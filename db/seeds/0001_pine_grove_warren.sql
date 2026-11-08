@@ -46,8 +46,8 @@ VALUES
 ('claim-pg-earliest','cemetery','cem-pine-grove-warren','earliest_reported_inscription_year','1746','supported','unreviewed','municipal heritage report'),
 ('claim-jemima-year','marker','marker-jemima-lincoln','reported_signature_year','1786','tentative','unreviewed','user-supplied draft'),
 ('claim-martha-year','marker','marker-martha-glezen','reported_signature_year','1804','tentative','unreviewed','user-supplied draft'),
-('claim-jemima-maker','marker','marker-jemima-lincoln','attributed_carver',NULL,'tentative','unreviewed','draft signature excerpt + stylistic attribution'),
-('claim-martha-maker','marker','marker-martha-glezen','attributed_carver',NULL,'supported','unreviewed','draft report of inscription');
+('claim-jemima-maker','marker','marker-jemima-lincoln','attributed_carver','Soule family / unidentified carver','tentative','unreviewed','draft signature excerpt + stylistic attribution'),
+('claim-martha-maker','marker','marker-martha-glezen','attributed_carver','Beza Soule Jr.','supported','unreviewed','draft report of inscription');
 UPDATE claims SET object_type='craftsperson',object_id='carver-soule-workshop' WHERE id='claim-jemima-maker';
 UPDATE claims SET object_type='craftsperson',object_id='carver-beza-soule-jr' WHERE id='claim-martha-maker';
 
