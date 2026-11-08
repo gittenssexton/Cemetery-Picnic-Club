@@ -49,12 +49,15 @@ class PineGroveDatabaseTests(unittest.TestCase):
         self.assertEqual(self.count("claim_evidence"), 5)
 
     def test_rights_cannot_be_unknown_but_published(self):
-        # The current schema stores publication grants separately; app policy
-        # must ensure unknown-rights images are never published.
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute(
-                "INSERT INTO images(id,rights_basis) VALUES (?,?)",
-                ("bad-rights","not_a_valid_basis"),
+                "INSERT INTO images(id,rights_basis,publish_authorized) VALUES (?,?,?)",
+                ("bad-publish","unknown",1),
+            )
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute(
+                "INSERT INTO images(id,rights_basis,analysis_authorized) VALUES (?,?,?)",
+                ("bad-analysis","unknown",1),
             )
 
     def test_marker_can_commemorate_multiple_persons(self):
