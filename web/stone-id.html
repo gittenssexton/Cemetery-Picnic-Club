@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stone Material Identifier — Cemetery Picnic Club</title><meta name="theme-color" content="#173e33">
+<style>:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f9f8f3;color:#25362f;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{background:#173e33;color:white;padding:24px 18px}main{max-width:760px;margin:auto;padding:18px}h1,h2{font-family:Georgia,serif;font-weight:500}h1{font-size:1.9rem;margin:0}h2{margin:4px 0 12px;font-size:1.4rem}section{background:white;border:1px solid #dde2db;border-radius:16px;margin-bottom:14px;padding:16px}p{margin:7px 0 12px}.small{font-size:.89rem;color:#596960}label{display:block;margin:15px 0 6px;font-weight:600}select,textarea{font:inherit;display:block;width:100%;background:white;border:1px solid #91a79d;border-radius:10px;padding:11px;color:#26362f}textarea{min-height:88px}button{font:inherit;border:1px solid #173e33;background:#173e33;color:#fff;border-radius:10px;padding:11px 15px;font-weight:650;cursor:pointer}button.secondary{color:#173e33;background:white}#results{display:none}.result{padding:13px;border-radius:12px;background:#f3f6f1;border:1px solid #d5dfd1;margin-top:10px}.result strong{display:block}.score{font-size:.82rem;color:#405c4b}.notice{padding:11px;border-left:4px solid #b2884a;background:#fff5e6}.buttons{display:flex;gap:8px;flex-wrap:wrap}a{color:#145c4b}</style></head>
+<body><header><div style="font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.8">Cemetery Picnic Club · Field research</div><h1>Stone Material Identifier</h1><div style="opacity:.8">Non-invasive visual field guide · Prototype 0.1</div></header>
+<main><section><h2>Examine the visible surface</h2><p class="small">Observe the marker without touching, scratching, applying liquids, or disturbing it. One photograph rarely proves rock identity. Choose “Not sure” when a feature is difficult to see.</p>
+<label for="grains">Surface grain</label><select id="grains"><option value="unknown">Not sure</option><option value="fine">Very fine, largely uniform</option><option value="sand">Sand-sized separate grains</option><option value="crystals">Visible interlocking crystals</option><option value="sugary">Sugary crystalline weathering</option><option value="cast">Smooth cast or fabricated appearance</option></select>
+<label for="layers">Layering</label><select id="layers"><option value="unknown">Not sure</option><option value="planes">Flat cleavage layers</option><option value="bedded">Sedimentary bedding layers</option><option value="bands">Alternating light/dark bands</option><option value="none">No obvious layers</option></select>
+<label for="color">Overall appearance</label><select id="color"><option value="unknown">Not sure</option><option value="dark">Dark gray, blue or black</option><option value="red">Red, reddish brown or tan</option><option value="pale">White, pale gray or cream</option><option value="speckled">Speckled multicolor crystals</option><option value="other">Other or weathered</option></select>
+<label for="details">Other observed features</label><select id="details"><option value="unknown">Not sure</option><option value="fossils">Possible fossils or shell fragments</option><option value="veins">Colored veins or crystalline streaks</option><option value="flakes">Thin sheets or flakes separating</option><option value="mica">Sparkling aligned mica flakes</option><option value="cast">Repeated cast detail, seams or metal panel</option><option value="none">None clearly visible</option></select>
+<label for="notes">Field notes (optional)</label><textarea id="notes" placeholder="Example: polished face, gray-green on rough edge, layered at broken corner"></textarea>
+<div class="buttons"><button id="identify">Compare possible materials</button><button class="secondary" id="reset">Reset</button></div></section>
+<section id="results" aria-live="polite"><h2>Candidate materials</h2><div class="notice">Visual comparison only. Results are hypotheses, not definitive geological identification or cleaning advice.</div><div id="candidateList"></div><p class="small">For confirmation, compare museum or geological reference specimens and seek a qualified conservator/geologist if identification affects treatment. Avoid acid, scratch and other tests on historic monuments.</p><button class="secondary" id="export">Export observation JSON</button></section>
+<section><h2>Materials in the reference library</h2><p class="small">Slate · sandstone / brownstone · marble · limestone · granite · schist · gneiss · soapstone · cast zinc / “white bronze” · concrete / cast stone.</p><p class="small">Reference standards: <a href="https://www.nps.gov/articles/000/cemetery-preservation-course-materials-and-monuments.htm">National Park Service</a>, <a href="https://www.gravestonestudies.org/component/content/article/88-preservationconservation/100-preservation-and-conservation-2">Association for Gravestone Studies</a>, <a href="https://www.mass.gov/doc/preservation-guidelines-for-municipally-owned-historic-burial-grounds-and-cemeteries/download">Massachusetts historic burial-ground guidelines</a>.</p><p><a href="./index.html">Return to Pine Grove field notebook</a></p></section></main>
+<script>
+(()=>{
+ const $=s=>document.getElementById(s);
+ const refs=[
+ {id:"material-slate",name:"Slate",match:{fine:3,planes:3,dark:2,flakes:1},why:"Fine uniform texture and planar cleavage"},
+ {id:"material-sandstone",name:"Sandstone / brownstone",match:{sand:5,bedded:2,red:2,flakes:1},why:"Individual sand grains and possible bedding"},
+ {id:"material-marble",name:"Marble",match:{sugary:4,pale:2,veins:2,crystals:1},why:"Recrystallized appearance, sometimes veins or sugary weathering"},
+ {id:"material-limestone",name:"Limestone",match:{fossils:5,pale:1,fine:1,bedded:1},why:"Fine carbonate-looking rock; fossil evidence can be informative"},
+ {id:"material-granite",name:"Granite / commercial granite",match:{crystals:4,speckled:3,none:1},why:"Coarse interlocking minerals; trade names can include other rocks"},
+ {id:"material-schist",name:"Schist",match:{mica:5,flakes:2,bands:1,dark:1},why:"Aligned shiny mica and foliated surface"},
+ {id:"material-gneiss",name:"Gneiss",match:{bands:5,crystals:2,speckled:1},why:"Alternating mineral bands and crystalline texture"},
+ {id:"material-soapstone",name:"Soapstone",match:{fine:2,other:1,dark:1},why:"Typically fine-grained, but extremely hard to confirm visually"},
+ {id:"material-zinc",name:"Cast zinc / white bronze",match:{cast:5},why:"Cast seams, modular panels or replicated metal ornament"},
+ {id:"material-concrete",name:"Concrete / cast stone",match:{cast:2,sand:1,other:1},why:"Manufactured appearance; aggregate may be visible"}
+ ];
+ let observation=null;
+ $("identify").onclick=()=>{
+ const a=[$("grains").value,$("layers").value,$("color").value,$("details").value];
+ observation={format:"cpc-stone-observation-v1",recordedAt:new Date().toISOString(),grains:a[0],layers:a[1],appearance:a[2],details:a[3],notes:$("notes").value.trim(),captureMethod:"visual",invasiveTestPerformed:false};
+ const scored=refs.map(r=>({id:r.id,name:r.name,why:r.why,score:a.reduce((sum,v)=>sum+(r.match[v]||0),0)})).sort((x,y)=>y.score-x.score);
+ const host=$("candidateList");host.replaceChildren();
+ const choices=scored.filter(x=>x.score>0).slice(0,4);
+ if(!choices.length){const p=document.createElement("p");p.textContent="Insufficient features to suggest a material. Photograph the surface and record more observations.";host.appendChild(p);}
+ else choices.forEach((c,i)=>{const el=document.createElement("div");el.className="result";
+ const title=document.createElement("strong");title.textContent=(i+1)+". "+c.name;
+ const desc=document.createElement("div");desc.textContent=c.why;
+ const note=document.createElement("div");note.className="score";note.textContent="Evidence-match score: "+c.score+" (relative only; not a calibrated probability)";
+ el.append(title,desc,note);host.appendChild(el);});
+ $("results").style.display="block";$("results").scrollIntoView({behavior:"smooth",block:"start"});
+ };
+ $("reset").onclick=()=>{for(const s of ["grains","layers","color","details"])$(s).selectedIndex=0;$("notes").value="";$("results").style.display="none";observation=null;};
+ $("export").onclick=()=>{if(!observation)return;const data={...observation,candidates:refs.map(r=>({id:r.id,score:[observation.grains,observation.layers,observation.appearance,observation.details].reduce((s,v)=>s+(r.match[v]||0),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,4),reviewStatus:"unreviewed",identificationStatus:"hypothesis"};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download="cpc-stone-observation.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);};
+})();
+</script></body></html>
