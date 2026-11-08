@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#183a31">
+<title>Cemetery Picnic Club — Pine Grove Field Notebook</title>
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light;--pine:#173e33;--ink:#202821;--paper:#faf8f2;--muted:#607166;--line:#d7dfd5;--gold:#ba8840}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+header{background:var(--pine);color:#fff;padding:28px max(18px,calc((100vw - 850px)/2)) 22px}
+.kicker{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;opacity:.8}h1{font-family:Georgia,serif;font-weight:500;font-size:clamp(1.8rem,6vw,2.9rem);margin:4px 0 4px}header p{color:#dce8dd;max-width:650px;margin:0}
+main{max-width:850px;margin:auto;padding:18px 16px 76px}section{background:white;border:1px solid var(--line);border-radius:17px;padding:18px;margin:0 0 16px}
+h2{font-family:Georgia,serif;font-weight:500;font-size:1.4rem;margin:0 0 8px}.caption{font-size:.9rem;color:var(--muted)}.eyebrow{letter-spacing:.07em;text-transform:uppercase;font-size:.76rem;color:var(--muted)}
+label{display:block;font-weight:600;font-size:.93rem;margin:14px 0 6px}
+input[type=text],textarea,select{width:100%;font:inherit;border:1px solid #9aaca0;border-radius:10px;padding:11px;background:#fff;color:var(--ink)}
+input[type=file]{width:100%;font:inherit}textarea{min-height:80px;resize:vertical}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+button,.linklike{font:inherit;font-weight:650;border-radius:12px;padding:11px 15px;border:1px solid var(--pine);background:var(--pine);color:white;cursor:pointer;touch-action:manipulation}
+button.secondary{background:white;color:var(--pine)}button:disabled{opacity:.45;cursor:default}
+#preview{display:none;width:100%;max-height:360px;object-fit:contain;background:#f1f1ee;border-radius:10px;margin-top:10px}
+#gpsStatus,#status{font-size:.9rem;margin-top:8px}#status{min-height:1.4em}#status[role=status]{color:#194f3b}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:10px}
+.card{padding:13px;border-radius:12px;border:1px solid var(--line);background:#fcfdfb}.card b{display:block}
+.notice{padding:10px 12px;border-left:3px solid var(--gold);background:#faf4e9;font-size:.9rem}
+label.check{font-weight:400;display:flex;gap:9px;align-items:flex-start}label.check input{margin-top:5px}
+.draft{border-top:1px solid var(--line);padding:12px 0}.draft strong{display:block}.draft small{color:var(--muted)}
+.draft-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.draft-actions button{padding:6px 10px;font-size:.84rem}
+a{color:#125e4d}footer{color:var(--muted);font-size:.8rem;padding-top:8px}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="kicker">Cemetery Picnic Club / Pilot 01</div><h1>Pine Grove Field Notebook</h1><p>Document the stone. Preserve the evidence. Discover the person and the craft.</p></header>
+<main>
+<section aria-label="Pilot cemetery">
+<div class="eyebrow">Active research site</div><h2>Pine Grove Cemetery · Warren, Massachusetts</h2>
+<p class="caption">207 Maple Street · Town cemetery · Public visiting hours: dawn to dusk. Location of any individual historical stone is unverified until field checked.</p>
+<p class="notice">This is a local-only prototype. No image recognition, database upload, public posting or cloud backup is active. Keep the original photograph in your Photos app.</p>
+</section>
+<section>
+<h2>Record a gravestone</h2>
+<form id="fieldForm">
+<label for="photograph">1. Attach a clear front photograph</label>
+<input id="photograph" type="file" accept="image/*" capture="environment" required>
+<img id="preview" alt="Your selected gravestone photograph">
+<p class="caption">Recommended: also photograph the entire stone, its back, and close-up lettering. Do not rub, chalk, or clean a stone to improve readability.</p>
+<label for="label">2. Stone name or temporary identifier</label>
+<input id="label" type="text" maxlength="160" placeholder="Example: Unknown headstone near west path">
+<label for="inscription">3. What can you read?</label>
+<textarea id="inscription" placeholder="Literal transcription, including uncertain words marked [?]"></textarea>
+<label for="features">4. Artwork, material, or condition notes</label>
+<textarea id="features" placeholder="Example: winged head, carved rosette, possible slate, fissure along left side"></textarea>
+<div class="buttons"><button type="button" class="secondary" id="geoBtn">Use iPhone GPS</button><button type="button" class="secondary" id="clearGps">Remove location</button></div>
+<p id="gpsStatus" aria-live="polite" class="caption">Location not collected. GPS is optional and may be inaccurate beneath trees.</p>
+<label class="check"><input id="rights" type="checkbox"><span>I took this photograph or have permission to retain it for this private research draft. This does not grant public publication rights.</span></label>
+<div class="buttons"><button type="submit">Save private field draft</button></div>
+<p id="status" role="status" aria-live="polite"></p>
+</form>
+</section>
+<section><h2>Saved on this iPhone</h2><p class="caption">Drafts are stored locally in this browser, not on Cloudflare. Browser storage may be cleared. Export both the record and its original photo to keep a backup.</p><div id="drafts">Loading drafts…</div></section>
+<section><h2>Research starting points</h2><p class="caption">Two stones listed in an uploaded working carver draft. They are not yet field-located or independently verified.</p>
+<div class="cards"><div class="card"><b>Jemima Lincoln</b><span class="caption">1786 reported stone · “by Soule” · individual carver unresolved</span></div><div class="card"><b>Martha Glezen</b><span class="caption">1804 reported stone · attributed by inscription to Beza Soule Jr.</span></div></div>
+<p class="caption">Source: Carvers_Section_Draft (2).pdf, p. 7. These are research leads, not automatically identified graves.</p>
+</section>
+<footer>Pilot version 0.1 · Research and permission-aware documentation. No alterations to graves or cemetery property are authorized by this app.</footer>
+</main>
+<script>
+(() => {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const DB_NAME="cpc-field-notebook-v1", STORE="drafts";
+let gps=null, previewURL=null;
+function openDb(){
+ return new Promise((resolve,reject)=>{
+  if(!("indexedDB" in window)){reject(new Error("Offline storage is not available in this browser."));return;}
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE,{keyPath:"id"});};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+ });
+}
+async function operate(mode,callback){
+ const db=await openDb();
+ try{return await new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE),req=callback(store);
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error);
+  tx.onerror=()=>reject(tx.error);
+ });}finally{db.close();}
+}
+const list=()=>operate("readonly",s=>s.getAll());
+const put=(r)=>operate("readwrite",s=>s.put(r));
+const del=(id)=>operate("readwrite",s=>s.delete(id));
+function showStatus(message,isError=false){$("status").textContent=message;$("status").style.color=isError?"#9c2929":"#194f3b";}
+function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);}
+async function render(){
+ const host=$("drafts");host.replaceChildren();
+ try{const entries=(await list()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ if(!entries.length){host.textContent="No local drafts yet. Add the first stone above.";return;}
+ for(const r of entries){
+  const div=document.createElement("div");div.className="draft";
+  const name=document.createElement("strong");name.textContent=r.markerLabel||"Unidentified stone";div.appendChild(name);
+  const date=document.createElement("small");date.textContent=new Date(r.createdAt).toLocaleString()+" · "+r.photoName+" · "+(r.gps?"GPS included":"no GPS");div.appendChild(date);
+  const bar=document.createElement("div");bar.className="draft-actions";
+  const action=(t,fn)=>{const b=document.createElement("button");b.type="button";b.className="secondary";b.textContent=t;b.onclick=fn;bar.appendChild(b);};
+  action("Export record",()=>{
+   const {photo,...meta}=r;
+   download(new Blob([JSON.stringify({format:"cpc-field-draft-v1",...meta,photoIncluded:false},null,2)],{type:"application/json"}),(r.id+".json"));
+  });
+  action("Download photo",()=>download(r.photo,r.photoName||r.id+".jpg"));
+  action("Delete",async()=>{if(!confirm("Delete this local draft? This cannot be undone."))return;try{await del(r.id);await render();}catch(e){showStatus(e.message,true);}});
+  div.appendChild(bar);host.appendChild(div);
+ }}catch(e){host.textContent="Unable to load offline drafts: "+e.message;}
+}
+$("photograph").addEventListener("change",()=>{
+ const f=$("photograph").files[0];
+ if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
+ if(!f){$("preview").style.display="none";return;}
+ previewURL=URL.createObjectURL(f);$("preview").src=previewURL;$("preview").style.display="block";
+});
+$("geoBtn").addEventListener("click",()=>{
+ if(!navigator.geolocation){$("gpsStatus").textContent="Geolocation is not available.";return;}
+ $("gpsStatus").textContent="Requesting location permission…";
+ navigator.geolocation.getCurrentPosition(p=>{
+  gps={latitude:p.coords.latitude,longitude:p.coords.longitude,accuracyMeters:p.coords.accuracy,observedAt:new Date(p.timestamp).toISOString()};
+  $("gpsStatus").textContent="GPS: "+gps.latitude.toFixed(6)+", "+gps.longitude.toFixed(6)+" · accuracy ±"+Math.round(gps.accuracyMeters)+" m";
+ },e=>{$("gpsStatus").textContent="No location saved: "+e.message;},
+ {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+});
+$("clearGps").addEventListener("click",()=>{gps=null;$("gpsStatus").textContent="Location removed.";});
+$("fieldForm").addEventListener("submit",async(e)=>{
+ e.preventDefault();const file=$("photograph").files[0];
+ if(!file){showStatus("Please select a photograph.",true);return;}
+ if(!$("rights").checked){showStatus("Please confirm that you can retain this photograph.",true);return;}
+ const btn=e.submitter;if(btn)btn.disabled=true;
+ try{
+  const id=crypto.randomUUID?crypto.randomUUID():("cpc-"+Date.now()+"-"+Math.random().toString(36).slice(2));
+  await put({id,format:"cpc-field-draft-v1",cemeteryId:"cem-pine-grove-warren",markerLabel:$("label").value.trim(),
+    transcription:$("inscription").value.trim(),notes:$("features").value.trim(),gps:structuredClone(gps),
+    createdAt:new Date().toISOString(),photo:file,photoName:file.name||"gravestone.jpg",photoType:file.type,
+    publicationAuthorized:false,analysisAuthorized:false,source:"user field capture",syncStatus:"local_only"});
+  $("fieldForm").reset();gps=null;$("gpsStatus").textContent="Location not collected.";
+  $("preview").style.display="none";if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
+  showStatus("Saved on this device. Export the record and photo for backup.");await render();
+ }catch(err){showStatus("Could not save draft: "+(err.message||err),true);}
+ finally{if(btn)btn.disabled=false;}
+});
+if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("./sw.js").catch(()=>{});
+render();
+})();
+</script>
+</body></html>
