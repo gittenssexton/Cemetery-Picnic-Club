@@ -87,6 +87,19 @@ class ResearchCoreTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             importer.import_rows(self.db,rows)
 
+    def test_readonly_research_catalog_export(self):
+        export_spec=importlib.util.spec_from_file_location(
+            "cpc_export", ROOT / "scripts/export_research_catalog.py")
+        module=importlib.util.module_from_spec(export_spec)
+        export_spec.loader.exec_module(module)
+        obj=module.export_catalog(self.db)
+        self.assertEqual(obj["format"], "cpc-research-catalog-v1")
+        self.assertEqual(len(obj["data"]["works"]), 7)
+        self.assertEqual(len(obj["data"]["interpretations"]), 4)
+        self.assertEqual(len(obj["data"]["collections"]), 2)
+        self.assertEqual(len(obj["data"]["research_tasks"]), 5)
+        self.assertNotIn("images", obj["data"])
+
     def test_cross_cemetery_relation_not_confused_with_identity(self):
         self.db.execute("""INSERT INTO cemeteries(id,name,town,state) VALUES
             ('test-remote','Synthetic test cemetery','Test Town','VT')""")
