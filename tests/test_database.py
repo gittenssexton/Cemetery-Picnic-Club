@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = (ROOT / "db/migrations/0001_initial.sql").read_text(encoding="utf-8")
 SEED = (ROOT / "db/seeds/0001_pine_grove_warren.sql").read_text(encoding="utf-8")
+MOTIFS = (ROOT / "db/seeds/0002_carver_motifs.sql").read_text(encoding="utf-8")
 
 
 class PineGroveDatabaseTests(unittest.TestCase):
@@ -14,6 +15,7 @@ class PineGroveDatabaseTests(unittest.TestCase):
         self.db.execute("PRAGMA foreign_keys = ON")
         self.db.executescript(SCHEMA)
         self.db.executescript(SEED)
+        self.db.executescript(MOTIFS)
 
     def tearDown(self):
         self.db.close()
@@ -45,6 +47,7 @@ class PineGroveDatabaseTests(unittest.TestCase):
 
     def test_idempotent_seed(self):
         self.db.executescript(SEED)
+        self.db.executescript(MOTIFS)
         self.assertEqual(self.count("markers"), 2)
         self.assertEqual(self.count("claim_evidence"), 5)
 
@@ -59,6 +62,12 @@ class PineGroveDatabaseTests(unittest.TestCase):
                 "INSERT INTO images(id,rights_basis,analysis_authorized) VALUES (?,?,?)",
                 ("bad-analysis","unknown",1),
             )
+
+    def test_comparative_motif_vocabulary_does_not_auto_attribute(self):
+        self.assertEqual(self.count("motifs"), 19)
+        self.assertEqual(self.count("marker_motifs"), 0)
+        self.assertEqual(self.count("craftspeople"), 7)
+        self.assertEqual(self.count("marker_positions"), 0)
 
     def test_marker_can_commemorate_multiple_persons(self):
         self.db.execute("INSERT INTO persons(id,display_name) VALUES (?,?)",("p-test","Second Person"))
