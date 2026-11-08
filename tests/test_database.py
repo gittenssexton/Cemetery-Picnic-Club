@@ -5,8 +5,10 @@ import unittest
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = (ROOT / "db/migrations/0001_initial.sql").read_text(encoding="utf-8")
+GLOBAL_SCHEMA = (ROOT / "db/migrations/0002_global_research_core.sql").read_text(encoding="utf-8")
 SEED = (ROOT / "db/seeds/0001_pine_grove_warren.sql").read_text(encoding="utf-8")
 MOTIFS = (ROOT / "db/seeds/0002_carver_motifs.sql").read_text(encoding="utf-8")
+GLOBAL_SEED = (ROOT / "db/seeds/0003_global_research_sources.sql").read_text(encoding="utf-8")
 
 
 class PineGroveDatabaseTests(unittest.TestCase):
@@ -14,8 +16,10 @@ class PineGroveDatabaseTests(unittest.TestCase):
         self.db = sqlite3.connect(":memory:")
         self.db.execute("PRAGMA foreign_keys = ON")
         self.db.executescript(SCHEMA)
+        self.db.executescript(GLOBAL_SCHEMA)
         self.db.executescript(SEED)
         self.db.executescript(MOTIFS)
+        self.db.executescript(GLOBAL_SEED)
 
     def tearDown(self):
         self.db.close()
@@ -48,6 +52,7 @@ class PineGroveDatabaseTests(unittest.TestCase):
     def test_idempotent_seed(self):
         self.db.executescript(SEED)
         self.db.executescript(MOTIFS)
+        self.db.executescript(GLOBAL_SEED)
         self.assertEqual(self.count("markers"), 2)
         self.assertEqual(self.count("claim_evidence"), 5)
 
