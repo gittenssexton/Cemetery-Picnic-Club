@@ -82,9 +82,11 @@ async function operate(mode,callback){
  const db=await openDb();
  try{return await new Promise((resolve,reject)=>{
   const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE),req=callback(store);
-  req.onsuccess=()=>resolve(req.result);
+  let result;
+  req.onsuccess=()=>{result=req.result;};
   req.onerror=()=>reject(req.error);
   tx.onerror=()=>reject(tx.error);
+  tx.oncomplete=()=>resolve(result);
  });}finally{db.close();}
 }
 const list=()=>operate("readonly",s=>s.getAll());
