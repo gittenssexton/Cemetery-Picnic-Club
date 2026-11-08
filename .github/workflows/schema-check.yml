@@ -1,0 +1,19 @@
+name: Pine Grove database checks
+on:
+  push:
+    paths:
+      - "db/**"
+      - "tests/**"
+      - ".github/workflows/schema-check.yml"
+  pull_request:
+    paths:
+      - "db/**"
+      - "tests/**"
+      - ".github/workflows/schema-check.yml"
+jobs:
+  sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SQLite migration and seed tests
+        run: python3 -m unittest discover -s tests -v
