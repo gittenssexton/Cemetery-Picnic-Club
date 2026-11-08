@@ -121,6 +121,8 @@ CREATE TABLE IF NOT EXISTS images (
     CHECK(rights_basis IN ('own_photo','explicit_permission','licensed','public_domain','unknown')),
   analysis_authorized INTEGER NOT NULL DEFAULT 0 CHECK(analysis_authorized IN (0,1)),
   publish_authorized INTEGER NOT NULL DEFAULT 0 CHECK(publish_authorized IN (0,1)),
+  CHECK(publish_authorized = 0 OR rights_basis <> 'unknown'),
+  CHECK(analysis_authorized = 0 OR rights_basis <> 'unknown'),
   capture_type TEXT NOT NULL DEFAULT 'front'
     CHECK(capture_type IN ('front','context','detail','angled','back','other')),
   captured_at TEXT,
