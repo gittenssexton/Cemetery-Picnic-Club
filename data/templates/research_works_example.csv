@@ -1,0 +1,2 @@
+id,title,authors,published_year,work_type,publisher,journal,volume,issue,pages,doi,isbn,url,full_text_status,rights_status,review_status
+example-public-source,Example local cemetery ledger,Town archivist,1900,archive,Town archive,,,,,,,https://example.org/catalog/local-ledger,not_acquired,unverified,bibliography_only
