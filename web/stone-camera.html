@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stone Camera Pilot — Cemetery Picnic Club</title><meta name="theme-color" content="#173e33">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8f7f1;color:#23382e;font:16px/1.5 system-ui,-apple-system,sans-serif}header{padding:24px max(18px,calc((100% - 820px)/2));background:#173e33;color:#fff}h1,h2{font-family:Georgia,serif;font-weight:normal}h1{font-size:2rem;margin:2px 0}h2{font-size:1.35rem;margin:0 0 10px}main{max-width:820px;margin:auto;padding:18px}section{background:white;border:1px solid #d7dfd5;border-radius:14px;padding:17px;margin-bottom:14px}.hint{color:#52695b;font-size:.9rem}.warning{border-left:4px solid #b68d48;background:#fff6e6;padding:10px 12px}.capture{border:2px dashed #9aaea1;border-radius:12px;padding:14px}label{display:block;font-weight:600;margin:14px 0 6px}input[type=file],select,textarea{width:100%;font:inherit}select,textarea{border:1px solid #9baea2;border-radius:10px;padding:10px;background:white;color:#23382e}textarea{min-height:70px}button{font:inherit;font-weight:650;background:#173e33;color:white;border:1px solid #173e33;border-radius:10px;padding:10px 14px;cursor:pointer}button.secondary{color:#173e33;background:white}button:disabled{opacity:.45}#photo{display:none;width:100%;height:auto;max-height:400px;object-fit:contain;margin-top:10px;border-radius:10px;background:#e9eae5}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.candidate{padding:12px;background:#f4f7f2;border:1px solid #d9e3d7;border-radius:11px;margin:9px 0}.muted{color:#596f62;font-size:.85rem}a{color:#145e4a}#output{display:none}.note{font-size:.85rem}output{display:block;padding-top:8px}
+</style></head><body>
+<header><div style="font-size:.8rem;letter-spacing:.1em">CEMETERY PICNIC CLUB · CAMERA RESEARCH</div><h1>Stone Camera Pilot</h1><div>Photograph a stone, document its features, compare possible materials</div></header>
+<main>
+<section><h2>1. Photograph the material</h2><p class="warning">Field identification only; this version does not automatically recognize rock types from pixels. No photos leave your device. Do not scratch, wet, acid-test, clean or remove historic stone.</p>
+<div class="capture"><label for="image">Take a photo or choose an existing one</label><input id="image" type="file" accept="image/*" capture="environment"><img id="photo" alt="Locally selected stone photograph"><p id="photoInfo" class="hint">Aim at an exposed stone surface, with mineral texture visible; avoid relying on an inscription alone.</p></div></section>
+<section><h2>2. Describe what you see</h2>
+<label for="grains">Texture</label><select id="grains"><option value="unknown">Not sure</option><option value="fine">Very fine / smooth</option><option value="sand">Visible sand grains</option><option value="crystals">Interlocking visible mineral crystals</option><option value="sugary">Sugary / granular crystalline appearance</option><option value="cast">Cast or manufactured surface</option></select>
+<label for="layers">Structure</label><select id="layers"><option value="unknown">Not sure</option><option value="planes">Flat splitting / cleavage planes</option><option value="bedded">Sedimentary bedding</option><option value="bands">Alternating mineral bands</option><option value="none">No visible layers</option></select>
+<label for="color">Appearance</label><select id="color"><option value="unknown">Not sure</option><option value="dark">Dark gray / black</option><option value="red">Red / tan / brown</option><option value="pale">White / cream / pale gray</option><option value="speckled">Multicolored mineral speckles</option><option value="other">Other or heavily weathered</option></select>
+<label for="details">Diagnostic clues</label><select id="details"><option value="unknown">Not sure</option><option value="fossils">Fossils or shells</option><option value="veins">Mineral veins</option><option value="flakes">Thin flakes splitting</option><option value="mica">Aligned sparkling mica</option><option value="cast">Mold seams or repeated cast details</option><option value="none">None visible</option></select>
+<label for="notes">Field notes</label><textarea id="notes" placeholder="E.g. front face polished, rough edge reveals coarse white and black minerals"></textarea>
+<div class="actions"><button id="compare">Compare materials</button><button id="reset" class="secondary">Clear observations</button></div></section>
+<section id="output" aria-live="polite"><h2>3. Possible materials</h2><div id="matches"></div><p class="hint">These are rule-based evidence matches, not AI predictions or calibrated probabilities. A photograph alone generally cannot identify an exact quarry. Quarry origin requires documented historical/geological comparisons.</p><button id="export" class="secondary">Export research record (JSON)</button><output id="exportStatus"></output></section>
+<section><h2>Reference and provenance</h2><p class="hint">Starter material profiles are descriptive field heuristics only, derived from the existing CPC Stone Material Identifier. No Mindat data, images, or API calls are used. Original photos remain with you and are not included in the exported JSON.</p>
+<p><a href="./stone-id.html">Original Stone Material Identifier</a> · <a href="./index.html">Pine Grove notebook</a></p></section>
+</main><script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id);
+const refs=[
+{id:"slate",name:"Slate",signals:{fine:3,planes:4,dark:1,flakes:1},basis:"Fine texture with flat cleavage planes"},
+{id:"sandstone",name:"Sandstone / brownstone",signals:{sand:5,bedded:2,red:2},basis:"Separate sand-sized grains with possible bedding"},
+{id:"marble",name:"Marble",signals:{sugary:4,pale:2,veins:2},basis:"Crystalline carbonate appearance, possibly sugary or veined"},
+{id:"limestone",name:"Limestone",signals:{fossils:5,pale:1,fine:1,bedded:1},basis:"Carbonate-looking stone; visible fossils can be useful"},
+{id:"granite",name:"Granite / commercial granite",signals:{crystals:4,speckled:3,none:1},basis:"Interlocking mineral crystals; commercial 'granite' may include other rocks"},
+{id:"gneiss",name:"Gneiss",signals:{bands:5,crystals:2,speckled:1},basis:"Distinct mineral banding"},
+{id:"schist",name:"Schist",signals:{mica:5,flakes:2,bands:1},basis:"Aligned mica flakes and foliation"},
+{id:"soapstone",name:"Soapstone",signals:{fine:2,dark:1,other:1},basis:"Fine-grained appearance; difficult to confirm visually"},
+{id:"zinc",name:"Cast zinc / white bronze",signals:{cast:5},basis:"Cast seams or replicated ornament on metal"},
+{id:"concrete",name:"Concrete / cast stone",signals:{cast:2,sand:1,other:1},basis:"Manufactured material with possible aggregate"}
+];
+let url=null, photo=null, result=null;
+$("image").addEventListener("change",()=>{
+if(url){URL.revokeObjectURL(url);url=null;}
+const file=$("image").files[0];photo=null;
+if(!file){$("photo").style.display="none";$("photoInfo").textContent="No photograph selected.";return;}
+if(!file.type.startsWith("image/")){$("photoInfo").textContent="Please choose an image file.";return;}
+photo={name:file.name,sizeBytes:file.size,type:file.type};url=URL.createObjectURL(file);
+$("photo").src=url;$("photo").style.display="block";$("photoInfo").textContent="Local preview only: "+file.name+". The photo is not uploaded.";
+});
+$("compare").onclick=()=>{
+const values=[$("grains").value,$("layers").value,$("color").value,$("details").value];
+const matches=refs.map(r=>({id:r.id,name:r.name,basis:r.basis,score:values.reduce((n,v)=>n+(r.signals[v]||0),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,4);
+result={format:"cpc-stone-camera-observation-v1",observedAt:new Date().toISOString(),photo:photo?{...photo,uploaded:false,embedded:false}:null,features:{texture:values[0],structure:values[1],appearance:values[2],details:values[3]},notes:$("notes").value.trim(),candidateMaterials:matches.map(m=>({id:m.id,evidenceMatchScore:m.score,interpretation:"tentative"})),method:"human-assisted rules",reviewStatus:"unreviewed",quarryOrigin:"unknown",externalDataUsed:false};
+const box=$("matches");box.replaceChildren();
+if(!matches.length){box.textContent="No candidate yet. Choose observable features before comparing.";}
+for(const m of matches){const div=document.createElement("div");div.className="candidate";const strong=document.createElement("strong");strong.textContent=m.name;const p=document.createElement("div");p.textContent=m.basis;const small=document.createElement("div");small.className="muted";small.textContent="Relative evidence score "+m.score+" (not a probability)";div.append(strong,p,small);box.append(div);}
+$("output").style.display="block";$("output").scrollIntoView({block:"start",behavior:"smooth"});
+};
+$("reset").onclick=()=>{for(const id of ["grains","layers","color","details"])$(id).selectedIndex=0;$("notes").value="";$("output").style.display="none";$("exportStatus").textContent="";result=null;};
+$("export").onclick=()=>{if(!result)return;const blob=new Blob([JSON.stringify(result,null,2)],{type:"application/json"}),href=URL.createObjectURL(blob),a=document.createElement("a");a.href=href;a.download="cpc-stone-camera-observation.json";document.body.append(a);a.click();a.remove();$("exportStatus").textContent="Observation exported. Save the original photo separately.";setTimeout(()=>URL.revokeObjectURL(href),5000);};
+window.addEventListener("pagehide",()=>{if(url)URL.revokeObjectURL(url);});
+})();
+</script></body></html>
