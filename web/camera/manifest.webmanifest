@@ -1,0 +1,13 @@
+{
+ "name":"Cemetery Picnic Club — Field Camera",
+ "short_name":"CPC Camera",
+ "description":"GPS-first field documentation camera for gravestones and monuments",
+ "id":"./",
+ "start_url":"./index.html",
+ "scope":"./",
+ "display":"standalone",
+ "orientation":"any",
+ "theme_color":"#122522",
+ "background_color":"#0c1717",
+ "icons":[{"src":"icon.svg","type":"image/svg+xml","sizes":"192x192","purpose":"any maskable"},{"src":"icon.svg","type":"image/svg+xml","sizes":"512x512","purpose":"any maskable"}]
+}
