@@ -1,0 +1,123 @@
+{
+  "record_id": "cpc-field-2026-11-08-combs-candidate-001",
+  "status": "unverified_field_photo_record",
+  "cemetery_id": null,
+  "location_status": "not_geolocated",
+  "images": [
+    {
+      "filename": "IMG_5263.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1CEVTHztvFW_v9cw4kLiPrOlXDgShd3fa/view",
+      "view": "front",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5264.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1hHphrsLGgNAWAUzc43EgvPHuBbjop18i/view",
+      "view": "front",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5265.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1JHgf8H56-6NtZnw9Wq6pP9YtnG_ROVr-/view",
+      "view": "front",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5266.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1-BvJf1MrseRpewqwb9ikLwcjOtKuy1iI/view",
+      "view": "front",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5267.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1W5lDgeF7plDAEMNXPpT9Eyw2jH_Um6Rj/view",
+      "view": "detail",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5268.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1OEYT_zovVp61jXrcBzu4NV48QfMXvDj5/view",
+      "view": "detail",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5269.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1u3fKee_g2duDVqPzUZwLC4ifP4TRZgSS/view",
+      "view": "detail",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    },
+    {
+      "filename": "IMG_5270.HEIC",
+      "drive_url": "https://drive.google.com/file/d/10snbPUqyJ6ko4FlEKiimT5LTIS8feIgG/view",
+      "view": "detail",
+      "rights_status": "unconfirmed",
+      "analysis_permission": "not_recorded",
+      "publication_permission": "not_recorded"
+    }
+  ],
+  "inscription": {
+    "name_reading": "Daniel Combs",
+    "name_confidence": "tentative",
+    "birth": "Born March 2, 1799",
+    "birth_confidence": "supported_visual_reading",
+    "death": "Nov. 18?? (not verified)",
+    "death_confidence": "unknown",
+    "age": "85 years",
+    "age_confidence": "supported_visual_reading",
+    "text_excerpt": "retired to his rest",
+    "uncertain_spans": [
+      "surname confirmation",
+      "death year and month/day",
+      "verse transcription"
+    ]
+  },
+  "physical": {
+    "shape": "tall upright tablet with arched shoulders and incised framing",
+    "decoration": [
+      "paired corner drapery motifs",
+      "flanking pilaster-like vertical elements",
+      "circular side medallions",
+      "central verse panel"
+    ],
+    "texture": "dark gray, very fine even grain with subtle horizontal surface banding on lower edge closeups",
+    "material_candidates": [
+      {
+        "material": "slate",
+        "confidence": "possible"
+      },
+      {
+        "material": "fine-grained schist/phyllite",
+        "confidence": "possible"
+      }
+    ],
+    "confirmed_material": null,
+    "quarry": null,
+    "carver": null
+  },
+  "observations": [
+    "Photo set seems to document one memorial, not eight different stones.",
+    "Closeups show an existing rough edge and slight green-yellow biological growth; no invasive inspection performed.",
+    "No embedded GPS or verified cemetery metadata interpreted in this record."
+  ],
+  "next_actions": [
+    "Review name and date with secondary angled/raking-light photographs.",
+    "Confirm cemetery, section, GPS and plot.",
+    "Photograph natural broken edge with scale reference without handling marker.",
+    "Confirm photographer rights before enabling automated analysis or public photo display."
+  ],
+  "evidence_provenance": "Photographs provided in connected Cemetery Picnic Club Drive root; transcription is provisional visual reading."
+}
