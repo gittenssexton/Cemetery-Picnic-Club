@@ -1,0 +1,130 @@
+{
+  "schema": "cpc-field-observation-v1",
+  "id": "obs-daniel-combs-2026-11-08",
+  "status": "field_observation_unverified",
+  "date_cataloged": "2026-11-08",
+  "person_name_read": "DANIEL COMBS",
+  "person_name_confidence": "high",
+  "cemetery_id": null,
+  "location_status": "unknown_unverified",
+  "photo_group": "IMG_5263–IMG_5270",
+  "source_ownership": "owner_supplied_drive_photos",
+  "image_rights": "not_established_for_publication",
+  "photos": [
+    {
+      "file": "IMG_5263.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1CEVTHztvFW_v9cw4kLiPrOlXDgShd3fa/view",
+      "view": "front"
+    },
+    {
+      "file": "IMG_5264.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1hHphrsLGgNAWAUzc43EgvPHuBbjop18i/view",
+      "view": "front"
+    },
+    {
+      "file": "IMG_5265.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1JHgf8H56-6NtZnw9Wq6pP9YtnG_ROVr-/view",
+      "view": "front"
+    },
+    {
+      "file": "IMG_5266.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1-BvJf1MrseRpewqwb9ikLwcjOtKuy1iI/view",
+      "view": "front"
+    },
+    {
+      "file": "IMG_5267.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1W5lDgeF7plDAEMNXPpT9Eyw2jH_Um6Rj/view",
+      "view": "lower edge"
+    },
+    {
+      "file": "IMG_5268.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1OEYT_zovVp61jXrcBzu4NV48QfMXvDj5/view",
+      "view": "lower edge"
+    },
+    {
+      "file": "IMG_5269.HEIC",
+      "drive_url": "https://drive.google.com/file/d/1u3fKee_g2duDVqPzUZwLC4ifP4TRZgSS/view",
+      "view": "lower edge"
+    },
+    {
+      "file": "IMG_5270.HEIC",
+      "drive_url": "https://drive.google.com/file/d/10snbPUqyJ6ko4FlEKiimT5LTIS8feIgG/view",
+      "view": "lower edge"
+    }
+  ],
+  "inscription": {
+    "lines": [
+      {
+        "reading": "DANIEL COMBS",
+        "confidence": "high"
+      },
+      {
+        "reading": "Born March 2, 1799",
+        "confidence": "high"
+      },
+      {
+        "reading": "Departed this life Nov. [unreadable date]",
+        "confidence": "low"
+      },
+      {
+        "reading": "Aged 85 years and retired to his rest",
+        "confidence": "moderate"
+      }
+    ],
+    "poem_transcription_status": "partial; no reliable full transcription yet",
+    "birth_date_candidate": "1799-03-02",
+    "death_date": null
+  },
+  "material": {
+    "candidates": [
+      {
+        "type": "zinc / white bronze (cast metal)",
+        "confidence": "possible",
+        "reasons": [
+          "crisp raised text",
+          "regularly repeated molded ornament",
+          "panel-like layout",
+          "uniform dark patina"
+        ]
+      },
+      {
+        "type": "fine-grained dark stone such as slate",
+        "confidence": "possible_but_weaker",
+        "reasons": [
+          "dark uniform surface; no non-invasive material confirmation"
+        ]
+      }
+    ],
+    "verification_status": "not_verified",
+    "no_scratching_no_acid_tests": true
+  },
+  "visual_features": [
+    "tall tablet monument",
+    "ornamented arched top with circular side elements",
+    "raised cartouche for name",
+    "classically framed lower verse panel",
+    "pilaster-like vertical borders"
+  ],
+  "maker_mark": {
+    "status": "possibly_present_at_lower_edge",
+    "reading": null,
+    "confidence": "insufficient"
+  },
+  "metadata": {
+    "gps": "not verified",
+    "dimensions": "not measured"
+  },
+  "separate_document": {
+    "filename": "Scan Nov 8, 2026 at 7.00 PM.pdf",
+    "drive_url": "https://drive.google.com/file/d/1TDwejroxzYUY2-C8hzGaoHa9FCxtMUMo/view",
+    "pages": 9,
+    "content": "regional gravestone tour and symbolic vocabulary; South Warren Cemetery section; does not independently establish photographed stone location"
+  },
+  "next_steps": [
+    "confirm cemetery and plot using user GPS/cemetery record",
+    "capture manufacturer marking with safe raking light",
+    "obtain clearer death date closeup",
+    "record side/back panel seams",
+    "photographer permissions before publication"
+  ]
+}
