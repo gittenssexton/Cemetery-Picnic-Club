@@ -1,0 +1,149 @@
+{
+  "schema": "cpc-warren-assisted-visual-check-v1",
+  "prepared": "2026-11-10",
+  "source_pdf": {
+    "drive_url": "https://drive.google.com/file/d/1Wn4XG9cI59RfkhTuevKwu4xoBHIBkaZI/view",
+    "title": "Vital records of Warren (formerly Western), Massachusetts, to the end of the year 1849, Cornell copy",
+    "sha256": "59c84a3f62810733555d7631c02ad7fd9f5cebd8dce6891f57f69192f4f830b6",
+    "pages": {
+      "9": {
+        "pdf_index": 12,
+        "loc_gallery_image": 13,
+        "render_sha256": "86a4367f3425a5b24ab4f85ea120dda8fb825380477b774e6faffb94adf9f848"
+      },
+      "10": {
+        "pdf_index": 13,
+        "loc_gallery_image": 14,
+        "render_sha256": "8dda636648e75444ecd1fa63fbdc71c2ad2c0315dd10e78a71b40c84739ca18d"
+      },
+      "11": {
+        "pdf_index": 14,
+        "loc_gallery_image": 15,
+        "render_sha256": "775780404ee21ec22635ed5d64679b8db1a3e6012fc35567272fcd8a0e7cdbe2"
+      }
+    }
+  },
+  "evidence_class": "assistant_visual_page_reading_not_human_attestation",
+  "review_status": "proposed_correction_pending_named_human_review",
+  "source_record_changes": false,
+  "accepted_vital_events": 0,
+  "findings": [
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P009-001",
+      "printed_page": 9,
+      "field": "parent_2",
+      "prior_ocr_or_ambiguity": "Jemama [text-layer reading; needs scan check]",
+      "visual_reading": "Jemima",
+      "notes": "Printed name visibly reads Jemima; Cornell text extraction produced Jemama",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P009-017",
+      "printed_page": 9,
+      "field": "name_semantics",
+      "prior_ocr_or_ambiguity": "[unnamed son]",
+      "visual_reading": "Unnamed male child (no recorded personal name)",
+      "notes": "Blank name line appears; retain no given name",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P009-019",
+      "printed_page": 9,
+      "field": "event_year",
+      "prior_ocr_or_ambiguity": "1803 [OCR uncertainty]",
+      "visual_reading": "1803",
+      "notes": "Digits in the printed line appear as 1803, not OCR 1S03",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P009-024",
+      "printed_page": 9,
+      "field": "name_verbatim",
+      "prior_ocr_or_ambiguity": "Rodbulphus [OCR alternative]",
+      "visual_reading": "Rodoulphus",
+      "notes": "Printed letters match Rodoulphus",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P010-001",
+      "printed_page": 10,
+      "field": "event_date_verbatim",
+      "prior_ocr_or_ambiguity": "Feb. 20, 1748-9 [OCR uncertain]",
+      "visual_reading": "Feb. 20, 1748-9",
+      "notes": "Printed dual year preserved rather than forced to ISO",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P010-012",
+      "printed_page": 10,
+      "field": "parentage_uncertainty",
+      "prior_ocr_or_ambiguity": "Jepthah and Joanna",
+      "visual_reading": "[s. Jepthah and Joanna ?]",
+      "notes": "Printed source has bracketed/uncertain parentage and G.S.2",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P010-024",
+      "printed_page": 10,
+      "field": "name_verbatim",
+      "prior_ocr_or_ambiguity": "BAKER Marion L. Fairbank [initial uncertain]",
+      "visual_reading": "BAKER Marion I. Fairbank",
+      "notes": "Printed initial is I; G.S.2 remains gravestone-derived",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P010-025",
+      "printed_page": 10,
+      "field": "name_semantics",
+      "prior_ocr_or_ambiguity": "[unnamed child]",
+      "visual_reading": "Unnamed child of Frank and unnamed second parent",
+      "notes": "Printed blank for child name and second parent; no personal identity inferred",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P011-001",
+      "printed_page": 11,
+      "field": "event_year",
+      "prior_ocr_or_ambiguity": "1840 [LOC indexed OCR alternative]",
+      "visual_reading": "1849",
+      "notes": "Printed July 1, 1849; Cornell staging year correct",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P011-022",
+      "printed_page": 11,
+      "field": "surname",
+      "prior_ocr_or_ambiguity": "BARWUM [earlier OCR]",
+      "visual_reading": "BARNUM",
+      "notes": "Printed surname heading is BARNUM",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P011-023",
+      "printed_page": 11,
+      "field": "surname",
+      "prior_ocr_or_ambiguity": "BARWUM [earlier OCR]",
+      "visual_reading": "BARNUM",
+      "notes": "Same printed BARNUM heading",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P011-024",
+      "printed_page": 11,
+      "field": "surname",
+      "prior_ocr_or_ambiguity": "BARWUM [earlier OCR]",
+      "visual_reading": "BARNUM",
+      "notes": "Same printed BARNUM heading",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    },
+    {
+      "candidate_id": "MA-WARREN-RICE1910-BIRTH-P011-025",
+      "printed_page": 11,
+      "field": "surname",
+      "prior_ocr_or_ambiguity": "BARWUM [earlier OCR]",
+      "visual_reading": "BARNUM",
+      "notes": "Same printed BARNUM heading",
+      "review_status": "assisted_visual_read_pending_human_signoff"
+    }
+  ]
+}
