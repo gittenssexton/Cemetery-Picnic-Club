@@ -35,6 +35,14 @@ has('cemetery_relationships_at_capture:state.siteSelection?');
 has('savedSiteEvidence');
 has('r.cemetery_assignment?.cemetery_entity_id');
 has('No site ID assigned');
+has('id="exportGpsExif"');
+has("if($('exportGpsExif').checked&&r.location?.latitude!=null");
+has("strip.export_privacy={gps_exif_copy_included:false");
+has('strip.export_privacy.gps_exif_copy_included=true');
+has("async function openReview(r){$('exportGpsExif').checked=false;");
+has('record_json_contains_coordinates:!!r.location');
+absent('<span>GPS embedded in JPEG</span><strong>When available</strong>');
+
 
 absent('id="cemetery" value="Pine Grove Cemetery"');
 checks++;assert.ok(sw.includes("'./cemetery-resolver.js'")&&sw.includes("'./cemetery-sites.js'"));
