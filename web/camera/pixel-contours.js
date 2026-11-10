@@ -85,7 +85,7 @@ function analyzeScene(rgba,w,h,options={}){
   const neutral=sumSat/tail<41,green=sumGreen/tail>.4;
   const upright=bh/bw>.87,adequate=bh/h>.09&&bw/w>.025;
   const shapeScore=(upright?2:0)+(adequate?1:0)+(neutral?2:0)+(!green?1:0)+(maxY>h*.3?1:0)+(fill>.39?1:0);
-  const stoneCandidate=shapeScore>=5&&tail<n*.36;
+  const stoneCandidate=upright&&adequate&&!green&&shapeScore>=5&&tail<n*.36;
   raw.push({points:pts,box,pixels:tail,fill:+fill.toFixed(2),
    kind:'visual_region_unverified',classification:stoneCandidate?'possible_monument_shape':'unclassified_region',
    shape_score:shapeScore,neutral,green,touches_frame:touches});
