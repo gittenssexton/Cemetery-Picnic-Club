@@ -79,3 +79,33 @@ def apply_audited(db, records):
                  record["review_status"], batch_id)
             )
     return {"batch_id": batch_id, "inserted": inserted, "duplicates": duplicate}
+
+
+def main():
+    """Offline CLI: dry-run by default, explicit local database required to write."""
+    import argparse
+    from pathlib import Path
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("json_file", type=Path)
+    parser.add_argument("--apply", action="store_true",
+                        help="Write validated metadata into an existing local SQLite file")
+    parser.add_argument("--database", type=Path)
+    args = parser.parse_args()
+    if args.apply and (not args.database or not args.database.is_file()):
+        parser.error("--apply requires an existing local SQLite --database")
+    try:
+        records = json.loads(args.json_file.read_text(encoding="utf-8"))
+        validated = plan(records)
+        if not args.apply:
+            print(f"Validated {len(validated)} records; DRY RUN ONLY.")
+            return
+        with sqlite3.connect(str(args.database)) as db:
+            db.execute("PRAGMA foreign_keys=ON")
+            result = apply_audited(db, records)
+        print("Audited metadata import complete: " + json.dumps(result, sort_keys=True))
+    except (OSError, ValueError, sqlite3.Error, json.JSONDecodeError) as exc:
+        parser.exit(1, f"Audited import failed: {exc}\\n")
+
+
+if __name__ == "__main__":
+    main()
