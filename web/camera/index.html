@@ -45,11 +45,19 @@
         </div>
       </div>
       <div class="toolbar live-only" id="cameraToolbar"><button class="btn soft" id="startBtn">Enable camera + GPS</button><button class="btn primary" id="captureBtn" disabled>Capture monument</button><button class="btn ghost" id="unlocatedBtn" disabled>Without GPS</button></div>
-      <div class="panel-body review-only" style="padding-bottom:0">
-        <label class="toggle"><input type="checkbox" id="exportGpsExif" /> Include extra GPS-tagged JPEG in ZIP (optional)</label>
-        <p class="muted compact">Off by default. The private record.json still contains captured GPS coordinates. Export ZIPs should be treated as sensitive even when this is off.</p>
-      </div>
-      <div class="panel-body review-only" id="overviewPickerPanel" hidden><strong>Select the gravestone in the distance photograph</strong><p class="muted">Mint curves are tentative pixel boundaries, not confirmed gravestones. If they are inaccurate or absent, tap the intended gravestone yourself. The yellow target selection is an editable box, not an automatic outline.</p><div class="twocol"><div class="field"><label for="targetWidth">Selection width (%)</label><input type="range" id="targetWidth" min="5" max="75" value="24"></div><div class="field"><label for="targetHeight">Selection height (%)</label><input type="range" id="targetHeight" min="10" max="95" value="58"></div></div><p class="muted" id="overviewSelectionStatus">No stone selected yet. Tap the gravestone in the image.</p></div><div class="toolbar review-only"><button class="btn primary" id="exportBtn">Export private research ZIP</button><button class="btn soft" id="shareReviewBtn" type="button">Create shareable ZIP</button><button class="btn soft" id="continueMonumentBtn">Next guided photograph</button><button class="btn ghost" id="newBtn">New monument</button></div>
+      
+      <div class="panel-body review-only" id="overviewPickerPanel" hidden><strong>Select the gravestone in the distance photograph</strong><p class="muted">Mint curves are tentative pixel boundaries, not confirmed gravestones. If they are inaccurate or absent, tap the intended gravestone yourself. The yellow target selection is an editable box, not an automatic outline.</p><div class="twocol"><div class="field"><label for="targetWidth">Selection width (%)</label><input type="range" id="targetWidth" min="5" max="75" value="24"></div><div class="field"><label for="targetHeight">Selection height (%)</label><input type="range" id="targetHeight" min="10" max="95" value="58"></div></div><p class="muted" id="overviewSelectionStatus">No stone selected yet. Tap the gravestone in the image.</p></div><div class="panel-body review-only" role="status" aria-live="polite" style="border-top:1px solid var(--line)">
+ <strong id="captureSaveState">Saved on this phone</strong>
+ <p class="muted" id="captureBackupState">Drive backup status will appear here.</p>
+ <p class="muted compact">Taking the photograph saves it immediately to this phone's local camera records. No ZIP export needed.</p>
+ </div>
+ <div class="toolbar review-only"><button class="btn primary" id="continueMonumentBtn">Next guided photograph</button><button class="btn soft" id="newBtn">New monument</button></div>
+ <details class="panel-body review-only" style="border-top:1px solid var(--line)"><summary style="cursor:pointer">Optional archive and sharing tools</summary>
+ <p class="muted compact">These create downloads on your phone, not uploads to ChatGPT or Google Drive. In iPhone Files, check Downloads or the browser's download manager. Do not treat a ZIP as proof of cloud backup.</p>
+ <label class="toggle"><input type="checkbox" id="exportGpsExif" /> Include extra GPS-tagged JPEG in private ZIP (off by default)</label>
+ <p class="muted compact">Private record.json may still contain coordinates. Do not share private ZIPs publicly.</p>
+ <div class="review-buttons"><button class="btn soft" id="exportBtn">Download private archive ZIP</button><button class="btn ghost" id="shareReviewBtn" type="button">Prepare reviewed shareable ZIP</button></div>
+ </details>
       <div class="panel-body review-only" id="shareReviewPanel" hidden style="border-top:1px solid var(--line)"><strong>Review before sharing</strong><p class="warning">Coordinates and private record identifiers will be excluded. Images, inscriptions, and cemetery names can still reveal the location. Do not share material without permission.</p><label class="toggle"><input type="checkbox" id="shareImage"> Include re-encoded photo (check image content and permission)</label><label class="toggle"><input type="checkbox" id="shareInscription"> Include inscription (may identify grave)</label><div class="field"><label for="shareInscriptionText">Approved inscription text (type or paste only what can be shared)</label><textarea id="shareInscriptionText" placeholder="Optional, reviewed inscription"></textarea></div><label class="toggle"><input type="checkbox" id="shareMaterial"> Include tentative material and form</label><label class="toggle"><input type="checkbox" id="shareSite"> Include a reviewed cemetery name (can reveal location)</label><div class="field"><label for="shareSiteName">Approved cemetery name</label><input id="shareSiteName" placeholder="Leave blank unless approved"></div><label class="toggle"><input type="checkbox" id="shareConfirm"> I reviewed visible image/text/location cues and have permission to share these selections</label><div class="review-buttons"><button class="btn primary" id="shareExportBtn" type="button">Export reviewed shareable ZIP</button><button class="btn ghost" id="shareCancelBtn" type="button">Cancel</button></div></div><div class="panel-body review-only" role="status" aria-live="polite">
         <strong>Saved location evidence</strong>
         <p class="muted" id="savedSiteEvidence">Site identity not verified.</p>
@@ -231,7 +239,7 @@ function persistMergedRecord(incoming,fromSync=false){
  });
 }
 
-async function refreshRecords(){if(!state.db)return;try{const rs=await records();$('recordCount').textContent=`${rs.length} record${rs.length===1?'':'s'}`;const list=$('recentList');list.innerHTML='';if(!rs.length){list.innerHTML='<p class="muted">No captures yet.</p>';return}for(const r of rs.slice(0,20)){const el=document.createElement('div');el.className='recent-item';const body=document.createElement('div');const head=document.createElement('strong');head.textContent=r.monument||r.id;const label=document.createElement('small');label.textContent=`${new Date(r.captured_at).toLocaleString()} · ${r.location?'Located':'NO GPS'} · Drive ${r.drive_sync?.status||'pending'}`;body.append(head,label);const btn=document.createElement('button');btn.textContent='Open';btn.addEventListener('click',()=>openReview(r));el.append(body,btn);list.appendChild(el)}}catch(e){notify('Local record listing unavailable: '+e.message)}}
+async function refreshRecords(){if(!state.db)return;try{const rs=await records();$('recordCount').textContent=`${rs.length} record${rs.length===1?'':'s'}`;const list=$('recentList');list.innerHTML='';if(!rs.length){list.innerHTML='<p class="muted">No captures yet.</p>';return}for(const r of rs.slice(0,20)){const el=document.createElement('div');el.className='recent-item';const body=document.createElement('div');const head=document.createElement('strong');head.textContent=r.monument||r.id;const label=document.createElement('small');const ds=r.drive_sync?.status;label.textContent=`${new Date(r.captured_at).toLocaleString()} · Saved on phone · ${ds==='uploaded'?'Backed up to Drive':ds==='partial'?'Drive upload incomplete':ds==='pending'?'Drive backup pending':'Not uploaded to Drive'}`;body.append(head,label);const btn=document.createElement('button');btn.textContent='Open';btn.addEventListener('click',()=>openReview(r));el.append(body,btn);list.appendChild(el)}}catch(e){notify('Local record listing unavailable: '+e.message)}}
 function generateRecord(g,blob,w,h,polygon){return{
   location_observation_id:'LOC:observation:'+crypto.randomUUID(),
   location_observation:g?{
@@ -258,8 +266,8 @@ async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=state.shotType==='overview'?[[0,0],[w,0],[w,h],[0,h]]:getGuidePolygon(w,h);
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);
   if(screenTest){r.capture_source='photograph_of_display_reference_test';r.location=null;r.location_observation=null;r.location_status='reference_image_no_site_attribution';r.cemetery_match=null;r.cemetery_assignment={cemetery_entity_id:null,assignment_method:null,verification_state:'unverified',source_id:null,reviewed_at:null};r.cemetery=null;r.cemetery_relationships_at_capture=null;r.site_name_entry='reference_image_not_site_evidence';}
-  try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();queueDriveSync();notify(screenTest?'Saved as a screen/reference test, not evidence of phone GPS at the depicted cemetery.':g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}finally{state.captureBusy=false}}
-async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
+  try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();queueDriveSync();notify(screenTest?'Saved on this phone as a reference-screen test; the pictured site was not GPS-verified.':g?'Saved on this phone with GPS observation. Drive status is shown below the image.':'Saved on this phone without GPS; Drive status is shown below the image.');}finally{state.captureBusy=false}}
+async function openReview(r){$('shareReviewPanel').hidden=true;updateCaptureSaveStatus(r);$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
   const selected=r.cemetery_assignment?.cemetery_entity_id||null;
   const savedMatch=r.cemetery_match?.status||'no_gps_match';
   const evidence=r.cemetery_match?.candidates?.find(c=>c.entity_id===selected);
@@ -371,6 +379,21 @@ $('startBtn').addEventListener('click',async()=>{requestGPS();await startCamera(
 $('clearManualGpsBtn').addEventListener('click',()=>{state.manualGps=null;state.gps=null;state.siteMatch=null;redrawGPS();requestGPS();notify('Manual location cleared. Requesting a fresh device GPS fix.');});
 $('manualGpsBtn').addEventListener('click',()=>{const lat=$('latInput').value.trim(),lon=$('lonInput').value.trim(),a=Number(lat),b=Number(lon);if(!lat||!lon||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){notify('Enter valid latitude (−90 to 90) and longitude (−180 to 180).');return}state.manualGps={latitude:a,longitude:b,accuracy_m:null,source:'manual',timestamp:Date.now()};redrawGPS();notify('Manual coordinates recorded; they are NOT independently surveyed or verified.')});
 $('captureBtn').addEventListener('click',()=>capture(false));$('unlocatedBtn').addEventListener('click',()=>$('unlocatedModal').classList.add('visible'));$('cancelUnlocated').addEventListener('click',()=>$('unlocatedModal').classList.remove('visible'));$('confirmUnlocated').addEventListener('click',()=>{$('unlocatedModal').classList.remove('visible');capture(true)});let driveSyncRunning=false;
+function updateCaptureSaveStatus(record=state.capture){
+ const saved=$('captureSaveState'),backup=$('captureBackupState');
+ if(!saved||!backup)return;
+ if(!record){saved.textContent='No photo selected';backup.textContent='Capture a photo to save it on this phone.';return}
+ saved.textContent='Saved on this phone';
+ const sync=record.drive_sync?.status;
+ const drive=window.CPCDriveSync?.status?.();
+ backup.textContent=sync==='uploaded'?'Backed up to Google Drive ('+(record.drive_sync.uploaded_at?new Date(record.drive_sync.uploaded_at).toLocaleString():'upload complete')+').':
+   sync==='partial'?'Drive backup incomplete. Original remains on this phone; retry when connected.':
+   !drive?.configured?'Not uploaded to Drive. The camera needs its own Google Drive setup; ChatGPT authorization does not transfer.':
+   !drive.authorized?'Not uploaded to Drive. Connect Google Drive on this camera page.':
+   !drive.enabled?'Drive automatic backup is off.':
+   !navigator.onLine?'Offline: waiting to upload when the camera is open and connected.':
+   'Saved locally; queued for Drive backup while the app is open.';
+}
 function driveStatus(){
  const d=window.CPCDriveSync?.status?.();
  if(!d)return;
@@ -378,6 +401,7 @@ function driveStatus(){
    (d.enabled?' · Automatic uploads enabled':' · Automatic uploads off')+
    (d.folderId?' · Destination folder ready':' · Folder created after first upload')+
    (driveSyncRunning?' · Uploading…':'');
+ updateCaptureSaveStatus();
 }
 async function queueDriveSync(){
  if(driveSyncRunning||!state.db||!navigator.onLine)return;
@@ -387,6 +411,8 @@ async function queueDriveSync(){
   const all=await records(),result=await d.sync(all,async r=>persistMergedRecord(r,true),()=>driveStatus());
   if(result.failed)notify(result.failed+' Drive upload(s) still pending. Reconnect or retry.');
   await refreshRecords();
+  if(state.capture){const updated=await storage('readonly',store=>store.get(state.capture.id));if(updated)state.capture.drive_sync=updated.drive_sync;}
+  updateCaptureSaveStatus();
  }catch(e){notify('Drive sync: '+e.message)}
  finally{driveSyncRunning=false;driveStatus()}
 }
