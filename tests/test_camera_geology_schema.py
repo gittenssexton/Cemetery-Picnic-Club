@@ -24,7 +24,10 @@ class IntegratedMigrationContractTests(unittest.TestCase):
         try:
             db.execute('PRAGMA foreign_keys=ON')
             for path in sorted(MIGRATIONS.glob('*.sql')):
-                db.executescript(path.read_text(encoding='utf-8'))
+                try:
+                    db.executescript(path.read_text(encoding='utf-8'))
+                except sqlite3.Error as e:
+                    self.fail(f'Migration {path.name} failed: {e}')
             names = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             for table in ('markers','geology_map_sources','geology_units','geology_site_context',
                           'marker_form_observations','carving_feature_observations',
