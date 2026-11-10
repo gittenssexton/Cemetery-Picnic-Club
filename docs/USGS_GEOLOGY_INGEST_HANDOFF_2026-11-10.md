@@ -96,3 +96,19 @@ The initial plan above is preserved for provenance. The following supersedes its
 - **Still blocked:** original MassGIS attributed bedrock polygons are not available to this execution environment, so P01 source unit, legend, independent alignment and 18 real point queries are **unverified**. No geologic unit or quarry is assigned to any gravestone, no XYZ tile service has been deployed, and no D1 production migration has run.
 
 **Do not promote this reference imagery to vetted geological polygons or claim phase 1 is fully complete until the real feature query, map-symbol review, independent georeferencing QA, staging and review gates pass.**
+
+
+## 10. Further execution — offline MassGIS polygons (2026-11-10)
+
+The original ZIP/KMZ and raster processing remain verified per section 9. An independent, properly sourced polygon import is now implemented at `scripts/geology/ingest_bedlith_offline.py`, with tests `tests/test_bedlith_offline.py`. It accepts the **actual MassGIS bedrock-lithology shapefile ZIP** (or extracted `.shp` plus sidecars), tests ZIP integrity and paths, requires geographic CRS and expected fields, projects the 18 existing QA point coordinates and performs point-in-polygon membership. The result is a reproducible `massgis_bedlith_unreviewed_qa.json` with immutable source ID, input SHA-256, original `BEDROCK_1` labels, mapped lithology categories, approximate distance to polygon boundaries and explicit non-provenance cautions. It writes **no D1 production units or quarry attribution**.
+
+**Local result:** 11 / 11 offline processing tests passed, including compressed ZIP and shapefile input tested on synthetic features. This does not constitute a successful real MassGIS source ingest. No real `bedlith.zip` was present in the three original Drive assets, and direct retrieval from the MassGIS/ArcGIS endpoints was inaccessible in this runtime. Consequently, P01 and the other 17 point-unit assignments remain unverified.
+
+**Exact additional input required:** MassGIS `BEDROCKLITHOLOGY_POLY` shapefile ZIP from [the official MassGIS data page](https://www.mass.gov/info-details/massgis-data-bedrock-lithology). Place the original ZIP in `Cemetery Picnic Club/08_Geography_Maps_GIS/01_GIS_Survey_Data`; do not modify it or substitute the USGS raster ZIP. Then run:
+
+```bash
+python scripts/geology/ingest_bedlith_offline.py --vector /path/to/bedlith.zip --points data/geology/qa_sample_points_ma.csv --out generated/geology/bedlith
+python -m unittest discover -s tests -p 'test_*geology*.py' -v
+```
+
+The second command is an optional broader test sweep; `test_bedlith_offline.py` should also be selected explicitly by filename. Check the symbol/legend and independent point-location quality before treating any imported record as reviewed. No new Google/Mindat credentials are required to obtain MassGIS open GIS data. An accessible official download is a data dependency, not an account permission dependency.
