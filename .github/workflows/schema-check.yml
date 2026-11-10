@@ -4,6 +4,7 @@ on:
     paths:
       - "db/**"
       - "tests/**"
+      - "web/camera/**"
       - ".github/workflows/schema-check.yml"
   pull_request:
     paths:
@@ -25,6 +26,8 @@ jobs:
         run: node tests/test_camera_export_privacy.js
       - name: Test camera ZIP writer and redaction
         run: node tests/test_camera_export_archive.js
+      - name: Test geology-to-private camera capture contract
+        run: node tests/test_camera_geology_integration.js
       - name: Test guided photo sequence
         run: node tests/test_guided_capture.js
       - name: Test live on-device analysis
