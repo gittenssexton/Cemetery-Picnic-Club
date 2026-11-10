@@ -8,8 +8,8 @@ const SCOPE='https://www.googleapis.com/auth/drive.file';
 const API='https://www.googleapis.com/drive/v3/files';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink';
 const FOLDER_NAME='Cemetery Picnic Club - Camera Uploads';
-let token=null,expires=0,client=null,folderId=null,busy=false,config={clientId:'',enabled:false};
-function load(){try{const data=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}');config={clientId:typeof data.clientId==='string'?data.clientId:'',enabled:data.enabled===true};folderId=typeof data.folderId==='string'?data.folderId:null;}catch(e){config={clientId:'',enabled:false};folderId=null}return status();}
+let token=null,expires=0,client=null,folderId=null,busy=false,config={clientId:'',enabled:true};
+function load(){try{const data=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}');config={clientId:typeof data.clientId==='string'?data.clientId:'',enabled:data.enabled!==false};folderId=typeof data.folderId==='string'?data.folderId:null;}catch(e){config={clientId:'',enabled:true};folderId=null}return status();}
 function save(){localStorage.setItem(CONFIG_KEY,JSON.stringify({...config,folderId}));return status();}
 function configure(clientId,enabled){const id=String(clientId||'').trim();if(!/^[0-9]+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(id))throw Error('Enter a valid Google OAuth web client ID.');if(config.clientId!==id){token=null;expires=0;client=null;folderId=null;}config.clientId=id;config.enabled=!!enabled;return save();}
 function enabled(value){config.enabled=!!value;return save();}
