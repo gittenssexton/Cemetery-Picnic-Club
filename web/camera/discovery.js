@@ -1,4 +1,4 @@
-/* CPC Live Discovery 0.4 - on-device edge-based visual regions and human annotation.
+/* CPC Live Discovery 0.7 - on-device edge-based visual regions and human annotation.
    NOT a trained object/symbol detector: highlighted regions are visual-interest proposals only. */
 (()=>{'use strict';
 const catalog=[
@@ -42,7 +42,7 @@ const catalog=[
 ];
 const $=id=>document.getElementById(id), video=$('video'),stage=$('cameraStage'),canvas=$('discoveryCanvas'),ctx=canvas.getContext('2d',{alpha:true}),status=$('discoveryStatus');
 const scan=document.createElement('canvas');scan.width=160;scan.height=200;const g=scan.getContext('2d',{willReadFrequently:true});
-let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false;let tracks=[],nextTrackId=1;
+let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false;let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[];
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
@@ -80,24 +80,50 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
    const t=selected[k];tracks.push({...t,id:nextTrackId++,hits:1,missed:0});
  }
  const stable=tracks.filter(t=>t.hits>=2&&t.missed<=1).sort((a,b)=>b.score-a.score).slice(0,3);
- latest=stable;ctx.clearRect(0,0,w,h);
+ latest=stable;
+ const live=window.CPCLiveAnalysis;
+ latestAnalysis=live?.analyzeRGBA?.(p,160,200)||null;
+ const mode=document.querySelector('[data-shot][aria-pressed="true"]')?.dataset.shot||'front';
+ latestMonuments=mode==='overview'&&$('liveMonuments')?.checked?
+   (window.CPCGuidedCapture?.propose?.(p,160,200)||[]):[];
+ // Publicly visible live detection is tentative and never automatically labeled as a named stone.
+ if($('livePreviewEnhance')?.checked&&latestAnalysis?.preview){
+   const brightness=latestAnalysis.preview.brightness,contrast=latestAnalysis.preview.contrast;
+   video.style.filter='brightness('+brightness+') contrast('+contrast+')';
+ }else video.style.filter='';
+ ctx.clearRect(0,0,w,h);
+ if($('liveMonuments')?.checked&&mode==='overview'){
+   ctx.save();ctx.setLineDash([9,6]);ctx.strokeStyle='#7fe0bd';ctx.lineWidth=2;
+   for(const r of latestMonuments){ctx.strokeRect(r.x*w,r.y*h,r.w*w,r.h*h);ctx.font='11px system-ui';ctx.fillStyle='#073b2b';ctx.fillRect(r.x*w,Math.max(0,r.y*h-22),125,22);ctx.fillStyle='#c9f9e7';ctx.fillText('Possible outline',r.x*w+5,Math.max(13,r.y*h-6));}
+   ctx.restore();
+ }
+ if($('liveLettering')?.checked&&latestAnalysis){
+   ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle='#8bc4ff';ctx.lineWidth=2;
+   for(const r of latestAnalysis.textRegions){ctx.strokeRect(r.x*w,r.y*h,r.w*w,r.h*h);}
+   ctx.restore();
+ }
  ctx.lineWidth=2;ctx.strokeStyle='#f4d48c';ctx.fillStyle='rgba(244,212,140,.12)';ctx.setLineDash([5,5]);
- for(const t of stable){const x=vr.x+t.x*vr.w,y=vr.y+t.y*vr.h,r=Math.max(22,Math.min(w,h)*.068);ctx.beginPath();ctx.ellipse(x,y,r,r*.9,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
+ for(const t of ($('liveDetails')?.checked?stable:[])){const x=vr.x+t.x*vr.w,y=vr.y+t.y*vr.h,r=Math.max(22,Math.min(w,h)*.068);ctx.beginPath();ctx.ellipse(x,y,r,r*.9,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
  ctx.setLineDash([]);for(const a of annotations){const x=a.x*w,y=a.y*h;ctx.strokeStyle='#7ce1b7';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,22,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#082b20';ctx.fillRect(Math.min(w-145,x+18),Math.max(0,y-24),138,27);ctx.fillStyle='#def8e8';ctx.font='12px system-ui';ctx.fillText(a.label.slice(0,18),Math.min(w-141,x+22),Math.max(18,y-7))}
- status.textContent=stable.length?`${stable.length} persistent detail region${stable.length===1?'':'s'} highlighted (experimental; symbols not identified).`:'Scanning for persistent visual detail; no symbol identified.';
+ const m=latestMonuments.length,letter=latestAnalysis?.textRegions.length||0;
+ status.textContent='LIVE proposals: '+m+' possible outlines, '+letter+' text-like regions, '+stable.length+' detail areas. No stone, symbol or carver has been identified.';
+ if($('liveQuality'))$('liveQuality').textContent=latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
  lastDraw=Date.now();
 }
 function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,1200);$('liveDiscovery').checked=true;}
-function stop(){running=false;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
+function stop(){running=false;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
- const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;cycle()}
+ const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
 const chooser=$('symbolChoice');for(const c of catalog){let option=document.createElement('option');option.value=c[0];option.textContent=c[1];chooser.appendChild(option)}
 chooser.addEventListener('change',()=>{const c=catalog.find(c=>c[0]===chooser.value);$('symbolDescription').textContent=c?`${c[2]} — reference PDF p. ${c[3]}`:''});
-$('markSymbol').addEventListener('click',()=>{if(!running){status.textContent='Enable live analysis and camera first.';return}manual=true;status.textContent='Tap the carving in the camera view to place a reference annotation.'});
-canvas.addEventListener('click',e=>{if(!manual)return;const r=canvas.getBoundingClientRect();$('markX').value=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));$('markY').value=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));$('markPanel').hidden=false;manual=false});
-$('saveSymbol').addEventListener('click',saveAnnotation);$('cancelSymbol').addEventListener('click',()=>{$('markPanel').hidden=true;manual=false});
+$('markSymbol').addEventListener('click',()=>{if(!running){status.textContent='Enable live analysis and camera first.';return}manual=true;canvas.classList.add('enabled');status.textContent='Tap the carving in the camera view to place a reference annotation.'});
+canvas.addEventListener('click',e=>{if(!manual)return;const r=canvas.getBoundingClientRect();$('markX').value=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));$('markY').value=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));$('markPanel').hidden=false;manual=false;canvas.classList.remove('enabled')});
+$('saveSymbol').addEventListener('click',saveAnnotation);$('cancelSymbol').addEventListener('click',()=>{$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled')});
 $('clearSymbols').addEventListener('click',()=>{annotations=[];cycle();status.textContent='Annotations cleared for next monument.'});
 $('liveDiscovery').addEventListener('change',e=>e.target.checked?start():stop());
 // No automatic label claims. Working visual-interest indicators and user-tagged references only.
-window.CPCDiscovery={start,stop,getAnnotations:()=>annotations.map(a=>({...a})),clear:()=>{annotations=[];manual=false;$('markPanel').hidden=true},catalog:catalog.map(c=>({id:c[0],name:c[1],meaning:c[2],source_page:c[3]}))};
+window.CPCDiscovery={start,stop,getAnnotations:()=>annotations.map(a=>({...a})),
+ snapshot:()=>({analysis_version:latestAnalysis?.version||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
+ clear:()=>{annotations=[];manual=false;canvas.classList.remove('enabled');$('markPanel').hidden=true},
+ catalog:catalog.map(c=>({id:c[0],name:c[1],meaning:c[2],source_page:c[3]}))};
 })();
