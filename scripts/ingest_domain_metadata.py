@@ -40,6 +40,13 @@ def plan(records):
         errors = list(Draft202012Validator(schema, format_checker=FormatChecker()).iter_errors(record))
         if errors:
             raise ValueError(f"record {n}: invalid domain contract: {errors[0].message}")
+        expected_ref = f"{domain}:{typ}:{record.get('source_local_id', '')}"
+        if record["entity_ref"] != expected_ref:
+            raise ValueError(f"record {n}: canonical reference does not match domain, type and source-local ID")
+        # This intake intentionally imports metadata records only. A supplied link
+        # must not be silently dropped, because that loses evidence/provenance.
+        if record.get("links"):
+            raise ValueError(f"record {n}: cross-domain links require the reviewed evidence bridge")
         attributes = record.get("attributes") or {}
         if not isinstance(attributes, dict):
             raise ValueError(f"record {n}: attributes must be an object")
