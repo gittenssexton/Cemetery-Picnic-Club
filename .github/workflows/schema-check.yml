@@ -24,3 +24,6 @@ jobs:
         run: |
           python3 scripts/validate_domains.py
           python3 -m unittest discover -s tests -v
+
+      - name: Verify camera JPEG GPS export without changing original bytes
+        run: node tests/test_camera_exif.mjs
