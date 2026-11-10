@@ -30,6 +30,12 @@ has("function resetToCapture(){state.siteSelection=null;state.siteMatch=null;");
 has("mask_type:r.polygon_provenance?.method");
 has("location_status:g?(g.source==='manual'?'manual_unverified'");
 has('device_gps_stale');
+has('<script src="cemetery-relations.js"></script>');
+has('cemetery_relationships_at_capture:state.siteSelection?');
+has('savedSiteEvidence');
+has('r.cemetery_assignment?.cemetery_entity_id');
+has('No site ID assigned');
+
 absent('id="cemetery" value="Pine Grove Cemetery"');
 checks++;assert.ok(sw.includes("'./cemetery-resolver.js'")&&sw.includes("'./cemetery-sites.js'"));
 checks++;assert.ok(registry.includes("geometry:{type:'Point'")&&!registry.includes("type:'Polygon'"));
