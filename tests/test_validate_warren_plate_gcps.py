@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pyproj import Transformer
 
-SCRIPT=Path(__file__).resolve().parent/'validate_warren_plate_gcps.py'
+SCRIPT=Path(__file__).resolve().parents[1]/'scripts'/'geology'/'validate_warren_plate_gcps.py'
 spec=importlib.util.spec_from_file_location('gq1358_preflight',SCRIPT)
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 
