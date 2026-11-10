@@ -27,3 +27,5 @@ jobs:
 
       - name: Verify camera JPEG GPS export without changing original bytes
         run: node tests/test_camera_exif.mjs
+      - name: Verify staging API authentication and read-only query contract
+        run: node tests/test_staging_worker.mjs
