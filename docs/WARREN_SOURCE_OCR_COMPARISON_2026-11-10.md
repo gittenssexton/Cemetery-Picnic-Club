@@ -36,3 +36,18 @@ The Library of Congress public gallery index identifies **digital Image 13 = pri
 4. Inventory omitted rows on p. 9, 10, 11; these three batches are not page-complete.
 
 **Engineering gate:** No action above has been logged as complete. The staging D1 remains 75 unverified candidates, zero review attestations, zero accepted events.
+
+## Update: original Cornell page pixels recovered from connected Drive
+
+**Supersedes the earlier scan-access blocker above.** The owner-held original Cornell digitization was located and fetched from Google Drive at https://drive.google.com/file/d/1Wn4XG9cI59RfkhTuevKwu4xoBHIBkaZI/view. The 204-page PDF has SHA-256 `59c84a3f62810733555d7631c02ad7fd9f5cebd8dce6891f57f69192f4f830b6`. Its **PDF pages 13–15 (zero-index 12–14)** display printed pages 9–11.
+
+The assistant rendered and inspected the actual page images at 2.4x. The exact rendered image SHA-256 fingerprints are printed p. 9 `86a4367f3425a5b24ab4f85ea120dda8fb825380477b774e6faffb94adf9f848`; p. 10 `8dda636648e75444ecd1fa63fbdc71c2ad2c0315dd10e78a71b40c84739ca18d`; p. 11 `775780404ee21ec22635ed5d64679b8db1a3e6012fc35567272fcd8a0e7cdbe2`. The images are render derivatives, not a checksum for a separately downloaded original image.
+
+**Image-informed findings on 13 previously flagged OCR candidates:**
+- Printed p. 9 **ABBOT George:** mother reads **Jemima**, not Cornell OCR `Jemama`. **ARNOLD Betsy:** year **1803**. **ARNOLD Rodoulphus:** the printed spelling is **Rodoulphus**. The unnamed ANDERSON son has a blank name line; do not assign a given name.
+- Printed p. 10 **ASHLEY Anna:** **February 20, 1748–9**, preserving dual-year notation. **BACON Jeptha Jr.:** apparent bracketed uncertain parentage; **G.S.2** source remains dependent on a gravestone. **BAKER Marion I. Fairbank:** middle initial looks like printed **I.**, not L.; **G.S.2** remains gravestone-derived. Another BAKER child is unnamed in the printed line.
+- Printed p. 11 **BARNES Charles:** date is **July 1, 1849** (not LOC indexed OCR 1840); mother's name **Marsha**. **Four BARNUM candidates:** the heading on the printed page is **BARNUM**, not OCR `BARWUM`.
+
+These are **assistant-assisted visual readings**. The machine-readable proposed corrections, original file fingerprint and candidate IDs are stored at `data/vital-records/warren-1910-assisted-visual-review-2026-11-10.json`. A named human reviewer has NOT signed off on these images: **do not populate `vital_ocr_page_reviews`, change canonical OCR source JSON, set `source_image_verified`, or promote `vital_record_entries` without that separate attestation and rights workflow**.
+
+The scanned page images still need person-level review before final catalog acceptance. Scans show more lines than the selected 25-record sample lists; page completeness and omissions must also be audited.
