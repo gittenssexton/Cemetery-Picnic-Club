@@ -45,7 +45,7 @@ const refs=[
 ];
 let url=null, photo=null, result=null, mapResult=null;
 const pineGroveContext=$("pineGroveContext");
-function invalidateGeology(){mapResult=null;geoOutput.textContent="Coordinates changed. Run a new geology lookup before exporting mapped geology.";}
+function invalidateGeology(){mapResult=null;result=null;$("output").style.display="none";$("exportStatus").textContent="";geoOutput.textContent="Coordinates changed. Run a new geology lookup before exporting mapped geology.";}
 for(const id of ["geoLat","geoLng"])$(id).addEventListener("input",()=>{pineGroveContext.hidden=true;invalidateGeology();});
 const geoOutput=$("geologyResult");
 function geoText(text){geoOutput.textContent=text;}
