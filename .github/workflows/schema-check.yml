@@ -29,3 +29,5 @@ jobs:
         run: node tests/test_guided_capture.js
       - name: Test live on-device analysis
         run: node tests/test_camera_live_analysis.js
+      - name: Test pixel contour shapes and tracking
+        run: node tests/test_camera_pixel_contours.js
