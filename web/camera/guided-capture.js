@@ -58,11 +58,13 @@ function propose(imageData,width,height){
      }
    }
    const cols=right-left+1,rows=bottom-top+1;
-   if(queue.length<2||cols>8||rows>10||cols>rows*1.6)continue;
+   // Reject tiny high-contrast debris, wide screens/signs and horizontal grass stripes.
+   // This is a conservative geometric gate, not proof an object is a gravestone.
+   if(queue.length<5||cols<2||rows<3||cols>8||rows>10||rows<cols*1.15)continue;
    const rect={x:Math.max(0,(left-.4)/gridX),y:Math.max(0,(top-.7)/gridY),w:Math.min(1,(cols+.8)/gridX),h:Math.min(1,(rows+1.5)/gridY)};
    candidates.push({...rect,kind:'visual_edge_candidate_unverified',score:score/queue.length});
  }
- return candidates.sort((a,b)=>b.score-a.score).slice(0,4).map(({score,...rest})=>rest);
+ return candidates.sort((a,b)=>b.score-a.score).slice(0,3).map(({score,...rest})=>rest);
 }
 return {VERSION,ORDER,DIRECTIONS,nextStep,rectangle,photoToView,propose};
 });
