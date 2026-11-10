@@ -32,6 +32,14 @@ export default {
       const url = new URL(request.url);
       if (request.method !== 'GET') return respond({error:'method_not_allowed'}, 405);
       if (url.pathname === '/health') return respond({service:'cpc-integration-staging',status:'alive'});
+      // Never serve internal evidence on an unintended Worker or production host.
+      if (env.CPC_ENVIRONMENT !== 'staging' ||
+          typeof env.CPC_ALLOWED_HOST !== 'string' ||
+          url.hostname !== env.CPC_ALLOWED_HOST)
+        return respond({error:'environment_not_authorized'}, 503);
+      // Browser-origin requests are not supported by this internal review endpoint.
+      // This is defense in depth, not a replacement for authentication.
+      if (request.headers.has('origin')) return respond({error:'browser_origin_denied'}, 403);
       if (!await authorized(request, env.CPC_API_TOKEN)) return respond({error:'unauthorized'}, 401);
       if (!env.CPC_DB || typeof env.CPC_DB.prepare !== 'function')
         return respond({error:'db_not_configured'},503);
