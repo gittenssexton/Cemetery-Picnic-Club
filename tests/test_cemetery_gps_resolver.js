@@ -42,8 +42,27 @@ r=resolve(f(-72.199,42.201,15),[childA,childB]);
 assert.equal(r.status,'multiple_candidates');
 r=resolve({...f(-72.200,42.201,3),fix_age_s:500},[parent,childA]);
 assert.equal(r.status,'stale_fix');
+// Invalid or unsourced boundaries must fail closed; point-only data is a hypothesis.
+r=resolve(f(-72.200,42.201),[{...a,source_id:null}]);
+assert.equal(r.status,'possible_within');
+const broken={type:'Polygon',coordinates:[[[0,0],[1,0],[1,1]]]};
+assert.equal(geometryResult([0.5,0.5],broken),null);
+assert.equal(geometryResult([0,0],{type:'Point',coordinates:[999,1]}),null);
+const multipolygon={type:'MultiPolygon',coordinates:[
+  sq(-72.201,42.200,-72.199,42.202).coordinates,
+  sq(-72.207,42.206,-72.205,42.208).coordinates
+]};
+assert.equal(geometryResult([-72.206,42.207],multipolygon).inside,true);
+assert.equal(geometryResult([-72.204,42.204],multipolygon).inside,false);
+r=resolve(f(-72.200,42.201,10),[a,{
+  id:'nearby-unknown',name:'Other historical ground',
+  geometry:{type:'Point',coordinates:[-72.200,42.201]},
+  geometry_status:'approximate_centroid',source_id:'synthetic'
+}]);
+assert.equal(r.status,'multiple_candidates');
+assert.equal(r.candidates.some(c=>c.status==='within_verified_boundary'),false);
 const fs=require('node:fs');
 const registry=fs.readFileSync(require('node:path').join(__dirname,'../web/camera/cemetery-sites.js'),'utf8');
 assert.equal(registry.includes("geometry:{type:'Point'"),true);
 assert.equal(registry.includes("type:'Polygon'"),false);
-console.log('CPC GPS resolver: 23 assertions passed, including point-only registry policy');
+console.log('CPC GPS resolver: 30 assertions passed, including point-only registry policy');
