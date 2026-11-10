@@ -24,7 +24,7 @@ const empty=new Uint8Array(160*200*4);
 assert.ok(Array.isArray(g.propose(empty,160,200)));
 assert.ok(g.DIRECTIONS.overview.includes('Step back'));
 const html=fs.readFileSync(path.join(__dirname,'../web/camera/index.html'),'utf8');
-for(const item of ['data-shot="overview"','overviewPickerPanel','overviewSelectionStatus','continueMonumentBtn','guidedProgress','guided_skip_reasons','selectedTarget','function selectOverviewTarget','function updateGuidedProgress','CPCGuidedCapture.propose']){
+for(const item of ['data-shot="overview"','overviewPickerPanel','overviewSelectionStatus','continueMonumentBtn','guidedProgress','guided_skip_reasons','selectedTarget','function selectOverviewTarget','function updateGuidedProgress','CPCPixelContours.analyze']){
   assert.ok(html.includes(item),'Missing '+item);
 }
 assert.ok(html.includes("state.shotType==='overview'?[[0,0],[w,0],[w,h],[0,h]]"));
