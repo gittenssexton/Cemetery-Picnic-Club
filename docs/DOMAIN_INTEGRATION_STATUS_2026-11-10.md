@@ -107,3 +107,11 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - Added static camera package checks, including existence of local JS dependencies and absence of direct upload paths. **These tests do not substitute for iPhone Safari field tests, actual camera/GPS validation, original-byte comparison, ZIP inspection, or accessibility review.**
 - GitHub CI verified **73 passing tests** on `feature/domain-integration`: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42845500292 .
 - Outstanding deployment gate: Cloudflare account inventory showed no CPC D1 database; do not run integration migrations against CartoVeyra's database. Staging D1, mobile field validation, and live licensed evidence ingestion remain unresolved.
+
+
+## Source metadata-to-evidence integration safeguard
+- The local metadata adapter now rejects inconsistent `entity_ref` / `source_local_id` pairs and nonempty cross-domain links it cannot process instead of silently discarding them.
+- The adapter now writes the **source-local ID** as the source table primary key; the canonical `DOMAIN:type:local-id` lives in `domain_entity_refs`. This fixes incompatibility with the already implemented evidence bridge.
+- New integration tests run GEO/VIT metadata intake, register canonical endpoints, create a cited candidate link and verify that no person, claim or automatic match is manufactured. A full remote metadata-import API is still not deployed.
+- The geological source catalog is present in staging (six maps, three archived asset references) and is repeatable without duplicates. Map symbols/geometry remain unreviewed.
+- Production files, public Worker, original camera photos and main branch are unchanged by this session.
