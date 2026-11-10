@@ -48,6 +48,23 @@ class MetadataAdapterTests(unittest.TestCase):
             self.assertEqual(self.db.execute("SELECT COUNT(*) FROM " + table).fetchone()[0], 0)
         self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
 
+    def test_metadata_import_registers_cross_domain_reference(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "bridge", ROOT / "scripts/domain_evidence_bridge.py")
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        sample = record("GEO", "geologic_map",
+                        {"title": "Synthetic map", "provider": "Fixture"})
+        metadata.insert(self.db, metadata.plan([sample]))
+        self.assertEqual(self.db.execute("SELECT id FROM geology_map_sources").fetchone()[0],
+                         "fixture-001")
+        self.assertEqual(
+            bridge.register_reference(self.db, sample["entity_ref"], sample["source_local_id"]),
+            "GEO:geologic_map:fixture-001")
+        self.assertEqual(self.db.execute("SELECT count(*) FROM domain_entity_refs").fetchone()[0], 1)
+        self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
+
     def test_duplicate_import_rolls_back_as_one_transaction(self):
         original = record("GEO", "geologic_map", {"title": "Synthetic map", "provider": "Fixture"})
         operations = metadata.plan([original])
