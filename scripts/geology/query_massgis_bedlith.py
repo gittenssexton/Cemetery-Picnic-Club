@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Query authoritative MassGIS bedrock polygons at CPC QA points.
+"""Query MassGIS-derived bedrock polygons using an accessible ArcGIS reference service.
 
-Produces UNREVIEWED observations; never assigns quarry provenance or claims
+This hosting service is a *replica*, not direct confirmation of MassGIS source data.\nProduces UNREVIEWED observations; never assigns quarry provenance or claims
 site stone matches locally mapped bedrock. Standard library only.
 """
 import argparse
@@ -13,9 +13,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-SERVICE = "https://services.arcgis.com/2gdL2gxYNFY2TOUb/ArcGIS/rest/services/bedlith/FeatureServer/0/query"
+SERVICE = "https://services1.arcgis.com/0EOqWPtpCmgQr2ay/ArcGIS/rest/services/Bedrock_Geology_WFL1/FeatureServer/19/query"
 SOURCE = "usgs-ofr-03-225-ne-lithology"
-FIELDS = "BEDROCK_1,BEDROCK_2,LITHO_CODE,LITH_MOD,ROCK_GPA,ROCK_GPB,G_PROVINCE"
+FIELDS = "*"  # allow variable schema for public reference map-service replica
 CAVEAT = "Generalized regional bedrock (~1.5 km spatial accuracy); not monument stone or quarry provenance."
 
 def query_point(lat, lon, service=SERVICE, opener=urllib.request.urlopen):
