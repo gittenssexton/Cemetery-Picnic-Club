@@ -61,3 +61,13 @@ The first command validates and performs **no write**. The second requires a pre
 - **Not scan-verified:** attempts to obtain rendered PDF page screenshots (page indexes 16–18) returned a cache-miss error; a separate Internet Archive PDF request was inaccessible. Consequently **no candidate was promoted**, and `source_image_verified` remains false for all 75.
 - Public reference: https://upload.wikimedia.org/wikipedia/commons/6/69/...Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_cu31924028839573%29.pdf
 - Reading the OCR/text layer is useful for prioritization but must not be called visual confirmation of print or independent corroboration.
+
+## Review worksheet generation (no automatic approval)
+
+The integration branch now includes an offline CSV review worksheet tool:
+
+```bash
+python3 -m scripts.export_warren_review_sheet --output warren-ocr-review.csv
+```
+
+It produces **75 source-linked rows** with candidate ID, printed page, original OCR name/date/source code, 14 gravestone-derived flags, 13 source-note flags, and record checksums. The human-review cells (scan URL and image sequence/hash, reviewer, exact printed line, corrected spelling/date/source code, review decision) are intentionally **blank**. The script refuses to overwrite an existing worksheet. Filling out a CSV does not itself approve or ingest an entry; an authorized operator must separately review source rights and use the audited, offline acceptance process. Do not treat these selected samples as complete printed pages.
