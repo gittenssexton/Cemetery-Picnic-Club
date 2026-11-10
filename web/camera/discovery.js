@@ -46,7 +46,10 @@ let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,re
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
- const {w,h}=fit();const vr=videoRect(w,h);g.clearRect(0,0,160,200);const sc=Math.max(160/video.videoWidth,200/video.videoHeight);g.drawImage(video,(160-video.videoWidth*sc)/2,(200-video.videoHeight*sc)/2,video.videoWidth*sc,video.videoHeight*sc);
+ const {w,h}=fit();const vr=videoRect(w,h);g.clearRect(0,0,160,200);const sc=Math.max(160/video.videoWidth,200/video.videoHeight);const scanX=(160-video.videoWidth*sc)/2,scanY=(200-video.videoHeight*sc)/2;g.drawImage(video,scanX,scanY,video.videoWidth*sc,video.videoHeight*sc);
+ // Map scan pixels through source video into the center-cropped on-screen preview.
+ // The scanning canvas and phone viewport rarely share an aspect ratio.
+ const point=(p)=>[vr.x+((p[0]*160-scanX)/sc)*vr.w/video.videoWidth,vr.y+((p[1]*200-scanY)/sc)*vr.h/video.videoHeight];
  const p=g.getImageData(0,0,160,200).data,gray=new Uint8Array(160*200);for(let i=0;i<gray.length;i++)gray[i]=(p[4*i]*77+p[4*i+1]*150+p[4*i+2]*29)>>8;
  // Conservative tiled edge density highlights candidate surface detail, not symbols.
  const tiles=[];const nx=8,ny=10,tw=20,th=20;
@@ -85,7 +88,7 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  latestAnalysis=live?.analyzeRGBA?.(p,160,200)||null;
  const mode=document.querySelector('[data-shot][aria-pressed="true"]')?.dataset.shot||'front';
  latestMonuments=$('liveMonuments')?.checked&&contourTracker?
-   contourTracker.update(window.CPCPixelContours.analyze(p,160,200)):[];
+   contourTracker.update(window.CPCPixelContours.analyzeScene(p,160,200).regions):[];
  // Publicly visible live detection is tentative and never automatically labeled as a named stone.
  if($('livePreviewEnhance')?.checked&&latestAnalysis?.preview){
    const brightness=latestAnalysis.preview.brightness,contrast=latestAnalysis.preview.contrast;
@@ -93,24 +96,28 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  }else video.style.filter='';
  ctx.clearRect(0,0,w,h);
  if($('liveMonuments')?.checked){
-   ctx.save();ctx.setLineDash([]);ctx.strokeStyle='#7fe0bd';ctx.lineWidth=2.5;
+   ctx.save();ctx.lineWidth=2;
    for(const shape of latestMonuments){const points=shape.points;if(!points?.length)continue;
-     ctx.beginPath();ctx.moveTo(vr.x+points[0][0]*vr.w,vr.y+points[0][1]*vr.h);
-     for(let i=1;i<points.length;i++)ctx.lineTo(vr.x+points[i][0]*vr.w,vr.y+points[i][1]*vr.h);
+     const possible=shape.classification==='possible_monument_shape';
+     ctx.strokeStyle=possible?'#7fe0bd':'rgba(192,205,220,.60)';
+     ctx.lineWidth=possible?2.7:1.4;ctx.setLineDash(possible?[]:[3,6]);
+     const first=point(points[0]);ctx.beginPath();ctx.moveTo(first[0],first[1]);
+     for(let i=1;i<points.length;i++){const pt=point(points[i]);ctx.lineTo(pt[0],pt[1]);}
      ctx.closePath();ctx.stroke();
    }
    ctx.restore();
  }
  if($('liveLettering')?.checked&&latestAnalysis){
    ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle='#8bc4ff';ctx.lineWidth=2;
-   for(const r of latestAnalysis.textRegions){const yy=vr.y+(r.y+r.h)*vr.h;ctx.beginPath();ctx.moveTo(vr.x+r.x*vr.w,yy);ctx.lineTo(vr.x+(r.x+r.w)*vr.w,yy);ctx.stroke();}
+   for(const r of latestAnalysis.textRegions){const a=point([r.x,r.y+r.h]),b=point([r.x+r.w,r.y+r.h]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
    ctx.restore();
  }
  ctx.lineWidth=2;ctx.strokeStyle='#f4d48c';ctx.fillStyle='rgba(244,212,140,.12)';ctx.setLineDash([5,5]);
  // No floating circles: detail candidates remain in the status summary until real surface contours are available.
  ctx.setLineDash([]);for(const a of annotations){const x=a.x*w,y=a.y*h;ctx.strokeStyle='#7ce1b7';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,22,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#082b20';ctx.fillRect(Math.min(w-145,x+18),Math.max(0,y-24),138,27);ctx.fillStyle='#def8e8';ctx.font='12px system-ui';ctx.fillText(a.label.slice(0,18),Math.min(w-141,x+22),Math.max(18,y-7))}
  const m=latestMonuments.length,letter=latestAnalysis?.textRegions.length||0;
- status.textContent='LIVE proposals: '+m+' possible outlines, '+letter+' text-like regions, '+stable.length+' detail areas. No stone, symbol or carver has been identified.';
+ const potential=latestMonuments.filter(r=>r.classification==='possible_monument_shape').length;
+ status.textContent='LIVE regions: '+m+' outlines, '+potential+' shape candidates, '+letter+' text-like areas, '+stable.length+' surface details. No monument has been identified.';
  if($('liveQuality'))$('liveQuality').textContent=latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
  lastDraw=Date.now();
 }
