@@ -214,6 +214,23 @@ function getGuidePolygon(w,h){const st=ui.stage.getBoundingClientRect();const cw
 function idb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('cpc-field-camera',1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('records'))req.result.createObjectStore('records',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function storage(mode,operation){return new Promise((resolve,reject)=>{const tx=state.db.transaction('records',mode),store=tx.objectStore('records'),req=operation(store);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function records(){return (await storage('readonly',s=>s.getAll())).reverse()}
+function persistMergedRecord(incoming,fromSync=false){
+ return new Promise((resolve,reject)=>{
+  if(!state.db){reject(new Error('Local storage unavailable'));return}
+  const tx=state.db.transaction('records','readwrite'),store=tx.objectStore('records'),req=store.get(incoming.id);
+  req.onsuccess=()=>{
+   const current=req.result||{};
+   const merged=fromSync?{...incoming,...current,drive_sync:incoming.drive_sync}:{...current,...incoming,drive_sync:current.drive_sync||incoming.drive_sync};
+   if(state.capture?.id===incoming.id)state.capture.drive_sync=merged.drive_sync;
+   store.put(merged);
+  };
+  req.onerror=()=>reject(req.error);
+  tx.oncomplete=()=>resolve();
+  tx.onerror=()=>reject(tx.error);
+  tx.onabort=()=>reject(tx.error||new Error('Record update aborted'));
+ });
+}
+
 async function refreshRecords(){if(!state.db)return;try{const rs=await records();$('recordCount').textContent=`${rs.length} record${rs.length===1?'':'s'}`;const list=$('recentList');list.innerHTML='';if(!rs.length){list.innerHTML='<p class="muted">No captures yet.</p>';return}for(const r of rs.slice(0,20)){const el=document.createElement('div');el.className='recent-item';const body=document.createElement('div');const head=document.createElement('strong');head.textContent=r.monument||r.id;const label=document.createElement('small');label.textContent=`${new Date(r.captured_at).toLocaleString()} · ${r.location?'Located':'NO GPS'} · Drive ${r.drive_sync?.status||'pending'}`;body.append(head,label);const btn=document.createElement('button');btn.textContent='Open';btn.addEventListener('click',()=>openReview(r));el.append(body,btn);list.appendChild(el)}}catch(e){notify('Local record listing unavailable: '+e.message)}}
 function generateRecord(g,blob,w,h,polygon){return{
   location_observation_id:'LOC:observation:'+crypto.randomUUID(),
@@ -285,8 +302,8 @@ function renderReview(showGuide){
    if(r){ctx.save();ctx.strokeStyle='#f4cc70';ctx.lineWidth=Math.max(5,w/240);const selectedContour=state.selectedTargetContour||state.capture.overview_target_polygon;if(selectedContour?.length){ctx.beginPath();ctx.moveTo(selectedContour[0][0]*w,selectedContour[0][1]*h);for(let i=1;i<selectedContour.length;i++)ctx.lineTo(selectedContour[i][0]*w,selectedContour[i][1]*h);ctx.closePath();ctx.stroke()}else ctx.strokeRect(r.x*w,r.y*h,r.w*w,r.h*h);ctx.fillStyle='#f4cc70';ctx.fillRect(r.x*w,Math.max(0,r.y*h-27),Math.min(240,r.w*w),27);ctx.fillStyle='#1a2825';ctx.font=Math.max(13,w/85)+'px sans-serif';ctx.fillText('SELECTED STONE',r.x*w+4,Math.max(18,r.y*h-7));ctx.restore();}
  }
 }
-async function suggestSilhouette(){if(!state.capture||!state.image)return;const result=window.CPCSilhouette?.propose?.(state.image);if(!result?.ok){notify('Automatic outline not reliable: '+(result?.reason||'unknown'));return}state.polygon=result.polygon;state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:result.algorithm,status:'unverified_candidate',coverage:result.coverage,contrast:result.contrast,updated_at:new Date().toISOString()};try{await storage('readwrite',store=>store.put(state.capture))}catch(e){notify('Outline visible but could not save: '+e.message)}state.tracing=false;state.trace=[];state.processed=true;$('traceStatus').textContent='EXPERIMENTAL outline suggested — inspect all edges and correct if necessary using Trace 4 corners.';renderReview(true)}
-function saveTracedPolygon(){if(state.trace.length<3){notify('Select at least three contour points.');return}state.polygon=state.trace.slice();state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:state.traceMode==='contour'?'manually_traced_full_contour':'manually_traced_four_corners',status:'user_reviewed',point_count:state.polygon.length,updated_at:new Date().toISOString()};storage('readwrite',store=>store.put(state.capture)).catch(e=>notify('Could not save contour: '+e.message));state.tracing=false;state.trace=[];$('finishContourBtn').hidden=true;$('traceStatus').textContent='Silhouette saved. Confirm the outline follows stone edges, including curved shoulders and hidden base.';renderReview(true)}
+async function suggestSilhouette(){if(!state.capture||!state.image)return;const result=window.CPCSilhouette?.propose?.(state.image);if(!result?.ok){notify('Automatic outline not reliable: '+(result?.reason||'unknown'));return}state.polygon=result.polygon;state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:result.algorithm,status:'unverified_candidate',coverage:result.coverage,contrast:result.contrast,updated_at:new Date().toISOString()};try{await persistMergedRecord(state.capture)}catch(e){notify('Outline visible but could not save: '+e.message)}state.tracing=false;state.trace=[];state.processed=true;$('traceStatus').textContent='EXPERIMENTAL outline suggested — inspect all edges and correct if necessary using Trace 4 corners.';renderReview(true)}
+function saveTracedPolygon(){if(state.trace.length<3){notify('Select at least three contour points.');return}state.polygon=state.trace.slice();state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:state.traceMode==='contour'?'manually_traced_full_contour':'manually_traced_four_corners',status:'user_reviewed',point_count:state.polygon.length,updated_at:new Date().toISOString()};persistMergedRecord(state.capture).catch(e=>notify('Could not save contour: '+e.message));state.tracing=false;state.trace=[];$('finishContourBtn').hidden=true;$('traceStatus').textContent='Silhouette saved. Confirm the outline follows stone edges, including curved shoulders and hidden base.';renderReview(true)}
 async function selectOverviewTarget(e){
  if(!state.capture||state.capture.shot_type!=='overview'||!state.image)return;
  const rect=ui.canvas.getBoundingClientRect(),w=state.capture.photo.width,h=state.capture.photo.height;
@@ -301,7 +318,7 @@ async function selectOverviewTarget(e){
  state.capture.overview_selection_method=hit?'manual_tap_matched_provisional_pixel_contour':'manual_tap_rectangle';state.capture.overview_selection_updated_at=new Date().toISOString();
  $('overviewSelectionStatus').textContent='Stone selected (yellow box). Adjust width/height or tap again before continuing.';
  renderReview(false);
- try{await storage('readwrite',store=>store.put(state.capture))}catch(error){notify('Could not save target selection: '+error.message)}
+ try{await persistMergedRecord(state.capture)}catch(error){notify('Could not save target selection: '+error.message)}
 }
 async function updateGuidedProgress(){
  const id=$('groupId').value.trim(),rs=(id&&state.db)?(await records()).filter(r=>r.monument_group_id===id):[];
@@ -367,7 +384,7 @@ async function queueDriveSync(){
  const d=window.CPCDriveSync;if(!d?.status().enabled||!d.status().authorized)return;
  driveSyncRunning=true;driveStatus();
  try{
-  const all=await records(),result=await d.sync(all,async r=>storage('readwrite',store=>store.put(r)),()=>driveStatus());
+  const all=await records(),result=await d.sync(all,async r=>persistMergedRecord(r,true),()=>driveStatus());
   if(result.failed)notify(result.failed+' Drive upload(s) still pending. Reconnect or retry.');
   await refreshRecords();
  }catch(e){notify('Drive sync: '+e.message)}
@@ -402,8 +419,8 @@ driveStatus();
 $('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);$('continueMonumentBtn').addEventListener('click',continueMonument);
 const hints=window.CPCGuidedCapture.DIRECTIONS;
 $('captureModes').addEventListener('click',e=>{const b=e.target.closest('button[data-shot]');if(!b)return;switchShotMode(b.dataset.shot)});
-$('targetWidth').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;state.selectedTargetContour=null;state.capture.overview_target_polygon=null;storage('readwrite',store=>store.put(state.capture)).catch(()=>{});renderReview(false)}});
-$('targetHeight').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;state.selectedTargetContour=null;state.capture.overview_target_polygon=null;storage('readwrite',store=>store.put(state.capture)).catch(()=>{});renderReview(false)}});
+$('targetWidth').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;state.selectedTargetContour=null;state.capture.overview_target_polygon=null;persistMergedRecord(state.capture).catch(()=>{});renderReview(false)}});
+$('targetHeight').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;state.selectedTargetContour=null;state.capture.overview_target_polygon=null;persistMergedRecord(state.capture).catch(()=>{});renderReview(false)}});
 $('skipGuidedShot').addEventListener('click',async()=>{const next=state.shotType;if(next==='overview'){notify('Take an overview to start the guided set, or choose Front manually.');return}const reason=prompt('Why skip '+next+'? (e.g. inaccessible or no carving)');if(reason===null)return;state.guidedSkipped.push(next);state.guidedSkipReasons[next]=reason.trim()||'not available';const n=await updateGuidedProgress();if(n)switchShotMode(n);notify('Skipped '+next+': '+(reason.trim()||'not available')+'.');});
 $('gridOverlay').addEventListener('change',updateGuide);
 $('backgroundMode').addEventListener('change',()=>renderReview(true));$('inscriptionStrength').addEventListener('input',()=>{$('inscriptionValue').textContent=Number($('inscriptionStrength').value)?$('inscriptionStrength').value+'% enhanced (derived image)':'Original contrast';renderReview(true)});
