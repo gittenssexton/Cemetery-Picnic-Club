@@ -60,11 +60,18 @@ r = await call('https://preview.example.invalid/internal/warren-ocr-review?page=
 assert.equal(r.status,200);
 assert.equal(r.body.page,9);
 assert.equal(r.body.review_required,true);
-assert.equal(r.body.page_complete,false);
-assert.deepEqual(hits.at(-1).params,['ma-warren-1849-rice1910',9,'requires_page_image_check']);
+assert.equal(r.body.scan_review_complete,false);
+assert.equal(r.body.next_after,null);
+assert.deepEqual(hits.at(-1).params,['ma-warren-1849-rice1910',9,'requires_page_image_check','']);
+r = await call('https://preview.example.invalid/internal/warren-ocr-review?page=11&after=MA-WARREN-RICE1910-BIRTH-P011-025',secret);
+assert.equal(r.status,200);
+assert.deepEqual(hits.at(-1).params,['ma-warren-1849-rice1910',11,'requires_page_image_check','MA-WARREN-RICE1910-BIRTH-P011-025']);
+
 assert.ok(hits.at(-1).sql.includes('LIMIT 25'));
 assert.ok(!hits.at(-1).sql.includes('raw_record_json'));
 const hitCount=hits.length;
+r = await call('https://preview.example.invalid/internal/warren-ocr-review?page=11&after=MA-WARREN-RICE1910-BIRTH-P009-025',secret);
+assert.equal(r.status,400);
 r = await call('https://preview.example.invalid/internal/warren-ocr-review?page=999',secret);
 assert.equal(r.status,400);
 r = await call('https://preview.example.invalid/internal/warren-ocr-review?page=9&status=reviewed%27%20OR%201=1',secret);
