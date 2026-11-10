@@ -32,3 +32,12 @@ The geology migration references `markers`; camera references `markers`, `images
 
 ## Acceptance
 Do not merge to main or deploy until live migration history and all schema, contract, ingestion and rights gates pass. The migration files here are **staged candidates**, not proof of successful D1 deployment.
+
+
+## 2026-11-10 verification addendum (supersedes stale test gates above)
+- CI executed the complete SQLite migration suite in memory with foreign keys enabled; see `tests/test_domain_integration.py` and `tests/test_integration_migrations.py`.
+- GEO/VIT/IMG versioned record JSON Schemas are present at `domains/{GEO,VIT,IMG}/contracts/v1/record.schema.json`. Timestamp format validation is explicitly constrained.
+- Independent, synthetic geology catalog, vital source and image/field draft tests verify no automatic identity or material attribution. Candidate withdrawal preserves source records.
+- Verified green integration workflow on commit `f8ab874ee116e1b7e3d06086f0b905692e14eadd`: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42842111929
+- Cloudflare connection inspection found only one D1 database, `cartoveyra-research-staging`, in the currently connected account. No Cemetery Picnic Club D1 database was listed; a CPC migration ledger therefore could not be inspected there. This does **not** prove no CPC D1 exists in another account.
+- Remaining: production account identification and D1 ledger if applicable; deployment of isolated CPC staging database; live source acquisition and licenses; phone Safari field-camera tests; end-to-end geologic unit extraction and vital entry review. No staging D1 migration or production deployment performed by this session.
