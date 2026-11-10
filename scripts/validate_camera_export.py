@@ -57,11 +57,20 @@ def validate_camera_zip(path):
             if (type(lat) not in (int,float) or type(lon) not in (int,float)
                 or not (-90 <= lat <= 90 and -180 <= lon <= 180)):
                 raise ValueError("Invalid GPS coordinates")
+            expected_source = "manual" if status == "manual_unverified" else "device_gps"
+            if location.get("source") != expected_source:
+                raise ValueError("Coordinate source disagrees with capture status")
+            accuracy = location.get("accuracy_m")
+            if accuracy is not None and (type(accuracy) not in (float,int)
+                                         or not (0 <= accuracy <= 100000)):
+                raise ValueError("Invalid reported GPS accuracy")
         root = rid + "/" + rid
         original_name = root + "_original.jpg"
         allowed = {rid + "/record.json"} | {root + s for s in SUFFIXES}
         if original_name not in names or not set(names).issubset(allowed):
             raise ValueError("Missing original or unexpected archive path")
+        if status == "location_missing" and root + "_geotagged.jpg" in names:
+            raise ValueError("Unlocated record must not export a GPS-tagged derivative")
         if archive.testzip() is not None:
             raise ValueError("Archive CRC failure")
         original = archive.read(original_name)
