@@ -1,0 +1,52 @@
+{
+  "schema": "cpc-cemetery-geology-reference-sensitivity-v1",
+  "source_shape_sha256": "a2f5f8a10d4787afb9ee1d9cc1c3673ad7d23410faff8aed50aed1ec02b68d00",
+  "source": "MassGIS Bedrock Lithology source shapefile",
+  "source_accuracy_m_estimate": 1500,
+  "reference_separation_m": 80.5,
+  "references": [
+    {
+      "reference": "OSM/Mapcarta cemetery-center reference",
+      "latitude": 42.20909,
+      "longitude": -72.1966,
+      "source": "https://mapcarta.com/22240244",
+      "point_status": "published_unsurveyed_reference",
+      "polygon_hits": [
+        {
+          "symbol": "Ops",
+          "rock_group": "Sulfidic Schists",
+          "edge_distance_m": 43.6
+        }
+      ],
+      "neighbor_symbols_1500m": [
+        "Dgd",
+        "Dl",
+        "Dlf",
+        "Ops",
+        "gr"
+      ]
+    },
+    {
+      "reference": "GNIS-derived cemetery point (third party listing)",
+      "latitude": 42.2098066,
+      "longitude": -72.1967443,
+      "source": "https://www.anyplaceamerica.com/directory/ma/worcester-county-25027/cemeteries/pine-grove-cemetery-602368/",
+      "point_status": "published_unsurveyed_reference",
+      "polygon_hits": [
+        {
+          "symbol": "Ops",
+          "rock_group": "Sulfidic Schists",
+          "edge_distance_m": 17.1
+        }
+      ],
+      "neighbor_symbols_1500m": [
+        "Dgd",
+        "Dl",
+        "Dlf",
+        "Ops"
+      ]
+    }
+  ],
+  "interpretation": "Two unsurveyed references differ by ~80 m. Both query Ops, but boundary distance is 17-44 m, far smaller than the ~1500 m stated layer accuracy. Neither coordinate verifies actual cemetery geology, marker material, or quarry origin.",
+  "verification": "live published online reference cross-check against locally processed original MassGIS polygons; neither point is a survey"
+}
