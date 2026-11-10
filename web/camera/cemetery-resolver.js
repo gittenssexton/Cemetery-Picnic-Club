@@ -95,16 +95,28 @@
     }
     // Never mark any independently named child verified if another plausible child overlaps.
     const plausible=matches.filter(m=>m.intersects_accuracy_circle);
-    const competing=plausible.filter(m=>m.entity_kind!=='cemetery_complex');
-    const multiple=competing.length>1 && competing.some(a=>competing.some(b=>a!==b &&
-      !(a.parent_id===b.entity_id || b.parent_id===a.entity_id)));
-    if(multiple) for(const m of competing){m.status='possible_within';m.reasons.push('competing_site');}
+    const siteCandidates=plausible.filter(m=>m.entity_kind!=='cemetery_complex');
+    // Any two separately identified possible child grounds remain ambiguous, even if
+    // they share a parent. A complex itself is not a competing child cemetery.
+    const multiple=siteCandidates.length>1;
+    if(multiple) for(const m of siteCandidates){
+      m.status='possible_within';m.reasons.push('competing_site');
+    }
+    // A parent boundary never establishes the child ground identity.
+    const parentOnly=plausible.length>0 && siteCandidates.length===0 &&
+      plausible.some(m=>m.entity_kind==='cemetery_complex');
+    const unresolvedChild=parentOnly || (plausible.some(m=>m.entity_kind==='cemetery_complex') &&
+      siteCandidates.length!==1);
     const status=stale?'stale_fix':multiple?'multiple_candidates':
+      unresolvedChild?'complex_child_unresolved':
       plausible.length?'possible_within':matches.length?'nearby_only':'unknown';
-    const definitive=plausible.length===1 && plausible[0].status==='within_verified_boundary';
+    const definitive=(!stale && !multiple && !unresolvedChild &&
+      siteCandidates.length===1 && siteCandidates[0].status==='within_verified_boundary');
     matches.sort((a,b)=>Number(b.intersects_accuracy_circle)-Number(a.intersects_accuracy_circle)||a.distance_m-b.distance_m);
     return {status:definitive?'within_verified_boundary':status,fix_accuracy_m:radius,
       candidates:matches,selected_entity_id:null,
+      parent_complex_ids:plausible.filter(m=>m.entity_kind==='cemetery_complex').map(m=>m.entity_id),
+      unresolved_child:unresolvedChild,
       notice:'Location matching is provisional; this does not identify a monument, person or plot.'};
   }
   return {validFix,distance,geometryResult,resolve};
