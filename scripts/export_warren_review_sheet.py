@@ -69,7 +69,7 @@ def build_rows(paths):
             "source_code_ocr":code or "",
             "source_class_ocr":source_class,
             "gs2_dependent":"YES" if source_class=="gravestone" else "NOT ESTABLISHED",
-            "ocr_notes":record.get("notes") or "Additional page-scan transcription; human review pending",
+            "ocr_notes":record.get("notes") or "",
             "candidate_sha256":record_sha,
             **{field:"" for field in HEADERS[10:]}
         })
