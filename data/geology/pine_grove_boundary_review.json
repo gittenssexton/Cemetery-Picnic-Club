@@ -1,0 +1,149 @@
+{
+  "schema": "cpc-pine-grove-neighborhood-review-v1",
+  "generated_utc": "2026-11-10T14:56:09.516033+00:00",
+  "source_title": "MassGIS Bedrock Lithology, derived from USGS OFR 03-225",
+  "source_url": "https://www.mass.gov/info-details/massgis-data-bedrock-lithology",
+  "source_shape_sha256": "a2f5f8a10d4787afb9ee1d9cc1c3673ad7d23410faff8aed50aed1ec02b68d00",
+  "source_crs": "EPSG:26986",
+  "number_of_polygons": 2886,
+  "site_reference": {
+    "label": "Pine Grove Cemetery approximate centroid (not surveyed)",
+    "latitude": 42.20909,
+    "longitude": -72.1966
+  },
+  "map_point_symbol": "Ops",
+  "reviewed_symbol_dictionary": {
+    "Ops": {
+      "formation": "Partridge Formation",
+      "unit_description": "typical sulfidic mica schist",
+      "symbol_evidence": [
+        "https://pubs.usgs.gov/of/2006/1272/documents/MAmetadata.htm",
+        "https://ngmdb.usgs.gov/Geolex/resources/docs/USGS_B-1605-A_t.pdf"
+      ],
+      "symbol_review": "publisher_cross_reference_verified"
+    },
+    "Dl": {
+      "formation": "Littleton Formation",
+      "unit_description": "pelitic metamorphic rock (source's lithogeochemical label)",
+      "symbol_evidence": [
+        "https://pubs.usgs.gov/of/2006/1272/documents/MAmetadata.htm",
+        "https://ngmdb.usgs.gov/Geolex/resources/docs/USGS_B-1605-A_t.pdf"
+      ],
+      "symbol_review": "publisher_cross_reference_verified"
+    }
+  },
+  "spatial_accuracy_caveat": "Published estimated positional accuracy ~1500 m, vastly exceeding the polygon-boundary distance. Radii indicate polygon intersections, not probabilities or actual outcrops.",
+  "site_assignment_status": "boundary_sensitive_unverified",
+  "marker_material_or_quarry": "unknown; never derived from this map",
+  "neighborhood": [
+    {
+      "radius_m": 100,
+      "nearby_polygons": [
+        {
+          "symbol": "Dl",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Ops",
+          "lithogeochemical_group": "Sulfidic Schists",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": true
+        }
+      ]
+    },
+    {
+      "radius_m": 250,
+      "nearby_polygons": [
+        {
+          "symbol": "Dl",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Ops",
+          "lithogeochemical_group": "Sulfidic Schists",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": true
+        }
+      ]
+    },
+    {
+      "radius_m": 500,
+      "nearby_polygons": [
+        {
+          "symbol": "Dl",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Ops",
+          "lithogeochemical_group": "Sulfidic Schists",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": true
+        }
+      ]
+    },
+    {
+      "radius_m": 1000,
+      "nearby_polygons": [
+        {
+          "symbol": "Dl",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Ops",
+          "lithogeochemical_group": "Sulfidic Schists",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": true
+        },
+        {
+          "symbol": "Dlf",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 798.67,
+          "reference_point_inside": false
+        }
+      ]
+    },
+    {
+      "radius_m": 1500,
+      "nearby_polygons": [
+        {
+          "symbol": "Dl",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Ops",
+          "lithogeochemical_group": "Sulfidic Schists",
+          "distance_to_boundary_m": 43.57,
+          "reference_point_inside": true
+        },
+        {
+          "symbol": "Dlf",
+          "lithogeochemical_group": "Pelitic Rocks",
+          "distance_to_boundary_m": 798.67,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "Dgd",
+          "lithogeochemical_group": "Granite, other",
+          "distance_to_boundary_m": 1014.94,
+          "reference_point_inside": false
+        },
+        {
+          "symbol": "gr",
+          "lithogeochemical_group": "Granite, other",
+          "distance_to_boundary_m": 1498.02,
+          "reference_point_inside": false
+        }
+      ]
+    }
+  ]
+}

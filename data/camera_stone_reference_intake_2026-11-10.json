@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1",
+  "status": "inventory_only_no_visual_validation",
+  "project": "Cemetery Picnic Club",
+  "updated_on": "2026-11-10",
+  "specimens": [
+    {
+      "file": "IMG_5263–5270.HEIC",
+      "count": 8,
+      "distinct_marker_count": 1,
+      "possible_materials": [
+        "cast zinc (white bronze)",
+        "slate",
+        "fine-grained metamorphic stone"
+      ],
+      "note": "One monument; identity and cemetery uncertain. Sources conflict on material; do not use as verified stone-material training label.",
+      "source": "Pine Grove field observation + Field Record 001",
+      "role": "silhouette_provisional_and_material_ambiguity"
+    },
+    {
+      "file": "IMG_5287.jpeg",
+      "role": "context_only",
+      "description": "Overview near white building",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5288.jpeg",
+      "role": "candidate_silhouette",
+      "description": "Bliss headstone, date 1837 read in source catalog",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5289.jpeg",
+      "role": "candidate_silhouette",
+      "description": "Rebekah monument, 1816 provisional",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5290.jpeg",
+      "role": "candidate_silhouette",
+      "description": "Weathered adjacent family memorial",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5291.jpeg",
+      "role": "candidate_silhouette_and_iconography",
+      "description": "Ornate effigy",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5292.jpeg",
+      "role": "candidate_silhouette",
+      "description": "Noah Bliss, 1829 provisional",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5293.jpeg",
+      "role": "candidate_silhouette_and_iconography",
+      "description": "Ornate Thomas memorial",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5294.jpeg",
+      "role": "context_only",
+      "description": "Bliss stone pair context",
+      "review": "unverified"
+    },
+    {
+      "file": "IMG_5295.jpeg",
+      "role": "candidate_silhouette_and_iconography",
+      "description": "Winged death's head carving",
+      "review": "unverified"
+    }
+  ],
+  "sources": [
+    {
+      "id": "CPC-DRIVE-IMG5287-5295",
+      "kind": "photo-manifest",
+      "url": "https://drive.google.com/file/d/14FebZ8zIensFBMCSLpiUYPiaR1w8iCu-/view",
+      "license": "not yet specified",
+      "assertion_level": "catalog_description_only"
+    },
+    {
+      "id": "CPC-DRIVE-CROSSWALK",
+      "kind": "provisional-identities",
+      "url": "https://drive.google.com/file/d/11EDM-_x8dBa1l5L9fJNkDEQCsH_fIEpf/view",
+      "license": "internal"
+    },
+    {
+      "id": "CPC-DRIVE-SYMBOL-GUIDE",
+      "kind": "illustrated-symbolism",
+      "url": "https://drive.google.com/file/d/1TDwejroxzYUY2-C8hzGaoHa9FCxtMUMo/view",
+      "license": "unverified_illustration_rights"
+    },
+    {
+      "id": "CPC-DRIVE-SOULE",
+      "kind": "regional-carver-research",
+      "url": "https://docs.google.com/document/d/1pVL_ilJrzGIrbrBwFpK5ePfu_zmWzixQLZisba0T-i0/edit",
+      "license": "mixed_reference_links"
+    },
+    {
+      "id": "USGS-OFR03-225",
+      "kind": "regional-bedrock-lithology",
+      "url": "https://docs.google.com/document/d/1NzLvHj9-4C3y_yg7hZ5g_h_vgPAZ_10OnqKtOaUj1ms/edit",
+      "license": "USGS metadata access/use constraints none; check other derived datasets",
+      "spatial_accuracy_m_approx": 1500
+    }
+  ],
+  "labels_needed": [
+    "whole_outline_polygon",
+    "crown_profile",
+    "left_shoulder",
+    "right_shoulder",
+    "base_visibility",
+    "material_candidates",
+    "material_visual_features",
+    "inscription_region",
+    "lettering_style",
+    "motif_regions",
+    "source_rights",
+    "review_status"
+  ],
+  "caveat": "Inventory and source manifest, not a training dataset or deployed recognition model."
+}

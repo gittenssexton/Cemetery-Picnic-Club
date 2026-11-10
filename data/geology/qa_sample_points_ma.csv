@@ -1,0 +1,19 @@
+point_id,place,latitude,longitude,location_basis,purpose
+P01,Pine Grove Cemetery centroid (Warren),42.20909,-72.1966,Repo seed 0001 approximate centroid,Milestone
+P02,West Warren village,42.207,-72.227,Approximate centre verify,Neighbour
+P03,West Brookfield,42.2353,-72.1412,Approximate centre verify,Neighbour
+P04,Brookfield,42.214,-72.1018,Approximate centre verify,Neighbour
+P05,Brimfield,42.1229,-72.2009,Approximate centre verify,Neighbour
+P06,Palmer,42.1584,-72.3287,Approximate centre verify,Neighbour
+P07,Ware,42.2598,-72.2398,Approximate centre verify,Neighbour
+P08,Sturbridge,42.1084,-72.0787,Approximate centre verify,Neighbour
+P09,Spencer,42.244,-71.9923,Approximate centre verify,Neighbour
+P10,Hardwick,42.3473,-72.199,Approximate centre verify,Neighbour
+P11,New Braintree,42.3176,-72.1287,Approximate centre verify,Neighbour
+P12,Quabbin area north,42.4,-72.3,Arbitrary grid point,Reservoir control
+P13,Worcester,42.2626,-71.8023,Approximate centre verify,Regional
+P14,Springfield (Connecticut Valley),42.1015,-72.5898,Approximate centre verify,Regional basin
+P15,Boston,42.3601,-71.0589,Approximate centre verify,Regional
+P16,Pittsfield,42.4501,-73.2454,Approximate centre verify,Sheet area
+P17,Provincetown,42.0584,-70.1787,Approximate centre verify,Sheet edge
+P18,Quincy,42.2529,-71.0023,Approximate centre verify,Historic quarry context only

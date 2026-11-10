@@ -1,0 +1,68 @@
+/* Run: node tests/test_cemetery_gps_resolver.js */
+const assert=require('node:assert/strict');
+const {resolve,geometryResult}=require('../web/camera/cemetery-resolver.js');
+const sq=(x1,y1,x2,y2)=>({type:'Polygon',coordinates:[[[x1,y1],[x2,y1],[x2,y2],[x1,y2],[x1,y1]]]});
+const f=(lon,lat,accuracy=3)=>({lon,lat,horizontal_accuracy_m:accuracy,fix_age_s:2});
+const a={id:'a',name:'A',geometry:sq(-72.201,42.200,-72.199,42.202),geometry_status:'verified_boundary',source_id:'synthetic'};
+const b={id:'b',name:'B',geometry:sq(-72.199,42.200,-72.197,42.202),geometry_status:'verified_boundary',source_id:'synthetic'};
+let r=resolve(f(-72.200,42.201),[a]);
+assert.equal(r.status,'within_verified_boundary');
+assert.equal(r.candidates[0].status,'within_verified_boundary');
+r=resolve(f(-72.199,42.201,15),[a,b]);
+assert.equal(r.status,'multiple_candidates');
+assert.equal(r.candidates.filter(x=>x.status==='within_verified_boundary').length,0);
+r=resolve(f(-72.200,42.201),[{...a,geometry_status:'approximate'}]);
+assert.equal(r.status,'possible_within');
+r=resolve(f(-72.200,42.201),[{id:'p',geometry:{type:'Point',coordinates:[-72.200,42.201]}}]);
+assert.equal(r.status,'nearby_only');
+r=resolve(f(-72.200,42.201),[{...a,parent_id:'complex'},{id:'complex',entity_kind:'cemetery_complex',geometry:sq(-72.203,42.198,-72.195,42.205),geometry_status:'verified_boundary'}]);
+assert.equal(r.candidates.length,2);
+r=resolve({...f(-72.200,42.201),fix_age_s:200},[a]);
+assert.equal(r.status,'stale_fix');
+const hole={type:'Polygon',coordinates:[sq(-72.203,42.198,-72.197,42.204).coordinates[0],sq(-72.201,42.200,-72.199,42.202).coordinates[0]]};
+assert.equal(geometryResult([-72.200,42.201],hole).inside,false);
+assert.equal(resolve(f(-72.200,42.201),[{...a,geometry:hole}]).status,'nearby_only');
+assert.equal(resolve({lat:95,lon:0,horizontal_accuracy_m:2},[a]).status,'invalid_fix');
+assert.equal(resolve(f(-71,41),[a]).status,'unknown');
+// Parent-complex boundaries never establish which child ground was visited.
+const parent={id:'complex',name:'Combined grounds',entity_kind:'cemetery_complex',geometry:sq(-72.203,42.198,-72.195,42.205),geometry_status:'verified_boundary',source_id:'synthetic'};
+const childA={...a,parent_id:'complex'};
+const childB={...b,parent_id:'complex'};
+r=resolve(f(-72.199,42.201,15),[parent,childA,childB]);
+assert.equal(r.status,'multiple_candidates');
+assert.equal(r.unresolved_child,true);
+assert.equal(r.parent_complex_ids.includes('complex'),true);
+r=resolve(f(-72.202,42.199,3),[parent]);
+assert.equal(r.status,'complex_child_unresolved');
+assert.equal(r.unresolved_child,true);
+r=resolve(f(-72.200,42.201,3),[parent,childA]);
+assert.equal(r.status,'within_verified_boundary');
+assert.equal(r.unresolved_child,false);
+r=resolve(f(-72.199,42.201,15),[childA,childB]);
+assert.equal(r.status,'multiple_candidates');
+r=resolve({...f(-72.200,42.201,3),fix_age_s:500},[parent,childA]);
+assert.equal(r.status,'stale_fix');
+// Invalid or unsourced boundaries must fail closed; point-only data is a hypothesis.
+r=resolve(f(-72.200,42.201),[{...a,source_id:null}]);
+assert.equal(r.status,'possible_within');
+const broken={type:'Polygon',coordinates:[[[0,0],[1,0],[1,1]]]};
+assert.equal(geometryResult([0.5,0.5],broken),null);
+assert.equal(geometryResult([0,0],{type:'Point',coordinates:[999,1]}),null);
+const multipolygon={type:'MultiPolygon',coordinates:[
+  sq(-72.201,42.200,-72.199,42.202).coordinates,
+  sq(-72.207,42.206,-72.205,42.208).coordinates
+]};
+assert.equal(geometryResult([-72.206,42.207],multipolygon).inside,true);
+assert.equal(geometryResult([-72.204,42.204],multipolygon).inside,false);
+r=resolve(f(-72.200,42.201,10),[a,{
+  id:'nearby-unknown',name:'Other historical ground',
+  geometry:{type:'Point',coordinates:[-72.200,42.201]},
+  geometry_status:'approximate_centroid',source_id:'synthetic'
+}]);
+assert.equal(r.status,'multiple_candidates');
+assert.equal(r.candidates.some(c=>c.status==='within_verified_boundary'),false);
+const fs=require('node:fs');
+const registry=fs.readFileSync(require('node:path').join(__dirname,'../web/camera/cemetery-sites.js'),'utf8');
+assert.equal(registry.includes("geometry:{type:'Point'"),true);
+assert.equal(registry.includes("type:'Polygon'"),false);
+console.log('CPC GPS resolver: 30 assertions passed, including point-only registry policy');

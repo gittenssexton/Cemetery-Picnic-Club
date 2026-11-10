@@ -1,0 +1,23 @@
+// node tests/test_camera_geology_integration.js
+const assert=require('node:assert/strict');
+const {contextForSite,attachPrivate,visibleSummary,PINE_GROVE_ID}=require('../web/camera/geology-context.js');
+const privateRecord={id:'private-stone-1',location:{latitude:42.20909,longitude:-72.1966},material_hypothesis:'slate'};
+assert.equal(contextForSite('unknown'),null);
+assert.equal(contextForSite(PINE_GROVE_ID).mapped_point_symbol,'Ops');
+assert.equal(contextForSite(PINE_GROVE_ID).nearby_map_symbol,'Dl');
+assert.equal(contextForSite(PINE_GROVE_ID).site_geology_status,'boundary_sensitive_unverified');
+assert.equal(contextForSite(PINE_GROVE_ID).monument_material_status,'not_inferred');
+assert.equal(contextForSite(PINE_GROVE_ID).quarry_origin_status,'unknown');
+assert.equal(attachPrivate(privateRecord,PINE_GROVE_ID,false).geology_context,undefined);
+assert.equal(attachPrivate(privateRecord,'unknown',true).geology_context,undefined);
+const joined=attachPrivate(privateRecord,PINE_GROVE_ID,true);
+assert.equal(joined.geology_context.mapped_point_symbol,'Ops');
+assert.equal(joined.material_hypothesis,'slate');
+assert.equal(privateRecord.geology_context,undefined);
+assert.notEqual(joined.geology_context,contextForSite(PINE_GROVE_ID));
+assert.match(visibleSummary(PINE_GROVE_ID),/unverified/);
+assert.match(visibleSummary('unknown'),/No reviewed/);
+const rejoined=attachPrivate(joined,'unknown',true);
+assert.equal(rejoined.geology_context,undefined);
+assert.throws(()=>attachPrivate(null,PINE_GROVE_ID,true),/record/);
+console.log('Geology camera private integration: 16 checks passed');
