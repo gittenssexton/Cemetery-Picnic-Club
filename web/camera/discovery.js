@@ -42,7 +42,7 @@ const catalog=[
 ];
 const $=id=>document.getElementById(id), video=$('video'),stage=$('cameraStage'),canvas=$('discoveryCanvas'),ctx=canvas.getContext('2d',{alpha:true}),status=$('discoveryStatus');
 const scan=document.createElement('canvas');scan.width=160;scan.height=200;const g=scan.getContext('2d',{willReadFrequently:true});
-let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false;let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
+let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,liveFeatures=[],featureTracker=window.CPCSurfaceFeatures?.tracker?.();let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
@@ -94,16 +94,31 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
    const brightness=latestAnalysis.preview.brightness,contrast=latestAnalysis.preview.contrast;
    video.style.filter='brightness('+brightness+') contrast('+contrast+')';
  }else video.style.filter='';
+ const selectedStone=lockedTrackId===null?null:latestMonuments.find(t=>t.track_id===lockedTrackId);
+ if(lockedTrackId!==null&&!selectedStone){lockedTrackId=null;featureTracker?.reset?.();}
+ const candidate=selectedStone||latestMonuments.filter(t=>t.classification==='possible_monument_shape').sort((a,b)=>b.pixels-a.pixels)[0];
+ liveFeatures=candidate&&$('liveDetails')?.checked?featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
  ctx.clearRect(0,0,w,h);
  if($('liveMonuments')?.checked){
    ctx.save();ctx.lineWidth=2;
    for(const shape of latestMonuments){const points=shape.points;if(!points?.length)continue;
      const possible=shape.classification==='possible_monument_shape';
-     ctx.strokeStyle=possible?'#7fe0bd':'rgba(192,205,220,.60)';
+     ctx.strokeStyle=shape.track_id===lockedTrackId?'#f4d48c':possible?'#7fe0bd':'rgba(192,205,220,.60)';
      ctx.lineWidth=possible?2.7:1.4;ctx.setLineDash(possible?[]:[3,6]);
      const first=point(points[0]);ctx.beginPath();ctx.moveTo(first[0],first[1]);
      for(let i=1;i<points.length;i++){const pt=point(points[i]);ctx.lineTo(pt[0],pt[1]);}
      ctx.closePath();ctx.stroke();
+   }
+   ctx.restore();
+ }
+ if(candidate&&liveFeatures.length){
+   ctx.save();ctx.setLineDash([]);
+   for(const f of liveFeatures){
+     if(f.kind==='letter_like_stroke_unverified'&&!$('liveLettering')?.checked)continue;
+     if(f.kind!=='letter_like_stroke_unverified'&&!$('liveDetails')?.checked)continue;
+     const a=point([f.x,f.y]),b=point([f.x+f.w,f.y+f.h]);
+     ctx.strokeStyle=f.kind==='letter_like_stroke_unverified'?'#8bc4ff':'#f4d48c';
+     ctx.lineWidth=1.5;ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
    }
    ctx.restore();
  }
@@ -117,12 +132,15 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  ctx.setLineDash([]);for(const a of annotations){const x=a.x*w,y=a.y*h;ctx.strokeStyle='#7ce1b7';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,22,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#082b20';ctx.fillRect(Math.min(w-145,x+18),Math.max(0,y-24),138,27);ctx.fillStyle='#def8e8';ctx.font='12px system-ui';ctx.fillText(a.label.slice(0,18),Math.min(w-141,x+22),Math.max(18,y-7))}
  const m=latestMonuments.length,letter=latestAnalysis?.textRegions.length||0;
  const potential=latestMonuments.filter(r=>r.classification==='possible_monument_shape').length;
- status.textContent='LIVE regions: '+m+' outlines, '+potential+' shape candidates, '+letter+' text-like areas, '+stable.length+' surface details. No monument has been identified.';
+ const letterFeatures=liveFeatures.filter(f=>f.kind==='letter_like_stroke_unverified').length;
+ const carvings=liveFeatures.filter(f=>f.kind==='carving_or_surface_detail_unverified').length;
+ status.textContent='LIVE: '+m+' outlines, '+potential+' monument-like shapes. '+(lockedTrackId!==null?'Target locked. ':'')+letterFeatures+' letter-like strokes, '+carvings+' surface details. Shapes are unverified; no name or symbol identified.';
+ if($('liveTargetStatus'))$('liveTargetStatus').textContent=lockedTrackId!==null?'Target locked; analyzing its internal details.':'Largest monument-like region analyzed provisionally. Lock a target when ready.';
  if($('liveQuality'))$('liveQuality').textContent=latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
  lastDraw=Date.now();
 }
 function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,1200);$('liveDiscovery').checked=true;}
-function stop(){running=false;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
+function stop(){running=false;lockedTrackId=null;featureTracker?.reset?.();liveFeatures=[];if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
  const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
 const chooser=$('symbolChoice');for(const c of catalog){let option=document.createElement('option');option.value=c[0];option.textContent=c[1];chooser.appendChild(option)}
@@ -132,9 +150,15 @@ canvas.addEventListener('click',e=>{if(!manual)return;const r=canvas.getBounding
 $('saveSymbol').addEventListener('click',saveAnnotation);$('cancelSymbol').addEventListener('click',()=>{$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled')});
 $('clearSymbols').addEventListener('click',()=>{annotations=[];cycle();status.textContent='Annotations cleared for next monument.'});
 $('liveDiscovery').addEventListener('change',e=>e.target.checked?start():stop());
+$('liveLockTarget')?.addEventListener('click',()=>{
+ if(lockedTrackId!==null){lockedTrackId=null;featureTracker?.reset?.();$('liveLockTarget').textContent='Lock detected stone';return}
+ const candidate=latestMonuments.filter(t=>t.classification==='possible_monument_shape').sort((a,b)=>b.pixels-a.pixels)[0];
+ if(!candidate){status.textContent='No stable monument-like shape yet. Move closer or improve the angle.';return}
+ lockedTrackId=candidate.track_id;featureTracker?.reset?.();$('liveLockTarget').textContent='Unlock target';cycle();
+});
 // No automatic label claims. Working visual-interest indicators and user-tagged references only.
 window.CPCDiscovery={start,stop,getAnnotations:()=>annotations.map(a=>({...a})),
- snapshot:()=>({analysis_version:latestAnalysis?.version||null,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
+ snapshot:()=>({analysis_version:latestAnalysis?.version||null,surface_feature_version:window.CPCSurfaceFeatures?.VERSION||null,live_feature_count:liveFeatures.length,locked_target_track_id:lockedTrackId,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
  clear:()=>{annotations=[];manual=false;canvas.classList.remove('enabled');$('markPanel').hidden=true},
  catalog:catalog.map(c=>({id:c[0],name:c[1],meaning:c[2],source_page:c[3]}))};
 })();
