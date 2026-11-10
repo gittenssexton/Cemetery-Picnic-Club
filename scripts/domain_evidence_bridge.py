@@ -108,3 +108,33 @@ def reject_candidate_link(db, link_id, reviewer, reviewed_at):
     if result.rowcount != 1:
         raise ValueError("Link missing or cannot be rejected in current state")
     # No source-row update/delete: rejected evidence stays visible for audit.
+
+
+def list_links(db, entity_ref, *, public=False):
+    """Read edges touching one canonical entity without exposing private evidence.
+
+    Public results require source-level publication permission AND reviewed link.
+    No raw evidence notes or citation locators are returned to the public view.
+    Default is private/internal for approved application callers only.
+    """
+    parse_ref(entity_ref)
+    base = """SELECT id,source_entity_ref,target_entity_ref,relation,evidence_ref,
+                     evidence_locator,evidence_note,confidence,review_status,
+                     access_scope,publication_permission
+              FROM domain_evidence_links
+              WHERE (source_entity_ref=? OR target_entity_ref=?)"""
+    if public:
+        base += """ AND review_status='reviewed'
+                    AND access_scope='public'
+                    AND publication_permission='permitted'"""
+    rows = db.execute(base + " ORDER BY id", (entity_ref, entity_ref)).fetchall()
+    keys = ("id","source_entity_ref","target_entity_ref","relation","evidence_ref",
+            "evidence_locator","evidence_note","confidence","review_status",
+            "access_scope","publication_permission")
+    if public:
+        # Even with a publishable link, source image/record and GPS rights must
+        # be checked by the application before publishing an entity page.
+        allowed = ("id","source_entity_ref","target_entity_ref","relation",
+                   "confidence","review_status")
+        return [{k:v for k,v in zip(keys,row) if k in allowed} for row in rows]
+    return [dict(zip(keys,row)) for row in rows]
