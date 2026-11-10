@@ -55,3 +55,11 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - **No CPC-named D1 database was listed in this connected account.** This does not prove no database exists in another account/environment or that no earlier deployment occurred.
 - No D1 SQL executed and no D1 resource created, modified or deleted.
 - Gate: establish which intended CPC staging/production database and Cloudflare account should be used before any migration execution. Do not point CPC migrations at CARTOVEYRA.
+
+## Session continuation — seeds and ingestion adapters
+- Imported `db/seeds/0005_geology_map_sources.sql` from the geology branch. The catalog is metadata only; it creates no automatic material or quarry provenance claims.
+- The additional `0006_ma_zen1983_symbol_crosswalk.sql` remains out of the default sequence pending source-level review and deliberate release; the existing seed sequence stays 0001–0005.
+- New `tests/test_seed_integration.py` checks all seeds against the integrated fresh schema, repeatable reruns and absence of fabricated positions, material links, burials and photo records.
+- Added `scripts/ingest_domain_metadata.py`: dry-run unless explicit `--apply --database` to an existing **local SQLite** file. Only GEO map-source catalog entries, VIT collection entries and IMG local drafts are supported. All other record types fail closed. No D1 connection, image bytes, person reconciliation, markers or historical claims.
+- Added metadata-adapter tests for allowable imports, duplicate safety, rights/namespace rejection and separation of evidence sources.
+- GitHub Actions: **53 tests passed** at https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42843687450 . The first staging/production database migration and real-source extraction remain unperformed.
