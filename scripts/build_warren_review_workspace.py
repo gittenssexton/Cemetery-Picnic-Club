@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from scripts.stage_warren_ocr_review import ROOT, FILES, prepare as original
-from scripts.stage_warren_page_omissions import prepare as omissions
+from scripts.stage_warren_page_omissions import FILENAME as OMIT_FILE, prepare as omissions
 from scripts.stage_warren_page12 import prepare as page12
 
 
@@ -20,7 +20,7 @@ def candidates():
     for name in FILES:
         _, batch=original(ROOT/"data/vital-records"/name)
         rows.extend(batch)
-    rows.extend(omissions()[1])
+    rows.extend(omissions(ROOT/"data/vital-records"/OMIT_FILE)[1])
     rows.extend(page12()[1])
     if len(rows)!=140 or len({r[0] for r in rows})!=140:
         raise ValueError("Expected 140 unique provisional source candidates")
