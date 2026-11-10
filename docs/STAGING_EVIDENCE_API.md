@@ -31,3 +31,17 @@ Automated Node tests cover missing/wrong token, missing D1 binding, invalid refe
 `scripts/review_warren_vitals.py` provides two Python helpers for an operator-controlled local SQLite workflow: `record_scan_review` records a named reviewer's exact line reading, HTTPS page locator, image sequence and image SHA-256; `accept_scan_reviewed_event` requires that confirmed review, the original candidate checksum, and a collection explicitly marked as `reviewed_source_entries` with `verified_public_domain` rights. It writes a **restricted** source event and an immutable acceptance lineage. No person, family, marker, burial, public rights grant or other identity assertion is made. No bulk accept, automated scan verification, public review endpoint or D1 promotion route is implemented.
 
 The connected staging database's Warren collection remains `metadata_only`; there are **zero** `vital_ocr_page_reviews`, **zero** `vital_ocr_accepted_events`, and **zero** accepted `vital_record_entries` at the post-migration check. Historical OCR batch names and dates must not be described as verified.
+
+## Actual Cloudflare setup check — 2026-11-10
+
+The separate `cpc-integration-staging` Worker script was uploaded and automatically deployed as an isolated Cloudflare Worker. It is **not publicly reachable**: its `workers.dev` subdomain and preview URLs are both disabled.
+
+Read-back of the actual Cloudflare Worker settings confirmed:
+- `CPC_DB`: D1 binding `ad4a436d-048c-47a6-bd00-8cf1b9632f6b` (`cemetery-picnic-club-integration-staging`, **not** CARTOVEYRA).
+- `CPC_ENVIRONMENT`: `staging`.
+- `CPC_ALLOWED_HOST`: `cpc-integration-staging.gittens-sexton.workers.dev`.
+- `CPC_API_TOKEN`: **not installed**. The attempted secret-write operation was blocked, so no token was created; do not assert otherwise.
+
+**Remaining operator step:** In Cloudflare Dashboard → Workers & Pages → `cpc-integration-staging` → Settings → Variables and Secrets, add a securely generated, unique `CPC_API_TOKEN` as a **Secret** (at least 32 characters), never as plaintext or in GitHub. Prefer Cloudflare Access service authentication and credential rotation for internal callers. Only after secrets and access policies are verified should the operator enable the staging subdomain, execute unauthenticated/authenticated smoke tests and document the results. Do not use this service as a public API or grant browser clients the bearer token.
+
+The Worker upload is not a production website deployment. Production workers, CARTOVEYRA resources, and `main` were not modified by this setup.
