@@ -67,6 +67,21 @@ class MetadataAdapterTests(unittest.TestCase):
                 {"title": "X", "repository": "Y", "state_code": "NY",
                  "canonical_url": "https://example.invalid"})])
 
+    def test_reject_mismatched_source_id_and_unprocessed_links(self):
+        good = record("GEO", "geologic_map", {"title": "Fixture map", "provider": "Fixture"})
+        incorrect = dict(good, source_local_id="different-source-id")
+        with self.assertRaisesRegex(ValueError, "canonical reference"):
+            metadata.plan([incorrect])
+        unsupported_link = dict(good, links=[{
+            "target_ref": "IMG:photo_original:fixture-001",
+            "relationship": "source_suggests",
+            "evidence_ref": "HIS:work:fixture",
+            "review_status": "candidate"
+        }])
+        with self.assertRaisesRegex(ValueError, "evidence bridge"):
+            metadata.plan([unsupported_link])
+        self.assertEqual(self.db.execute("SELECT count(*) FROM geology_map_sources").fetchone()[0], 0)
+
     def test_reject_invalid_rights_and_duplicate_refs_before_write(self):
         good = record("IMG", "field_draft")
         bad = dict(good)
