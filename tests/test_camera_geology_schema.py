@@ -31,9 +31,9 @@ class IntegratedMigrationContractTests(unittest.TestCase):
             names = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             for table in ('markers','geology_map_sources','geology_units','geology_site_context',
                           'marker_form_observations','carving_feature_observations',
-                          'lettering_style_observations'):
+                          'lettering_style_observations','marker_motif_interpretations','motif_interpretations'):
                 self.assertIn(table,names)
-            self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
+            self.assertNotIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(motif_interpretations)')})\n            self.assertIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(marker_motif_interpretations)')})\n            self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
         finally:
             db.close()
 
