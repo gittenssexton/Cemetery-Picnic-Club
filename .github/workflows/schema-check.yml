@@ -31,5 +31,7 @@ jobs:
         run: node tests/test_camera_live_analysis.js
       - name: Test pixel contour shapes and tracking
         run: node tests/test_camera_pixel_contours.js
+      - name: Test rule-based live stone detail tracking
+        run: node tests/test_camera_surface_features.js
       - name: Test direct Drive photo and JSON synchronization
         run: node tests/test_camera_drive_sync.js
