@@ -74,3 +74,10 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - The integration-branch v7 migration adds explicit `domain_entity_refs` and `domain_evidence_links` tables; links require two registered canonical refs, evidence reference + locator, status and separate rights. Existing domain tables remain distinct. Registry-to-underlying-row existence must be checked by adapters, since a generic bridge table cannot enforce dynamic foreign keys to arbitrary domain tables.
 - CI for seven migration coverage and evidence-link tests passed: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42843864025
 - **Remaining gates:** real-source ingestion with reviewed permissions and source provenance, adapter validation of source-row existence and duplicate imports, field camera Safari tests, accurate geologic map extraction, vital records manual review, staging Worker integration, and review of PR #5 before any production merge. Avoid deploying unapproved image content, GPS details, and private vital records.
+
+
+## Source-row adapter hardening
+- Added `scripts/domain_ref_adapter.py`: allowlisted CEM/GEO/VIT/IMG entity mappings, validates the source-owned table row exists before registering a canonical reference, rejects invalid/unknown entity types, and creates only unreviewed candidate links with publication permission unknown.
+- Added `tests/test_domain_ref_adapter.py` covering missing source row, invalid ID, duplicate-safe reference registration, citation requirement, candidate rejection/removal, original image preservation, and no implicit publishing.
+- GitHub Actions succeeded at commit `50a60dc65a1f3978ba7979fb97579864674337c0`: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42844288760
+- This Python adapter is a tested integration/library interface, not yet a deployed Worker API. No real-source imports or app sync are claimed.
