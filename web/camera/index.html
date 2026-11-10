@@ -83,6 +83,13 @@
       <div class="twocol"><div class="field"><label for="material">Material hypothesis</label><select id="material"><option value="unknown">Unknown</option><option value="slate">Slate (suspected)</option><option value="marble">Marble (suspected)</option><option value="granite">Granite (suspected)</option><option value="sandstone">Sandstone (suspected)</option><option value="limestone">Limestone (suspected)</option><option value="other">Other</option></select></div><div class="field"><label for="category">Monument type</label><select id="category"><option value="gravestone">Gravestone</option><option value="monument">Monument</option><option value="obelisk">Obelisk</option><option value="sculpture">Sculpture</option><option value="other">Other</option></select></div></div>
       <div class="field"><label for="notes">Field notes</label><textarea id="notes" placeholder="Inscription, condition, markings, nearby reference stones…"></textarea></div>
       <p class="muted">Material and identity entries are observations, not verified identifications.</p>
+      <div class="helper" id="geologyIntegration">
+        <strong>Stone identification + site geology</strong>
+        <p class="muted">Local bedrock, monument material, and quarry of origin are three different questions. Open the stone guide for visual comparison. The Pine Grove geology reference is a provisional map interpretation, not a GPS-based identification.</p>
+        <div class="review-buttons"><a class="btn soft" style="text-decoration:none;text-align:center" href="../stone-camera.html" target="_blank" rel="noopener noreferrer">Stone material guide</a><button id="showGeologyContext" class="btn soft" type="button">Show site geology reference</button></div>
+        <p id="geologyContextStatus" role="status" class="muted">Select Pine Grove as a candidate site to view its existing geology research. No coordinates are transmitted for this reference.</p>
+        <label class="toggle"><input type="checkbox" id="attachGeology" /> Include provisional site geology context in the PRIVATE capture record (never a material or quarry identification)</label>
+      </div>
     </div></div>
     <div class="panel live-only"><div class="panel-title"><strong>3 · Live Discovery</strong><small>Experimental on-device preview</small></div><div class="panel-body">
       <label class="toggle"><input type="checkbox" id="liveDiscovery" checked /> Run on-device detection while camera is active</label>
@@ -119,7 +126,7 @@
 </main>
 <div class="modal-backdrop" id="unlocatedModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><h2 id="modalTitle">Capture without coordinates?</h2><p>The field record will be flagged <strong>LOCATION UNVERIFIED</strong>. This is useful when service is unavailable, but the position will need to be surveyed later.</p><div class="actions"><button class="btn ghost" id="cancelUnlocated">Cancel</button><button class="btn danger" id="confirmUnlocated">Capture unlocated</button></div></div></div>
 <div role="status" aria-live="polite" id="toast"></div>
-<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="discovery.js" defer></script>
+<script src="geology-context.js"></script><script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="discovery.js" defer></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id); const ui={video:$('video'),stage:$('cameraStage'),canvas:$('reviewCanvas')};
@@ -171,8 +178,12 @@ function updateSiteMatch(g){
     evidence.textContent+=' | Relationship graph invalid; hierarchy disabled.';
   }
 }
+$('showGeologyContext').addEventListener('click',()=>{
+ const label=window.CPCGeologyContext?.visibleSummary(state.siteSelection)||'Geology reference module unavailable.';
+ $('geologyContextStatus').textContent=label;
+});
 $('siteCandidate').addEventListener('change',()=>{
-  state.siteSelection=$('siteCandidate').value||null;
+  state.siteSelection=$('siteCandidate').value||null;$('attachGeology').checked=false;$('geologyContextStatus').textContent='Site changed. Select Show site geology reference to review provisional context.';
   const entry=(window.CPCCemeterySites?.entities||[]).find(s=>s.id===state.siteSelection);
   $('cemetery').value=entry?.name||'';
   notify(entry?'Site selected by user, NOT GPS-verified.':'Cemetery left unknown.');
@@ -180,7 +191,7 @@ $('siteCandidate').addEventListener('change',()=>{
 $('cemetery').addEventListener('input',()=>{
   const entry=(window.CPCCemeterySites?.entities||[]).find(s=>s.id===state.siteSelection);
   if(!entry || $('cemetery').value!==entry.name){
-    state.siteSelection=null;$('siteCandidate').value='';
+    state.siteSelection=null;$('siteCandidate').value='';$('attachGeology').checked=false;$('geologyContextStatus').textContent='No verified site selected; geology context unavailable.';
   }
 });
 
@@ -220,6 +231,7 @@ function generateRecord(g,blob,w,h,polygon){return{
   cemetery_assignment:{cemetery_entity_id:state.siteSelection||null,assignment_method:state.siteSelection?'user_selected_unverified':null,verification_state:'unverified',source_id:state.siteSelection?'user_selection':null,reviewed_at:null},
   site_name_entry:state.siteSelection?'catalog_selection':($('cemetery').value.trim()?'free_text_unverified':'unknown'),
   cemetery_candidate_catalog_version:window.CPCCemeterySites?.version||null,
+  geology_context:$('attachGeology').checked?(window.CPCGeologyContext?.contextForSite(state.siteSelection)||null):null,
   cemetery_relationships_at_capture:state.siteSelection?
     window.CPCCemeteryRelations?.hierarchy?.(state.siteSelection,
       window.CPCCemeterySites?.entities||[],window.CPCCemeterySites?.relationships||[],
@@ -230,7 +242,7 @@ async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||
   try{const w=ui.video.videoWidth,h=ui.video.videoHeight;if(!w||!h){notify('Camera preview not ready.');return}
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=state.shotType==='overview'?[[0,0],[w,0],[w,h],[0,h]]:getGuidePolygon(w,h);
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);
-  if(screenTest){r.capture_source='photograph_of_display_reference_test';r.location=null;r.location_observation=null;r.location_status='reference_image_no_site_attribution';r.cemetery_match=null;r.cemetery_assignment={cemetery_entity_id:null,assignment_method:null,verification_state:'unverified',source_id:null,reviewed_at:null};r.cemetery=null;r.cemetery_relationships_at_capture=null;r.site_name_entry='reference_image_not_site_evidence';}
+  if(screenTest){r.capture_source='photograph_of_display_reference_test';r.location=null;r.location_observation=null;r.location_status='reference_image_no_site_attribution';r.cemetery_match=null;r.cemetery_assignment={cemetery_entity_id:null,assignment_method:null,verification_state:'unverified',source_id:null,reviewed_at:null};r.cemetery=null;r.cemetery_relationships_at_capture=null;r.geology_context=null;r.site_name_entry='reference_image_not_site_evidence';}
   try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(screenTest?'Saved as a screen/reference test, not evidence of phone GPS at the depicted cemetery.':g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}finally{state.captureBusy=false}}
 async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
   const selected=r.cemetery_assignment?.cemetery_entity_id||null;
