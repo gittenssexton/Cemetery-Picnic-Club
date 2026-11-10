@@ -13,7 +13,7 @@ function load(){try{const data=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}'
 function save(){localStorage.setItem(CONFIG_KEY,JSON.stringify({...config,folderId}));return status();}
 function configure(clientId,enabled){const id=String(clientId||'').trim();if(!/^[0-9]+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(id))throw Error('Enter a valid Google OAuth web client ID.');if(config.clientId!==id){token=null;expires=0;client=null;folderId=null;}config.clientId=id;config.enabled=!!enabled;return save();}
 function enabled(value){config.enabled=!!value;return save();}
-function status(){return{enabled:config.enabled,configured:!!config.clientId,authorized:!!token&&Date.now()<expires,folderId,uploading:busy,folderName:FOLDER_NAME};}
+function status(){return{enabled:config.enabled,clientId:config.clientId,configured:!!config.clientId,authorized:!!token&&Date.now()<expires,folderId,uploading:busy,folderName:FOLDER_NAME};}
 function auth(){if(!config.clientId)throw Error('Enter your Google OAuth client ID first.');if(!window.google?.accounts?.oauth2)throw Error('Google sign-in library unavailable; check connectivity.');return new Promise((resolve,reject)=>{
  try{client=window.google.accounts.oauth2.initTokenClient({client_id:config.clientId,scope:SCOPE,callback:(response)=>{
  if(response.error){reject(new Error(response.error));return}
@@ -22,7 +22,7 @@ function auth(){if(!config.clientId)throw Error('Enter your Google OAuth client 
  client.requestAccessToken({prompt:token?'':'consent'});
  }catch(e){reject(e)}
 });}
-function makeMetadata(record){const {originalBlob,drive_sync,...rest}=record;return {...rest,archive_format:'CPC_CAMERA_RECORD_JSON_V1',image_file:'original.jpg',private_research_record:true};}
+function makeMetadata(record){const {originalBlob,drive_sync,...rest}=record;const prefix='CPC-'+String(record.id||'unknown').replace(/[^A-Za-z0-9-]/g,'');return {...rest,archive_format:'CPC_CAMERA_RECORD_JSON_V1',image_file:prefix+'-original.jpg',photo_drive_file_id:drive_sync?.photoId||null,private_research_record:true};}
 function pending(record){return !!record&&record.originalBlob instanceof Blob&&(!record.drive_sync||record.drive_sync.status!=='uploaded');}
 async function fetchGoogle(url,options={}){if(!token||Date.now()>=expires)throw Error('Google authorization expired. Connect Drive again.');
  const response=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:'Bearer '+token}});
