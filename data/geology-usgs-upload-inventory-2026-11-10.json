@@ -1,0 +1,105 @@
+{
+  "schema": "cpc-geological-map-source-inventory-v1",
+  "created": "2026-11-10",
+  "storage": {
+    "googleDriveFolder": "https://drive.google.com/drive/folders/1Jfu7hl2HrrTKtgYJKJ4jAhbzATvP-O7E",
+    "status": "original files moved and retained intact"
+  },
+  "maps": [
+    {
+      "mapId": "usgs-ma-bedrock-zen-1983",
+      "title": "Bedrock geologic map of Massachusetts",
+      "publisher": "U.S. Geological Survey",
+      "authors": [
+        "Zen, E-an",
+        "Goldsmith, Richard",
+        "Ratcliffe, N.M.",
+        "Robinson, Peter",
+        "Stanley, R.S.",
+        "Hatch, N.L.",
+        "Shride, A.F.",
+        "Weed, E.G.A.",
+        "Wones, D.R."
+      ],
+      "year": 1983,
+      "scale": "1:250000",
+      "sourceCatalog": "USGS NGMDB product ngm16357",
+      "sourceFiles": [
+        {
+          "name": "USGS_ngm16357.zip",
+          "id": "1RcXdi8XiAjeCaTwzu8Tob6WzHLpcWbZz",
+          "sizeBytes": 37644226,
+          "sha256": "a48efc79baef0d9a468e14773bd4c66c1b261bd0bec9ddf521b232f8fbff418f",
+          "contains": [
+            "USGS_ngm16357_1.tif",
+            "USGS_ngm16357_1.tif.aux.xml",
+            "USGS_ngm16357_1.tif.txt",
+            "README.txt"
+          ],
+          "tiffSizePx": [
+            17476,
+            12370
+          ],
+          "projection": "NAD27 / US Albers EPSG:5069 per auxiliary XML; polynomial first-order source-to-target GCP transform",
+          "gcps": 4
+        },
+        {
+          "name": "USGS_ngm16357_1.kmz",
+          "id": "170lDnGOw7NeDEJFkJGTrns26EQSDaQnF",
+          "sizeBytes": 8664436,
+          "sha256": "e95b1fbb87d1d613cce8ddbc81011f7d114d839aecad2c58f38db1f3c3a0fd6c",
+          "contains": [
+            "doc.kml",
+            "16357_1_kmz.jpg",
+            "assets/images/*"
+          ],
+          "overlayImageSizePx": [
+            10000,
+            10000
+          ],
+          "kmlBounds": {
+            "north": 42.88680119709851,
+            "south": 41.22730042210839,
+            "east": -69.91624740049825,
+            "west": -73.50824644352802
+          }
+        }
+      ],
+      "geometryStatus": "raster overlay only, no attributed rock unit polygons",
+      "validationStatus": "inventory verified; map georegistration and legend decoding pending"
+    },
+    {
+      "mapId": "usgs-nh-bedrock-lyons-1997",
+      "title": "New Hampshire bedrock geological map",
+      "publisher": "USGS/State of New Hampshire",
+      "authors": [
+        "Lyons et al. (as named in file; citation to verify from publication)"
+      ],
+      "year": 1997,
+      "scale": "1:250000",
+      "sourceFiles": [
+        {
+          "name": "geo-nhx-250000-bmap-pg1-lyons1997.pdf",
+          "id": "1pt7_FWSXy7yvbcQzZQdIyIfiN5PWQ0d9",
+          "sizeBytes": 2552473
+        }
+      ],
+      "geometryStatus": "PDF cartographic map and legend; no attributed vector polygons verified",
+      "validationStatus": "readable descriptive legend; exact bibliographic citation and georeferencing pending"
+    }
+  ],
+  "dataPolicy": {
+    "quarryOrigin": "never inferred from the local bedrock map alone",
+    "units": "no units or polygons parsed/claimed from image colors",
+    "mindat": "not integrated pending written authorization",
+    "imageLicensing": "validate third-party illustration elements; cite USGS and state cooperation"
+  },
+  "nextActions": [
+    "georeference raster and QC 4 GCPs",
+    "extract manually verified legend into normalized geology_units",
+    "obtain vectorized authoritative datasets where possible",
+    "render raster tiles on separate CDN, not D1",
+    "seed database schema 0004 and only verified map metadata",
+    "link site geology to map observations; keep rock type and quarry-source claims distinct"
+  ]
+}
