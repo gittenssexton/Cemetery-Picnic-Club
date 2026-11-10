@@ -10,7 +10,7 @@
 <div class="capture"><label for="image">Take a photo or choose an existing one</label><input id="image" type="file" accept="image/*" capture="environment"><img id="photo" alt="Locally selected stone photograph"><p id="photoInfo" class="hint">Aim at an exposed stone surface, with mineral texture visible; avoid relying on an inscription alone.</p></div></section>
 <section id="geology"><h2>2. Geological map at the observation site</h2>
 <p class="hint">The mapped bedrock near a grave does <strong>not</strong> establish the quarry of a grave marker. This reports underlying mapped geology, not the material of imported stone.</p>
-<div class="actions"><button id="gpsGeology" type="button" class="secondary">Use my location</button><button id="warrenExample" type="button" class="secondary">Warren, Massachusetts example</button></div>
+<div class="actions"><button id="gpsGeology" type="button" class="secondary">Use my location</button><button id="warrenExample" type="button" class="secondary">Pine Grove (approximate centroid)</button></div><p class="hint">USGS 1983 reference-sheet ingest: original archives verified; preliminary georeferenced reference images prepared. The MassGIS unit query, map-symbol review and independent coordinate accuracy check are still pending. <a href="https://drive.google.com/file/d/1TOndcqv0rUlYJ3VuJzXru42phE5BfdDb/view" target="_blank" rel="noopener noreferrer">View original reference-map preview</a> · <a href="https://drive.google.com/file/d/1U9l4QfNNQsyH3tq-NbERzvXBkQN0bX6j/view" target="_blank" rel="noopener noreferrer">Pine Grove approximate-point crop (not a rock identification)</a>.</p>
 <p class="hint" id="locationStatus">Location is optional. You can enter latitude and longitude manually. Location is not saved or sent to Cemetery Picnic Club; the query goes to Macrostrat.</p>
 <label for="geoLat">Latitude (decimal degrees)</label><input id="geoLat" type="number" min="-90" max="90" step="any" placeholder="e.g. 42.2">
 <label for="geoLng">Longitude (decimal degrees)</label><input id="geoLng" type="number" min="-180" max="180" step="any" placeholder="e.g. -72.2">
@@ -45,7 +45,7 @@ const refs=[
 let url=null, photo=null, result=null, mapResult=null;
 const geoOutput=$("geologyResult");
 function geoText(text){geoOutput.textContent=text;}
-$("warrenExample").onclick=()=>{$("geoLat").value="42.215";$("geoLng").value="-72.19";$("locationStatus").textContent="Illustrative coordinate near Warren, MA — not a verified cemetery or gravestone location.";};
+$("warrenExample").onclick=()=>{$("geoLat").value="42.20909";$("geoLng").value="-72.1966";$("locationStatus").textContent="Pine Grove Cemetery approximate centroid from project seed — not a surveyed grave, outcrop, material or quarry location.";};
 $("gpsGeology").onclick=()=>{if(!navigator.geolocation){$("locationStatus").textContent="Geolocation not supported; enter coordinates manually.";return;}
 $("locationStatus").textContent="Requesting location permission…";
 navigator.geolocation.getCurrentPosition(p=>{$("geoLat").value=p.coords.latitude.toFixed(6);$("geoLng").value=p.coords.longitude.toFixed(6);$("locationStatus").textContent="Location supplied by browser, reported accuracy ±"+Math.round(p.coords.accuracy)+" m. Not stored.";},e=>{$("locationStatus").textContent="Location unavailable: "+e.message;},{enableHighAccuracy:true,timeout:15000,maximumAge:0});};
