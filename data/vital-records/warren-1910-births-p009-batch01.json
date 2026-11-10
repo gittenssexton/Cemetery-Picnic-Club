@@ -33,11 +33,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-002",
@@ -58,11 +60,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-003",
@@ -83,11 +87,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-004",
@@ -108,11 +114,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-005",
@@ -133,11 +141,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-006",
@@ -158,11 +168,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-007",
@@ -187,7 +199,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-008",
@@ -212,7 +226,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-009",
@@ -237,7 +253,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-010",
@@ -262,7 +280,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-011",
@@ -287,7 +307,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-012",
@@ -312,7 +334,9 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "gravestone_derived_not_independent",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-013",
@@ -333,11 +357,13 @@
       "relationship_note": "formerly wife of Dea. Thomas Cutler; at Lexington",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-014",
@@ -358,11 +384,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-015",
@@ -383,11 +411,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-016",
@@ -408,11 +438,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-017",
@@ -433,11 +465,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": "Unnamed son in source; do not treat '[unnamed son]' as legal name."
+      "notes": "Unnamed son in source; do not treat '[unnamed son]' as legal name.",
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-018",
@@ -458,11 +492,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-019",
@@ -483,11 +519,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": "Source PDF text contains OCR '1S03'; date normalized tentatively as 1803. Confirm original scan."
+      "notes": "Source PDF text contains OCR '1S03'; date normalized tentatively as 1803. Confirm original scan.",
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-020",
@@ -508,11 +546,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-021",
@@ -533,11 +573,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-022",
@@ -558,11 +600,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-023",
@@ -583,11 +627,13 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-024",
@@ -608,11 +654,13 @@
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": "OCR source renders name approximately 'Rodbulphus'; unresolved spelling; do not normalize without scan.",
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     },
     {
       "id": "MA-WARREN-RICE1910-BIRTH-P009-025",
@@ -633,11 +681,14 @@
       "relationship_note": "daughter",
       "printed_source_code": null,
       "original_source_class": "town_book",
-      "independent_from_pine_grove_photo": true,
+      "independent_from_pine_grove_photo": null,
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null
+      "notes": null,
+      "evidence_lineage_status": "provisionally_town_book_unverified",
+      "source_image_verified": false
     }
-  ]
+  ],
+  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified."
 }
