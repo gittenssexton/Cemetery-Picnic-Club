@@ -1,0 +1,30 @@
+{
+  "schema": "cpc-warren-digitization-page-locator-v1",
+  "prepared": "2026-11-10",
+  "collection_id": "ma-warren-1849-rice1910",
+  "source": "https://www.loc.gov/resource/gdcmassbookdig.vitalrecordsofwa00war/?st=gallery",
+  "attribution": "Library of Congress, digitized Warren (formerly Western) 1910 volume, LCCN 10008543",
+  "basis": "LOC public gallery index descriptions identify the printed page, but image pixels have not been acquired or manually inspected.",
+  "scan_content_verified": false,
+  "mappings": [
+    {
+      "printed_page": 9,
+      "loc_image_sequence": 13,
+      "source": "LOC gallery thumbnail indexed as Image 13, Warren Births p. 9",
+      "scan_content_verified": false
+    },
+    {
+      "printed_page": 10,
+      "loc_image_sequence": 14,
+      "source": "LOC gallery thumbnail indexed as Image 14, Warren Births p. 10",
+      "scan_content_verified": false
+    },
+    {
+      "printed_page": 11,
+      "loc_image_sequence": 15,
+      "source": "LOC gallery thumbnail indexed as Image 15, Warren Births p. 11",
+      "scan_content_verified": false
+    }
+  ],
+  "warning": "These are page locators, not page-image checksum evidence. Do not populate vital_ocr_page_reviews, source_image_verified, verified events or reviewer names from this file."
+}
