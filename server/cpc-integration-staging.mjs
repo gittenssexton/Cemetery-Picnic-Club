@@ -49,17 +49,26 @@ export default {
         if (!['9','10','11'].includes(page) ||
             !['requires_page_image_check','in_review','rejected','scan_checked'].includes(status))
           return respond({error:'invalid_review_filter'},400);
+        // Stable keyset pagination covers the 26/35/40 candidates per page
+        // without unsafe OFFSETs or exposing unbounded private source rows.
+        const after = url.searchParams.get('after') || '';
+        const prefix = 'MA-WARREN-RICE1910-BIRTH-P' + page.padStart(3,'0') + '-';
+        if (after.length > 100 || (after &&
+            (!after.startsWith(prefix) || !/^[A-Z0-9-]+$/.test(after))))
+          return respond({error:'invalid_review_cursor'},400);
         const sql = "SELECT id,printed_page,name_verbatim,date_verbatim,"
           + " printed_source_code,original_source_class,review_status,"
           + " source_image_verified,source_batch,record_sha256"
           + " FROM vital_ocr_review_candidates"
-          + " WHERE collection_id=? AND printed_page=? AND review_status=?"
+          + " WHERE collection_id=? AND printed_page=? AND review_status=? AND id>?"
           + " ORDER BY id LIMIT 25";
         const result = await env.CPC_DB.prepare(sql)
-          .bind('ma-warren-1849-rice1910',Number(page),status).all();
+          .bind('ma-warren-1849-rice1910',Number(page),status,after).all();
+        const candidates = result.results || [];
         return respond({collection:'ma-warren-1849-rice1910',
           page:Number(page),status,review_required:true,
-          page_complete:false,candidates:result.results||[]});
+          scan_review_complete:false,candidates,
+          next_after:candidates.length === 25 ? candidates.at(-1).id : null});
       }
       if (url.pathname !== '/internal/evidence-links')
         return respond({error:'not_found'},404);
