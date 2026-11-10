@@ -15,7 +15,7 @@ class DomainIntegrationTests(unittest.TestCase):
         self.db.execute("PRAGMA foreign_keys=ON")
         files = sorted((ROOT / "db/migrations").glob("*.sql"))
         self.assertEqual([p.name[:4] for p in files],
-                         ["0001", "0002", "0003", "0004", "0005", "0006"])
+                         ["0001", "0002", "0003", "0004", "0005", "0006", "0007"])
         for file in files:
             with self.subTest(migration=file.name):
                 self.db.executescript(file.read_text(encoding="utf-8"))
@@ -86,6 +86,32 @@ class DomainIntegrationTests(unittest.TestCase):
         self.assertEqual(self.db.execute("SELECT count(*) FROM stone_observations").fetchone()[0], 1)
         self.assertEqual(self.db.execute("SELECT count(*) FROM markers").fetchone()[0], 1)
         self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
+
+    def test_cited_cross_domain_link_reversible_and_nonmerging(self):
+        self.db.execute("""INSERT INTO domain_entity_refs
+            (entity_ref,domain,entity_type,source_local_id,source_table,source_row_id)
+            VALUES ('GEO:material_candidate:test','GEO','material_candidate','test','stone_material_candidates','row-a')""")
+        self.db.execute("""INSERT INTO domain_entity_refs
+            (entity_ref,domain,entity_type,source_local_id,source_table,source_row_id)
+            VALUES ('IMG:photo_original:test','IMG','photo_original','test','images','row-b')""")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO domain_entity_refs
+                (entity_ref,domain,entity_type,source_local_id,source_table,source_row_id)
+                VALUES ('VIT:event:bad','GEO','event','bad','vital_record_entries','bad')""")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO domain_evidence_links
+                (id,source_entity_ref,target_entity_ref,relation,evidence_ref,evidence_locator,review_status)
+                VALUES ('uncited','GEO:material_candidate:test','IMG:photo_original:test',
+                        'may_describe','','page 1','candidate')""")
+        self.db.execute("""INSERT INTO domain_evidence_links
+            (id,source_entity_ref,target_entity_ref,relation,evidence_ref,evidence_locator,review_status)
+            VALUES ('link-a','GEO:material_candidate:test','IMG:photo_original:test',
+                    'possible_material_from_photo','HIS:work:synthetic','synthetic page 1','candidate')""")
+        self.db.execute("UPDATE domain_evidence_links SET review_status='rejected' WHERE id='link-a'")
+        self.assertEqual(self.db.execute("SELECT review_status FROM domain_evidence_links").fetchone()[0], 'rejected')
+        self.assertEqual(self.db.execute("SELECT count(*) FROM domain_entity_refs").fetchone()[0], 2)
+        self.db.execute("DELETE FROM domain_evidence_links WHERE id='link-a'")
+        self.assertEqual(self.db.execute("SELECT count(*) FROM domain_entity_refs").fetchone()[0], 2)
 
     def test_reject_missing_foreign_key_and_invalid_geocoordinate(self):
         with self.assertRaises(sqlite3.IntegrityError):
