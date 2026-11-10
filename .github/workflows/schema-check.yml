@@ -10,7 +10,9 @@ on:
     paths:
       - "db/**"
       - "tests/**"
+      - "web/camera/**"
       - ".github/workflows/schema-check.yml"
+      - ".github/requirements-geology-test.txt"
 jobs:
   sqlite:
     runs-on: ubuntu-latest
@@ -34,6 +36,12 @@ jobs:
         run: node tests/test_camera_export_privacy.js
       - name: Test camera ZIP writer and redaction
         run: node tests/test_camera_export_archive.js
+      - name: Test camera GPS contract
+        run: node tests/test_camera_gps_contract.js
+      - name: Test cemetery resolver
+        run: node tests/test_cemetery_gps_resolver.js
+      - name: Test cemetery hierarchy
+        run: node tests/test_cemetery_relations.js
       - name: Test geology-to-private camera capture contract
         run: node tests/test_camera_geology_integration.js
       - name: Test guided photo sequence
