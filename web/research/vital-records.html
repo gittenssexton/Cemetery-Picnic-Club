@@ -29,7 +29,7 @@ const byId=id=>document.getElementById(id);
 byId("search").onclick=()=>{
 const name=byId("name").value.trim();const host=byId("searchResults");host.replaceChildren();
 if(name.length<2||name.length>120||!(/^[\p{L}\p{M} .,'-]+$/u.test(name))){host.textContent="Enter at least two letters (name punctuation is allowed).";return;}
-const results=[{label:"Search Library of Congress",url:"https://www.loc.gov/search/?fo=json&q="+encodeURIComponent(name+" vital records")},{label:"Search Digital Commonwealth",url:"https://www.digitalcommonwealth.org/search?search_field=all_fields&q="+encodeURIComponent(name)}];
+const results=[{label:"Search Library of Congress",url:"https://www.loc.gov/search/?q="+encodeURIComponent(name+" vital records")},{label:"Search Digital Commonwealth",url:"https://www.digitalcommonwealth.org/search?search_field=all_fields&q="+encodeURIComponent(name)}];
 const box=document.createElement("div");box.className="linkbox";const intro=document.createElement("p");intro.textContent="Open an external archival search (only the typed name is sent):";box.append(intro);
 for(const item of results){const p=document.createElement("p"),link=document.createElement("a");link.textContent=item.label;link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";p.append(link);box.append(p);}
 host.append(box);
