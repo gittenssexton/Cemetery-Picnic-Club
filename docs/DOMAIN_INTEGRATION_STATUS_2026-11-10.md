@@ -48,3 +48,10 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - Added in-memory migration and domain-ingestion smoke tests, candidate withdrawal preservation and SQLite FK/integrity checks.
 - GitHub Actions successfully completed **45 tests** in run https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42842111929 . This verifies a fresh SQLite integration, **not** Cloudflare D1 deployment history or staging D1 migration.
 - No production changes or real-data bulk ingest. Domain adapters, source-specific authorized ingestion and staged D1 remain future work.
+
+## Cloudflare D1 live inventory — read-only check, 2026-11-10
+- Inspected the connected Cloudflare account via the read-only List D1 Databases API.
+- The account exposed **one** D1 database: `cartoveyra-research-staging`, unrelated to CPC.
+- **No CPC-named D1 database was listed in this connected account.** This does not prove no database exists in another account/environment or that no earlier deployment occurred.
+- No D1 SQL executed and no D1 resource created, modified or deleted.
+- Gate: establish which intended CPC staging/production database and Cloudflare account should be used before any migration execution. Do not point CPC migrations at CARTOVEYRA.
