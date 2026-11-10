@@ -26,7 +26,11 @@
     "entity_ref_format": "<domain>:<entity-type>:<stable-id>",
     "contract_version_field": "schema_version",
     "cross_domain_link_rule": "Typed, evidence-backed link; never infer identity from a matching name, motif, photo or geology alone",
-    "event_rule": "Append evidence events; do not overwrite source reading without preserving history"
+    "event_rule": "Append evidence events; do not overwrite source reading without preserving history",
+    "cross_domain_link_tables": [
+      "domain_entity_refs",
+      "domain_evidence_links"
+    ]
   },
   "domains": [
     {
@@ -373,7 +377,8 @@
     "integration_plan": [
       "0004_geological_map_core.sql",
       "0005_monument_analysis.sql",
-      "0006_new_england_vital_records.sql"
+      "0006_new_england_vital_records.sql",
+      "0007_domain_evidence_links.sql"
     ],
     "policy": "Never renumber an already-applied production migration. Reconcile staging branch migrations prior to first production rollout; for any deployed migration use a new append-only version."
   }
