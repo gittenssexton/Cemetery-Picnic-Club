@@ -618,7 +618,7 @@
         "digital_page_sequence": null
       },
       "event_type": "birth",
-      "name_verbatim": "BAKER Marion I. Fairbank",
+      "name_verbatim": "BAKER Marion L. Fairbank [initial uncertain]",
       "event_date_iso": "1839-11-17",
       "event_date_verbatim": "1839-11-17",
       "date_precision": "day",
@@ -631,7 +631,7 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Cornell text layer reads 'Marion L Fairbank'; prior batch recorded 'Marion I.'; initial uncertain without scan verification.",
       "evidence_lineage_status": "gravestone_derived_not_independent",
       "source_image_verified": false
     },
@@ -662,5 +662,6 @@
       "source_image_verified": false
     }
   ],
-  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified."
+  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified.",
+  "coverage_note": "Selected structured entries, NOT a complete or consecutive transcription of every printed entry on this page. Do not infer page completeness."
 }
