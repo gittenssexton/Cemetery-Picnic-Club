@@ -223,7 +223,7 @@ async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||
   try{const w=ui.video.videoWidth,h=ui.video.videoHeight;if(!w||!h){notify('Camera preview not ready.');return}
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=getGuidePolygon(w,h);
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}finally{state.captureBusy=false}}
-async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif').checked=false;state.capture=r;
+async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.monument_group_id)$('groupId').value=r.monument_group_id;if(r.overview_target)state.selectedTarget=r.overview_target;
   const selected=r.cemetery_assignment?.cemetery_entity_id||null;
   const savedMatch=r.cemetery_match?.status||'no_gps_match';
   const evidence=r.cemetery_match?.candidates?.find(c=>c.entity_id===selected);
@@ -233,10 +233,12 @@ async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif'
     ' · GPS result: '+savedMatch.replaceAll('_',' ')+
     (evidence?' · '+(evidence.source_id||'Source missing'):'')+
     ' · Position is not a verified grave coordinate.';
-state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.8*r.photo.height],[.2*r.photo.width,.8*r.photo.height]];state.tracing=false;state.trace=[];state.processed=true;
+state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.8*r.photo.height],[.2*r.photo.width,.8*r.photo.height]];state.tracing=false;state.trace=[];state.processed=r.shot_type!=='overview';
   $('workspace').classList.add('is-review');ui.stage.classList.add('review');$('viewLabel').textContent='Processed reference';$('toggleProcessedBtn').textContent='Show original';$('traceBtn').textContent='Trace 4 corners';$('traceStatus').textContent='Processed preview (full-frame original remains preserved).';
   const url=URL.createObjectURL(r.originalBlob);try{const img=new Image();state.image=await new Promise((resolve,reject)=>{img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}finally{URL.revokeObjectURL(url)}
-  ui.canvas.width=r.photo.width;ui.canvas.height=r.photo.height;renderReview(true);}
+  ui.canvas.width=r.photo.width;ui.canvas.height=r.photo.height;
+  if(r.shot_type==='overview'){const small=document.createElement('canvas');small.width=160;small.height=200;const cx=small.getContext('2d',{willReadFrequently:true});cx.drawImage(state.image,0,0,160,200);try{state.overviewProposals=window.CPCGuidedCapture.propose(cx.getImageData(0,0,160,200).data,160,200)}catch(e){state.overviewProposals=[]} $('overviewSelectionStatus').textContent=state.selectedTarget?'Selected stone highlighted. Tap again to change it.':'Tap the intended stone in the photograph. Experimental proposals may be wrong.';}
+  await updateGuidedProgress();renderReview(true);}
 function polygonPath(ctx,points){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()}
 function backgroundStyle(ctx,w,h){
  const mode=$('backgroundMode').value;
@@ -254,11 +256,60 @@ function drawReading(ctx,w,h,baseImage=state.image){
 function composite(ctx,processed,showGuide){const r=state.capture,im=state.image,pts=state.polygon,w=r.photo.width,h=r.photo.height;ctx.save();ctx.clearRect(0,0,w,h);if(!processed){ctx.drawImage(im,0,0,w,h)}else{backgroundStyle(ctx,w,h);ctx.save();polygonPath(ctx,pts);ctx.clip();drawReading(ctx,w,h,im);ctx.restore()}
   if(showGuide&&processed){ctx.strokeStyle='#efc77d';ctx.lineWidth=Math.max(3,w/400);ctx.setLineDash([Math.max(8,w/100),Math.max(8,w/100)]);polygonPath(ctx,pts);ctx.stroke();ctx.setLineDash([]);for(const[x,y]of pts){ctx.beginPath();ctx.arc(x,y,Math.max(7,w/210),0,Math.PI*2);ctx.fillStyle='#f5d99b';ctx.fill();ctx.lineWidth=Math.max(3,w/500);ctx.strokeStyle='#163125';ctx.stroke()}}
   if(showGuide&&state.tracing&&state.trace.length){for(const[x,y]of state.trace){ctx.beginPath();ctx.arc(x,y,Math.max(12,w/150),0,Math.PI*2);ctx.fillStyle='#8deac4';ctx.fill()}}ctx.restore()}
-function renderReview(showGuide){if(!state.capture||!state.image)return;composite(ui.canvas.getContext('2d'),state.processed,showGuide)}
+function renderReview(showGuide){
+ if(!state.capture||!state.image)return;
+ const ctx=ui.canvas.getContext('2d');composite(ctx,state.processed,state.capture.shot_type==='overview'?false:showGuide);
+ if(state.capture.shot_type==='overview'){
+   const w=ui.canvas.width,h=ui.canvas.height;
+   for(const p of state.overviewProposals){ctx.save();ctx.setLineDash([9,7]);ctx.strokeStyle='#9ad6c3';ctx.lineWidth=Math.max(3,w/500);ctx.strokeRect(p.x*w,p.y*h,p.w*w,p.h*h);ctx.restore();}
+   const r=state.selectedTarget||state.capture.overview_target;
+   if(r){ctx.save();ctx.strokeStyle='#f4cc70';ctx.lineWidth=Math.max(5,w/240);ctx.strokeRect(r.x*w,r.y*h,r.w*w,r.h*h);ctx.fillStyle='#f4cc70';ctx.fillRect(r.x*w,Math.max(0,r.y*h-27),Math.min(240,r.w*w),27);ctx.fillStyle='#1a2825';ctx.font=Math.max(13,w/85)+'px sans-serif';ctx.fillText('SELECTED STONE',r.x*w+4,Math.max(18,r.y*h-7));ctx.restore();}
+ }
+}
 async function suggestSilhouette(){if(!state.capture||!state.image)return;const result=window.CPCSilhouette?.propose?.(state.image);if(!result?.ok){notify('Automatic outline not reliable: '+(result?.reason||'unknown'));return}state.polygon=result.polygon;state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:result.algorithm,status:'unverified_candidate',coverage:result.coverage,contrast:result.contrast,updated_at:new Date().toISOString()};try{await storage('readwrite',store=>store.put(state.capture))}catch(e){notify('Outline visible but could not save: '+e.message)}state.tracing=false;state.trace=[];state.processed=true;$('traceStatus').textContent='EXPERIMENTAL outline suggested — inspect all edges and correct if necessary using Trace 4 corners.';renderReview(true)}
 function saveTracedPolygon(){if(state.trace.length<3){notify('Select at least three contour points.');return}state.polygon=state.trace.slice();state.capture.polygon=state.polygon;state.capture.polygon_provenance={method:state.traceMode==='contour'?'manually_traced_full_contour':'manually_traced_four_corners',status:'user_reviewed',point_count:state.polygon.length,updated_at:new Date().toISOString()};storage('readwrite',store=>store.put(state.capture)).catch(e=>notify('Could not save contour: '+e.message));state.tracing=false;state.trace=[];$('finishContourBtn').hidden=true;$('traceStatus').textContent='Silhouette saved. Confirm the outline follows stone edges, including curved shoulders and hidden base.';renderReview(true)}
-function reviewTouch(e){if(!state.tracing||!state.capture)return;const rect=ui.canvas.getBoundingClientRect();const w=ui.canvas.width,h=ui.canvas.height;const scale=Math.min(rect.width/w,rect.height/h),shownW=w*scale,shownH=h*scale;const dx=(rect.width-shownW)/2,dy=(rect.height-shownH)/2;const x=(e.clientX-rect.left-dx)/scale,y=(e.clientY-rect.top-dy)/scale;if(x<0||y<0||x>w||y>h)return;state.trace.push([x,y]);if(state.traceMode==='four'&&state.trace.length>=4){saveTracedPolygon();$('traceBtn').textContent='Trace again';}else if(state.traceMode==='contour'){$('traceStatus').textContent=`${state.trace.length} silhouette points set. Continue around the entire stone, then tap Finish silhouette.`;}else{$('traceStatus').textContent=`Point ${state.trace.length}/4 set. Tap the next corner (clockwise).`;}renderReview(true)}
-function resetToCapture(){state.siteSelection=null;state.siteMatch=null;$('siteCandidate').value='';$('cemetery').value='';state.capture=null;state.image=null;state.polygon=null;state.trace=[];state.tracing=false;ui.stage.classList.remove('review');$('workspace').classList.remove('is-review');$('viewLabel').textContent='Field view';$('monument').value='';$('notes').value='';state.processed=true;refreshRecords();redrawGPS()}
+async function selectOverviewTarget(e){
+ if(!state.capture||state.capture.shot_type!=='overview'||!state.image)return;
+ const rect=ui.canvas.getBoundingClientRect(),w=state.capture.photo.width,h=state.capture.photo.height;
+ const point=window.CPCGuidedCapture.photoToView(e.clientX-rect.left,e.clientY-rect.top,rect.width,rect.height,w,h);
+ if(!point){notify('Tap within the photographed area.');return}
+ const width=Number($('targetWidth').value)/100,height=Number($('targetHeight').value)/100;
+ const r=window.CPCGuidedCapture.rectangle(point.x,point.y,width,height);
+ state.selectedTarget=r;state.capture.overview_target=r;state.capture.overview_selection_status='photographer_selected_unverified';
+ state.capture.overview_selection_method='manual_tap_rectangle';state.capture.overview_selection_updated_at=new Date().toISOString();
+ $('overviewSelectionStatus').textContent='Stone selected (yellow box). Adjust width/height or tap again before continuing.';
+ renderReview(false);
+ try{await storage('readwrite',store=>store.put(state.capture))}catch(error){notify('Could not save target selection: '+error.message)}
+}
+async function updateGuidedProgress(){
+ const id=$('groupId').value.trim(),rs=(id&&state.db)?(await records()).filter(r=>r.monument_group_id===id):[];
+ const types=Array.from(new Set(rs.map(r=>r.shot_type)));
+ const next=window.CPCGuidedCapture.nextStep(types,state.guidedSkipped);
+ const display=next?window.CPCGuidedCapture.DIRECTIONS[next]:'All recommended views captured or skipped. Review and export.';
+ $('guidedProgress').textContent=(next?'Next: '+next.toUpperCase()+'. ':'')+display;
+ if(state.capture){$('continueMonumentBtn').textContent=next?'Next guided photograph: '+next:'Finish photo set';$('continueMonumentBtn').disabled=state.capture.shot_type==='overview'&&!state.capture.overview_target;}
+ return next;
+}
+function switchShotMode(mode){
+ state.shotType=mode;
+ document.querySelectorAll('[data-shot]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shot===mode)));
+ const instruction=window.CPCGuidedCapture.DIRECTIONS[mode]||'Photograph this view';
+ $('shotHint').textContent=instruction;$('liveTip').textContent=instruction;
+ if(mode==='overview'){$('showMask').checked=false;}else{$('showMask').checked=true;}
+ updateGuide();
+}
+async function continueMonument(){
+ if(!state.capture)return;
+ if(state.capture.shot_type==='overview'&&!state.capture.overview_target){notify('Tap the intended stone in the overview before continuing.');return}
+ const next=await updateGuidedProgress();
+ if(!next){notify('Photo sequence complete. You can export the record or begin a new monument.');return}
+ state.capture=null;state.image=null;state.polygon=null;state.tracing=false;state.trace=[];state.overviewPick=false;
+ $('workspace').classList.remove('is-review');ui.stage.classList.remove('review');$('viewLabel').textContent='Field view';
+ $('overviewPickerPanel').hidden=true;switchShotMode(next);
+ notify('Next photograph: '+next+'. Keep documenting the same monument.');
+}
+function reviewTouch(e){if(state.capture?.shot_type==='overview'){selectOverviewTarget(e);return}if(!state.tracing||!state.capture)return;const rect=ui.canvas.getBoundingClientRect();const w=ui.canvas.width,h=ui.canvas.height;const scale=Math.min(rect.width/w,rect.height/h),shownW=w*scale,shownH=h*scale;const dx=(rect.width-shownW)/2,dy=(rect.height-shownH)/2;const x=(e.clientX-rect.left-dx)/scale,y=(e.clientY-rect.top-dy)/scale;if(x<0||y<0||x>w||y>h)return;state.trace.push([x,y]);if(state.traceMode==='four'&&state.trace.length>=4){saveTracedPolygon();$('traceBtn').textContent='Trace again';}else if(state.traceMode==='contour'){$('traceStatus').textContent=`${state.trace.length} silhouette points set. Continue around the entire stone, then tap Finish silhouette.`;}else{$('traceStatus').textContent=`Point ${state.trace.length}/4 set. Tap the next corner (clockwise).`;}renderReview(true)}
+function resetToCapture(){state.selectedTarget=null;state.overviewProposals=[];state.guidedSkipped=[];state.overviewPick=false;$('groupId').value='';$('overviewPickerPanel').hidden=true;switchShotMode('overview');state.siteSelection=null;state.siteMatch=null;$('siteCandidate').value='';$('cemetery').value='';state.capture=null;state.image=null;state.polygon=null;state.trace=[];state.tracing=false;ui.stage.classList.remove('review');$('workspace').classList.remove('is-review');$('viewLabel').textContent='Field view';$('monument').value='';$('notes').value='';state.processed=true;refreshRecords();redrawGPS()}
 function concatBytes(arr){let n=0;for(const a of arr)n+=a.length;const b=new Uint8Array(n);let p=0;for(const a of arr){b.set(a,p);p+=a.length}return b}
 function zip32(v,offset,value){v.setUint32(offset,value>>>0,true)}function zip16(v,offset,value){v.setUint16(offset,value,true)}
 const zipTable=(()=>{const a=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;a[n]=c>>>0}return a})();
@@ -280,9 +331,12 @@ async function exportCurrent(){const r=state.capture;if(!r)return;try{$('exportB
 $('startBtn').addEventListener('click',async()=>{requestGPS();await startCamera()});$('retryGpsBtn').addEventListener('click',requestGPS);
 $('clearManualGpsBtn').addEventListener('click',()=>{state.manualGps=null;state.gps=null;state.siteMatch=null;redrawGPS();requestGPS();notify('Manual location cleared. Requesting a fresh device GPS fix.');});
 $('manualGpsBtn').addEventListener('click',()=>{const lat=$('latInput').value.trim(),lon=$('lonInput').value.trim(),a=Number(lat),b=Number(lon);if(!lat||!lon||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){notify('Enter valid latitude (−90 to 90) and longitude (−180 to 180).');return}state.manualGps={latitude:a,longitude:b,accuracy_m:null,source:'manual',timestamp:Date.now()};redrawGPS();notify('Manual coordinates recorded; they are NOT independently surveyed or verified.')});
-$('captureBtn').addEventListener('click',()=>capture(false));$('unlocatedBtn').addEventListener('click',()=>$('unlocatedModal').classList.add('visible'));$('cancelUnlocated').addEventListener('click',()=>$('unlocatedModal').classList.remove('visible'));$('confirmUnlocated').addEventListener('click',()=>{$('unlocatedModal').classList.remove('visible');capture(true)});$('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);
-const hints={front:'Frame the whole front face and keep all edges visible.',back:'Photograph the rear face for maker marks, carving, and conditions.',side:'Document thickness, layered stone, and deterioration.',inscription:'Move closer, tap the lettering on screen to focus, then capture.',carving:'Document motifs and tool marks without touching the stone.'};
-$('captureModes').addEventListener('click',e=>{const b=e.target.closest('button[data-shot]');if(!b)return;state.shotType=b.dataset.shot;document.querySelectorAll('[data-shot]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('shotHint').textContent=hints[state.shotType];$('liveTip').textContent=hints[state.shotType]});
+$('captureBtn').addEventListener('click',()=>capture(false));$('unlocatedBtn').addEventListener('click',()=>$('unlocatedModal').classList.add('visible'));$('cancelUnlocated').addEventListener('click',()=>$('unlocatedModal').classList.remove('visible'));$('confirmUnlocated').addEventListener('click',()=>{$('unlocatedModal').classList.remove('visible');capture(true)});$('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);$('continueMonumentBtn').addEventListener('click',continueMonument);
+const hints=window.CPCGuidedCapture.DIRECTIONS;
+$('captureModes').addEventListener('click',e=>{const b=e.target.closest('button[data-shot]');if(!b)return;switchShotMode(b.dataset.shot)});
+$('targetWidth').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;storage('readwrite',store=>store.put(state.capture)).catch(()=>{});renderReview(false)}});
+$('targetHeight').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;storage('readwrite',store=>store.put(state.capture)).catch(()=>{});renderReview(false)}});
+$('skipGuidedShot').addEventListener('click',async()=>{const next=state.shotType;if(next==='overview'){notify('Take an overview to start the guided set, or choose Front manually.');return}const reason=prompt('Why skip '+next+'? (e.g. inaccessible or no carving)');if(reason===null)return;state.guidedSkipped.push(next);const n=await updateGuidedProgress();if(n)switchShotMode(n);notify('Skipped '+next+': '+(reason.trim()||'not available')+'.');});
 $('gridOverlay').addEventListener('change',updateGuide);
 $('backgroundMode').addEventListener('change',()=>renderReview(true));$('inscriptionStrength').addEventListener('input',()=>{$('inscriptionValue').textContent=Number($('inscriptionStrength').value)?$('inscriptionStrength').value+'% enhanced (derived image)':'Original contrast';renderReview(true)});
 $('focusWidth').addEventListener('input',updateGuide);$('focusHeight').addEventListener('input',updateGuide);$('showMask').addEventListener('change',updateGuide);$('toggleProcessedBtn').addEventListener('click',()=>{state.processed=!state.processed;$('toggleProcessedBtn').textContent=state.processed?'Show original':'Show isolation';$('viewLabel').textContent=state.processed?'Processed reference':'Unmodified frame';renderReview(true)});
