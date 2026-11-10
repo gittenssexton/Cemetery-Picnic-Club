@@ -26,7 +26,7 @@
 <body>
 <header>
   <div class="logo"><div class="logo-mark"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 28V13a10 10 0 0 1 20 0v15H6Z"/><path d="M16 6v13M11 11h10M11 23h10"/></svg></div><div><strong>Cemetery Picnic Club</strong><span>Field Camera</span></div></div>
-  <div class="version">Prototype 0.7 · Guided field photography</div>
+  <div class="version">Prototype 0.7 · Guided field + live cues</div>
 </header>
 <main>
 <div class="intro"><div><h1>Document the monument.</h1><p>Record precise location, preserve original evidence, reduce background distractions.</p></div></div>
@@ -85,8 +85,15 @@
       <p class="muted">Material and identity entries are observations, not verified identifications.</p>
     </div></div>
     <div class="panel live-only"><div class="panel-title"><strong>3 · Live Discovery</strong><small>Experimental on-device preview</small></div><div class="panel-body">
-      <label class="toggle"><input type="checkbox" id="liveDiscovery" /> Highlight visually distinctive regions</label>
-      <p class="muted" id="discoveryStatus" role="status">Start the camera, then enable highlighting. Yellow circles mark persistent image-detail proposals, <strong>not automatic symbol identifications</strong>.</p>
+      <label class="toggle"><input type="checkbox" id="liveDiscovery" checked /> Run on-device detection while camera is active</label>
+      <div class="twocol">
+        <label class="toggle"><input type="checkbox" id="liveMonuments" checked /> Possible monument shapes</label>
+        <label class="toggle"><input type="checkbox" id="liveLettering" checked /> Text-like detail</label>
+        <label class="toggle"><input type="checkbox" id="liveDetails" checked /> Carving / surface details</label>
+        <label class="toggle"><input type="checkbox" id="livePreviewEnhance" checked /> Auto-enhance preview only</label>
+      </div>
+      <p class="muted compact" id="liveQuality" aria-live="polite">Live quality suggestions appear after camera starts. Original capture stays unchanged.</p>
+      <p class="muted" id="discoveryStatus" role="status">On-device analysis begins when the camera starts. Mint: shape proposals. Blue: text-like edges. Gold: detail. These are <strong>not</strong> verified stones, inscriptions or carver identifications.</p>
       <div class="review-buttons"><button class="btn soft" id="markSymbol" type="button">Mark a symbol</button><button class="btn ghost" id="clearSymbols" type="button">Clear marks</button></div>
       <div id="markPanel" hidden><div class="field"><label for="symbolChoice">What carving do you see?</label><select id="symbolChoice"><option value="">Choose from illustrated reference…</option></select></div><p class="muted" id="symbolDescription">Meanings based on your illustrated cemetery symbolism guide; interpretations vary.</p>
        <input id="markX" type="hidden"><input id="markY" type="hidden"><div class="review-buttons"><button class="btn primary" id="saveSymbol" type="button">Add reference mark</button><button class="btn ghost" id="cancelSymbol" type="button">Cancel</button></div></div>
@@ -112,7 +119,7 @@
 </main>
 <div class="modal-backdrop" id="unlocatedModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><h2 id="modalTitle">Capture without coordinates?</h2><p>The field record will be flagged <strong>LOCATION UNVERIFIED</strong>. This is useful when service is unavailable, but the position will need to be surveyed later.</p><div class="actions"><button class="btn ghost" id="cancelUnlocated">Cancel</button><button class="btn danger" id="confirmUnlocated">Capture unlocated</button></div></div></div>
 <div role="status" aria-live="polite" id="toast"></div>
-<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="discovery.js" defer></script>
+<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="discovery.js" defer></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id); const ui={video:$('video'),stage:$('cameraStage'),canvas:$('reviewCanvas')};
@@ -216,7 +223,7 @@ function generateRecord(g,blob,w,h,polygon){return{
   cemetery_relationships_at_capture:state.siteSelection?
     window.CPCCemeteryRelations?.hierarchy?.(state.siteSelection,
       window.CPCCemeterySites?.entities||[],window.CPCCemeterySites?.relationships||[],
-      new Date().toISOString().slice(0,10))||null:null,id:'CPC-'+crypto.randomUUID(),schema_version:'0.7',software:'CPC Field Camera 0.7',shot_type:state.shotType,monument_group_id:$('groupId').value.trim()||null,overview_target:state.selectedTarget?{...state.selectedTarget}:null,guided_skipped:state.guidedSkipped.slice(),guided_skip_reasons:{...state.guidedSkipReasons},captured_at:new Date().toISOString(),cemetery:$('cemetery').value.trim()||null,monument:$('monument').value.trim()||null,material_hypothesis:$('material').value,monument_type:$('category').value,notes:$('notes').value.trim()||null,location:g?{...g}:null,location_status:g?(g.source==='manual'?'manual_unverified':(Date.now()-g.timestamp>120000?'device_gps_stale':'device_gps_observed')):'location_missing',photo:{format:'image/jpeg',width:w,height:h,source:'browser_video_frame',original_is_full_frame:true},polygon:polygon,live_discovery_annotations:window.CPCDiscovery?.getAnnotations?.()||[],originalBlob:blob}}
+      new Date().toISOString().slice(0,10))||null:null,id:'CPC-'+crypto.randomUUID(),schema_version:'0.7',software:'CPC Field Camera 0.7',shot_type:state.shotType,monument_group_id:$('groupId').value.trim()||null,overview_target:state.selectedTarget?{...state.selectedTarget}:null,guided_skipped:state.guidedSkipped.slice(),guided_skip_reasons:{...state.guidedSkipReasons},captured_at:new Date().toISOString(),cemetery:$('cemetery').value.trim()||null,monument:$('monument').value.trim()||null,material_hypothesis:$('material').value,monument_type:$('category').value,notes:$('notes').value.trim()||null,location:g?{...g}:null,location_status:g?(g.source==='manual'?'manual_unverified':(Date.now()-g.timestamp>120000?'device_gps_stale':'device_gps_observed')):'location_missing',photo:{format:'image/jpeg',width:w,height:h,source:'browser_video_frame',original_is_full_frame:true},polygon:polygon,live_discovery_annotations:window.CPCDiscovery?.getAnnotations?.()||[],live_visual_evidence:window.CPCDiscovery?.snapshot?.()||null,originalBlob:blob}}
 function blobFromCanvas(canvas,q=.92){return new Promise(resolve=>canvas.toBlob(b=>resolve(b),'image/jpeg',q))}
 async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||ui.video.readyState<2){notify('Start your camera first.');return}const g=unlocated?null:getLocation();if(!g&&!unlocated){notify('Location is required. Enable GPS, add surveyed coordinates or use the explicit no-GPS override.');return}
   if(!$('groupId').value.trim())$('groupId').value='MON-'+crypto.randomUUID();state.captureBusy=true;
