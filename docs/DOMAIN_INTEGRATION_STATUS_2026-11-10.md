@@ -89,3 +89,13 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - The new `tests/test_evidence_bridge.py` includes missing-row, invented-citation, mistaken namespace, duplicate mapping, rejection-retention and privacy/redaction cases.
 - Verified successful GitHub Actions run: **64 tests passing**, https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42844481860 .
 - No CPC staging D1 was created; no production change. Next: integrate the reviewed application API with these guards and separately verify a dedicated CPC staging DB and field-camera capture behavior.
+
+
+## 2026-11-10 continuation: staging geological inventory and importer hardening
+- **Live staging:** `cemetery-picnic-club-integration-staging` (D1 UUID `ad4a436d-048c-47a6-bd00-8cf1b9632f6b`) has seven migrations, verified separately from any production database. Earlier notes above saying staging D1 does not exist are historical and superseded.
+- Applied `db/seeds/0005_geology_map_sources.sql` to the staging D1 database. Current inventory: **6 geology map metadata records; 3 archived asset references**. Records are descriptive bibliography/archive references, not verified geologic units.
+- Applied seed a second time as an idempotency check: **0 additional rows**. Added a staging-only `cpc_staging_seed_ledger` entry recording seed filename, GitHub blob SHA `0b437aa94a7549bb8813331e8331afc10b0ccd41`, branch, and metadata-only scope.
+- Remote D1 post-seed checks: `geology_units=0`, `stone_material_candidates=0`, `marker_positions=0`, `vital_record_entries=0`, and `PRAGMA foreign_key_check` returned no violations. No person/marker/geolocation matching was performed.
+- Updated `scripts/ingest_domain_metadata.py` to reject inconsistent `domain:record_type:source_local_id` canonical references and reject nonempty `links` rather than silently discarding citations. Added corresponding tests in `tests/test_metadata_intake.py`.
+- CI green at https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42845116553 . Some intermediate commits failed while a separate evidence-bridge public-visibility test was being tightened; the cited passing run is the checked integration state.
+- Pending: obtain/verify real geologic unit geometries and point-query response; review source acquisition/redistribution rights; source-aware vital collection review; image capture UI integration and Safari field testing. **Production, main, and original images unchanged.**
