@@ -110,14 +110,48 @@ def reject_candidate_link(db, link_id, reviewer, reviewed_at):
     # No source-row update/delete: rejected evidence stays visible for audit.
 
 
-def list_links(db, entity_ref, *, public=False):
-    """Read edges touching one canonical entity without exposing private evidence.
+def _publishable_endpoint(db, entity_ref):
+    """Conservative per-entity publication gate; unknown entity types stay private."""
+    try:
+        domain, typ, _, table = parse_ref(entity_ref)
+    except ValueError:
+        return False
+    mapped = db.execute(
+        "SELECT source_row_id,source_table FROM domain_entity_refs WHERE entity_ref=?",
+        (entity_ref,)
+    ).fetchone()
+    if mapped is None or mapped[1] != table:
+        return False
+    row_id = mapped[0]
+    # No public photos without explicit rights; no derivatives or camera drafts.
+    if (domain, typ) == ("IMG", "photo_original"):
+        row = db.execute("SELECT publish_authorized,rights_basis FROM images WHERE id=?",
+                         (row_id,)).fetchone()
+        return bool(row and row[0] == 1 and row[1] != "unknown")
+    if (domain, typ) == ("VIT", "event"):
+        row = db.execute("SELECT privacy_status,review_status FROM vital_record_entries WHERE id=?",
+                         (row_id,)).fetchone()
+        return bool(row and row[0] == "public_historical" and row[1] == "reviewed")
+    if (domain, typ) == ("HIS", "work"):
+        row = db.execute("SELECT review_status,rights_status FROM research_works WHERE id=?",
+                         (row_id,)).fetchone()
+        return bool(row and row[0] in ("metadata_verified","partly_reviewed","fully_reviewed")
+                    and row[1] not in ("unverified","restricted","private"))
+    if (domain, typ) == ("GEO", "geologic_map"):
+        row = db.execute("SELECT validation_status,rights_note FROM geology_map_sources WHERE id=?",
+                         (row_id,)).fetchone()
+        # Map citation metadata can be public only after explicit ready review.
+        return bool(row and row[0] == "ready" and row[1])
+    # Do not leak burials, grave GPS via markers, unreviewed material hypotheses,
+    # or the content of private field drafts through a cross-domain edge.
+    return False
 
-    Public results require source-level publication permission AND reviewed link.
-    No raw evidence notes or citation locators are returned to the public view.
-    Default is private/internal for approved application callers only.
-    """
+
+def list_links(db, entity_ref, *, public=False):
+    """Find links. Public view fails closed on citation and BOTH endpoint rights."""
     parse_ref(entity_ref)
+    if public and not _publishable_endpoint(db,entity_ref):
+        return []
     base = """SELECT id,source_entity_ref,target_entity_ref,relation,evidence_ref,
                      evidence_locator,evidence_note,confidence,review_status,
                      access_scope,publication_permission
@@ -132,9 +166,18 @@ def list_links(db, entity_ref, *, public=False):
             "evidence_locator","evidence_note","confidence","review_status",
             "access_scope","publication_permission")
     if public:
-        # Even with a publishable link, source image/record and GPS rights must
-        # be checked by the application before publishing an entity page.
-        allowed = ("id","source_entity_ref","target_entity_ref","relation",
-                   "confidence","review_status")
-        return [{k:v for k,v in zip(keys,row) if k in allowed} for row in rows]
+        output = []
+        for row in rows:
+            record = dict(zip(keys,row))
+            source = db.execute("SELECT access_scope FROM sources WHERE id=?",
+                                (record["evidence_ref"],)).fetchone()
+            if not source or source[0] != "public":
+                continue
+            if not (_publishable_endpoint(db,record["source_entity_ref"]) and
+                    _publishable_endpoint(db,record["target_entity_ref"])):
+                continue
+            fields = ("id","source_entity_ref","target_entity_ref","relation",
+                      "confidence","review_status")
+            output.append({k:record[k] for k in fields})
+        return output
     return [dict(zip(keys,row)) for row in rows]
