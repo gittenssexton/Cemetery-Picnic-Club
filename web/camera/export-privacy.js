@@ -21,6 +21,9 @@
    const json=JSON.stringify(record);
    const banned=/(?:latitude|longitude|accuracy_m|horizontal_accuracy|location_observation|cemetery_match|cemetery_assignment|private_archive|gps_exif|geotagged|source_files|originalBlob|monument_group_id|candidate_catalog|provider)/i;
    if(banned.test(json))throw Error('Sensitive key or metadata in public record');
+   // Reject common pasted coordinate pairs in user-approved inscription/site text.
+   const userText=[record.inscription,record.site_display].filter(Boolean).join(' ');
+   if(/[-+]?\\d{1,3}\\.\\d{4,}\\s*[,; ]\\s*[-+]?\\d{1,3}\\.\\d{4,}/.test(userText))throw Error('Possible precise coordinates in reviewed public text');
    return true;
  }
  window.CPCExportPrivacy={buildShareableRecord,validatePublicRecord};
