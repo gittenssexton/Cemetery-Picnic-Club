@@ -1,4 +1,4 @@
-"""Generate a reviewer worksheet from provisional Warren OCR batches.
+"""Generate the 101-row reviewer worksheet from provisional Warren source batches.
 
 Read-only; never converts provisional records into verified records.
 Use this CSV beside legitimate original page images during manual QA.
@@ -8,6 +8,7 @@ import csv
 from pathlib import Path
 
 from scripts.stage_warren_ocr_review import FILES, ROOT, prepare
+from scripts.stage_warren_page_omissions import FILENAME as OMISSIONS, prepare as prepare_omissions
 
 HEADERS = (
     "candidate_id", "printed_page", "source_collection", "name_ocr",
@@ -48,6 +49,30 @@ def build_rows(paths):
                 # Human verification cells deliberately blank.
                 **{field:"" for field in HEADERS[10:]}
             })
+    # Reconcile the 26 omitted page entries without rewriting the first 75.
+    _batch, omitted = prepare_omissions(ROOT/"data/vital-records"/OMISSIONS)
+    for row in omitted:
+        (ident, collection, _name, _batch_sha, page, _seq, _event,
+         name, date, code, source_class, _independent, _url,
+         raw, record_sha, _status, _verified) = row
+        if ident in seen:
+            raise ValueError("Duplicate candidate identifier")
+        seen.add(ident)
+        import json
+        record=json.loads(raw)
+        result.append({
+            "candidate_id":ident,
+            "printed_page":page,
+            "source_collection":collection,
+            "name_ocr":name,
+            "date_ocr":date or "",
+            "source_code_ocr":code or "",
+            "source_class_ocr":source_class,
+            "gs2_dependent":"YES" if source_class=="gravestone" else "NOT ESTABLISHED",
+            "ocr_notes":record.get("notes") or "Additional page-scan transcription; human review pending",
+            "candidate_sha256":record_sha,
+            **{field:"" for field in HEADERS[10:]}
+        })
     return sorted(result,key=lambda x:(x["printed_page"],x["candidate_id"]))
 
 
