@@ -33,7 +33,9 @@ class IntegratedMigrationContractTests(unittest.TestCase):
                           'marker_form_observations','carving_feature_observations',
                           'lettering_style_observations','marker_motif_interpretations','motif_interpretations'):
                 self.assertIn(table,names)
-            self.assertNotIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(motif_interpretations)')})\n            self.assertIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(marker_motif_interpretations)')})\n            self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
+            self.assertNotIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(motif_interpretations)')})
+            self.assertIn('marker_id', {c[1] for c in db.execute('PRAGMA table_info(marker_motif_interpretations)')})
+            self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
         finally:
             db.close()
 
