@@ -1,4 +1,41 @@
 # Cemetery Picnic Club — Domain-Nomenclature Integration Handoff
+
+> **STATUS UPDATE — 2026-11-10, afternoon: This handoff is a historical baseline, not a fresh task list.**  
+> Several previously proposed steps are already implemented on other branches. Check current heads and PRs first. Do not recreate existing camera, geology or vital-records work. Camera is actively in development; no instruction here authorizes replacing or freezing it.
+
+## Subsequent progress and revised action priorities (Nov. 10)
+
+This addendum supersedes the earlier “next 10 actions” list **where work has already been completed**; the original plan is retained below for audit history.
+
+| Workstream | Observed current development status | Next gate |
+| --- | --- | --- |
+| Domain nomenclature | RFC and registry in draft PR #4; CI green when authored | Incorporate/compare with PR #5, avoid duplicate vocabulary changes |
+| Cross-domain integration | PR #5, `feature/domain-integration`, includes a tested multi-domain integration and Warren review workspace; most recent commit reports 132 passing tests | Inspect PR #5 actual contracts/migrations and review for merge safety |
+| Camera | PR #3, `feature/field-camera-pilot`, now titled **Field Camera v0.7.3**; actively evolving | Continue device QA, capture privacy checks and feature refinements; don't freeze/replace |
+| Camera + stone + geology | PR #7, `feature/camera-stone-geology-integration`, unified pilot; latest CI green | Review overlap with PR #3 and #5, iPhone real-device checks and release gates |
+| Vital records | `feature/domain-integration` now has an offline Warren review workspace and 140 candidates, including checksum-pinned PDF review tooling; 132 tests reported | Human source-page validation, permissions and safe identity matching; no assumption candidates are verified people |
+| USGS geology | Staging source inventories, point query and geology reference work exists | Real-data extraction and source-unit QA; do not claim actual quarry attribution |
+| Production D1/R2 | Not verified here | Inspect deployed state before changes; do not migrate or publish on assumptions |
+
+**Updated rule:** For each item, use four states: `implemented`, `tested`, `field_verified`, `deployed`. Those states are independent. GitHub passing tests mean `tested` only for the covered cases. A merged PR is not equivalent to a live deployment.
+
+**Do these next, without redoing earlier work:**
+
+1. Compare PR #4 with PR #5 and resolve domain-registry naming overlap; adopt the authoritative contract without duplicate tables.
+2. Check latest camera PR #3 and combined PR #7. Treat camera development as active, with owner-controlled feature merges; do not overwrite the work in progress.
+3. Audit the merged database migration sequence currently in PR #5, not the stale collision list below. Reconcile only remaining conflicts, verifying production migrations first.
+4. Run integration tests at the latest branch heads and inspect failures, not just counts.
+5. Validate the 140 Warren **candidate** entries against original scanned pages before creating accepted vital records or person links.
+6. Validate MassGIS/USGS real-data point queries and uncertainty, distinct from gravestone material provenance.
+7. Finish iPhone physical tests: permission prompts, GPS accuracy, image original/derivative separation, offline backup, battery, and false-positive image outlines.
+8. Integrate approved, versioned domain contract adapters at branch boundaries while preserving their independent workflows.
+9. Review rights, security and privacy at the photo/GPS/vital-record ingestion boundaries.
+10. Record what is implemented, tested, field-verified, deployed, blocked; integrate only after review.
+
+**Key references:** [Camera PR #3](https://github.com/gittenssexton/Cemetery-Picnic-Club/pull/3), [Domain PR #4](https://github.com/gittenssexton/Cemetery-Picnic-Club/pull/4), [Integration PR #5](https://github.com/gittenssexton/Cemetery-Picnic-Club/pull/5), [Camera-geology PR #7](https://github.com/gittenssexton/Cemetery-Picnic-Club/pull/7).
+
+---
+
 **Prepared:** 2026-11-10  
 **For:** Next engineering session / coding agent  
 **Scope:** Integrate independent domain pipelines into one globally scoped, evidence-based CPC core.  
