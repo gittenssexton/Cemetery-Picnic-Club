@@ -63,7 +63,7 @@ def main():
             row.update(matches=[], query_status="error", error=str(exc))
         rows.append(row)
         time.sleep(0.15)
-    output = {"schema": "cpc-bedlith-point-qa-v1", "source": SOURCE,
+    output = {"schema": "cpc-bedlith-point-qa-v1", "source": SOURCE, "query_service_type": "third_party_massgis_derived_replica",
               "source_url": "https://www.mass.gov/info-details/massgis-data-bedrock-lithology",
               "qa_status": "unreviewed", "points": rows}
     a.out.parent.mkdir(parents=True, exist_ok=True)
