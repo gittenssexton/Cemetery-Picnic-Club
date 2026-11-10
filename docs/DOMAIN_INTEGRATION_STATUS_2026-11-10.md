@@ -115,3 +115,13 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - New integration tests run GEO/VIT metadata intake, register canonical endpoints, create a cited candidate link and verify that no person, claim or automatic match is manufactured. A full remote metadata-import API is still not deployed.
 - The geological source catalog is present in staging (six maps, three archived asset references) and is repeatable without duplicates. Map symbols/geometry remain unreviewed.
 - Production files, public Worker, original camera photos and main branch are unchanged by this session.
+
+## Verified continuation — D1 reconciliation and camera export review
+
+- Read-only Cloudflare D1 inspection of `cemetery-picnic-club-integration-staging` confirms migration ledger entries for **0001–0007**. Each recorded GitHub blob SHA matches the current integration-branch migration file. The database is **staging only**.
+- Staging seed ledger shows `0005_geology_map_sources.sql` applied with provenance and metadata-only scope; no accepted image, vital-event, or cross-domain-link records in the inspected staging database. `PRAGMA foreign_key_check` returned no violations. CARTOVEYRA's separate D1 was not modified.
+- Added `tests/test_camera_exif.mjs` and a GitHub Actions step executing the actual EXIF GPS encoder for four coordinate fixtures; each verifies DMS coordinates and original JPEG byte preservation.
+- Added `scripts/validate_camera_export.py` and synthetic `tests/test_camera_export_zip.py`: validate exported `record.json`, camera version, original JPEG presence/hash, ZIP path safety, duplicate members, coordinate-status consistency, and restricted reporting. **No file upload, database import, automatic person attribution or public GPS access occurs.**
+- GitHub Actions validated **87 Python tests plus the JavaScript EXIF test**: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42846751437
+- Added `docs/CAMERA_FIELD_ACCEPTANCE.md` to specify the physical iPhone Safari, camera, GPS, original image, region proposal and ZIP export conditions that remain unverified.
+- Still blocked for release: physical iPhone/Safari field evidence, source rights and geologic/vital review, authenticated application API, production migration/deployment approval. Draft PR #5 remains unmerged.
