@@ -49,3 +49,15 @@ The existing static preview deployment was not updated as part of these commits;
 - Obtain defensible real source polygons; current Pine Grove data are still point-only.
 - Inspect D1 production migrations before schema additions; no deployment/migration conducted.
 - Verify complex hierarchy, historical names, effective dates, map rights and source licensing before import.
+
+## Cemetery relationship and captured-evidence review (latest 2026-11-10 session)
+- Added `web/camera/cemetery-relations.js`: directional, source-required, effective-date-aware cemetery relation graph. Rejects invalid references, self-links, containment cycles, invalid date scopes and unsupported predicates. Only reviewed current parentage is used to display a hierarchy.
+- `cemetery-sites.js` explicitly includes `relationships:[]`; no real Warren mixed-ground links were fabricated.
+- Camera now imports and offline-caches relationship graph and preserves selected-site hierarchy snapshot in `record.json`.
+- When a saved photo is reopened, the review screen shows the **capture's saved** site selection and GPS candidate result, not a fresh match that could change historically.
+- Added `tests/test_cemetery_relations.js` (17 assertions), expanded `test_camera_gps_contract.js` (26) and retained resolver tests (30). **73 source-level assertions executed successfully** with JavaScript harness; inline camera JS syntax parsed.
+- New `docs/CEMETERY_GPS_DATABASE_CONTRACT_2026-11-10.md` records the migration reconciliation and API/privacy requirements without running any schema changes.
+- No staged preview deployment or production changes in this session.
+
+### Still blocking completion
+Actual reviewed cemetery geometry and documentary historic links; reconciliation of feature migration numbers and D1 history; device/browser/ZIP round-trip testing; backend privacy controls; full source licensing review and production sign-off.
