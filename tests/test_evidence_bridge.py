@@ -89,6 +89,30 @@ class EvidenceBridgeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             bridge.reject_candidate_link(self.db,"link-001","a","2026-11-10T15:00:00Z")
 
+
+    def test_private_candidate_not_exposed_to_public_lookup(self):
+        self.register_two()
+        self.link(evidence_note="Private provisional field note")
+        internal = bridge.list_links(self.db,"IMG:photo_original:photo")
+        self.assertEqual(len(internal), 1)
+        self.assertEqual(internal[0]["evidence_note"], "Private provisional field note")
+        self.assertEqual(bridge.list_links(self.db,"IMG:photo_original:photo",public=True), [])
+
+    def test_public_lookup_redacts_citation_and_requires_review(self):
+        self.register_two()
+        self.link(evidence_note="Restricted original transcript")
+        self.db.execute("""UPDATE domain_evidence_links
+           SET review_status='reviewed',reviewer='reviewer',
+               reviewed_at='2026-11-10T15:00:00Z',
+               access_scope='public',publication_permission='permitted'
+           WHERE id='link-001'""")
+        rows = bridge.list_links(self.db,"VIT:event:record-001",public=True)
+        self.assertEqual(len(rows),1)
+        self.assertNotIn("evidence_note",rows[0])
+        self.assertNotIn("evidence_locator",rows[0])
+        self.assertNotIn("evidence_ref",rows[0])
+        self.assertEqual(rows[0]["review_status"],"reviewed")
+
     def test_invalid_domain_and_uncited_relation(self):
         with self.assertRaises(ValueError):
             bridge.parse_ref("OTHER:person:one")
