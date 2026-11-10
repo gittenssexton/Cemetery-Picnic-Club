@@ -7,12 +7,14 @@ This Worker has **not** been deployed by this integration branch. Its purpose is
 Required bindings for a future isolated staging deployment:
 - D1 binding `CPC_DB` pointing **only** to `cemetery-picnic-club-integration-staging`.
 - Secret `CPC_API_TOKEN` stored with Cloudflare secrets management; minimum 32 characters. Never add tokens to Git or client-side code.
+- Environment variable `CPC_ENVIRONMENT=staging` (mandatory; absent or any other value disables internal queries).
+- Environment variable `CPC_ALLOWED_HOST` set to the exact staging Worker hostname (mandatory; a production or alternate hostname disables internal queries).
 - A staging-only Worker name distinct from `cemetery-picnic-club`, `cemeterypicnicclub`, or CARTOVEYRA.
 
 Routes:
 - `GET /health`: liveness only, no database readiness claim and no content.
 - `GET /internal/evidence-links?entity_ref=DOMAIN:type:id`: bearer-authenticated, parameterized SQL, returns up to 100 matching evidence links. **Contains internal citations/notes and must never be embedded directly in a public page.**
-- Every other method or route is rejected. No uploads, publishing, record merges or writes.
+- Every other method or route is rejected. No uploads, publishing, record merges or writes. Browser `Origin` requests are rejected; the endpoint is only for approved server-side review clients.
 
 Security gates before deployment:
 1. Verify Cloudflare account, D1 binding ID, secret, and absence of any public route that can access private records.
