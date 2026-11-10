@@ -16,8 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python geospatial testing
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: .github/requirements-geology-test.txt
+      - name: Install geology test dependencies
+        run: python -m pip install -r .github/requirements-geology-test.txt
       - name: Run SQLite migration and seed tests
-        run: python3 -m unittest discover -s tests -v
+        run: python -m unittest discover -s tests -v
       - name: Set up Node for camera export tests
         uses: actions/setup-node@v4
         with:
