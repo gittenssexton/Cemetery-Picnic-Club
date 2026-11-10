@@ -14,6 +14,7 @@ SEEDS = [
     "0003_global_research_sources.sql",
     "0004_stone_materials.sql",
     "0005_geology_map_sources.sql",
+    "0006_new_england_vital_catalog.sql",
 ]
 
 
@@ -54,6 +55,22 @@ class SeedOrderTests(unittest.TestCase):
                       "stone_material_candidates", "material_provenance_hypotheses",
                       "marker_positions", "burials"):
             self.assertEqual(self.db.execute('SELECT COUNT(*) FROM "' + table + '"').fetchone()[0], 0, table)
+
+    def test_new_england_metadata_has_no_unverified_events_or_matches(self):
+        self.seed_all()
+        states = {row[0] for row in self.db.execute(
+            "SELECT state_code FROM vital_jurisdictions WHERE jurisdiction_type='state'")}
+        self.assertEqual(states, {"MA", "CT", "RI", "NH", "VT", "ME"})
+        collection = self.db.execute(
+            "SELECT canonical_url,ingestion_authorization FROM vital_record_collections"
+        ).fetchone()
+        self.assertEqual(collection,
+                         ("https://www.loc.gov/item/10008543/", "metadata_only"))
+        for table in ("vital_record_entries", "vital_entry_participants",
+                      "vital_entity_match_candidates", "vital_source_documents"):
+            self.assertEqual(self.db.execute(
+                'SELECT count(*) FROM "' + table + '"').fetchone()[0], 0)
+        self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
 
     def test_no_seed_adds_unlicensed_original_photographs(self):
         self.seed_all()
