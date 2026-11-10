@@ -61,3 +61,15 @@ The existing static preview deployment was not updated as part of these commits;
 
 ### Still blocking completion
 Actual reviewed cemetery geometry and documentary historic links; reconciliation of feature migration numbers and D1 history; device/browser/ZIP round-trip testing; backend privacy controls; full source licensing review and production sign-off.
+
+## Camera privacy and manual-position workflow (continuation, 2026-11-10)
+- Optional GPS EXIF JPEG is **unchecked by default** in photo review; users must explicitly opt in per opened record. Original canvas JPEG and derivative do not receive GPS via the `CPCGeoTag.addGPS` code path unless selected.
+- The ZIP still includes the raw GPS observation in `record.json`, and is explicitly described as a sensitive private archive. This is *not* a public redacted export.
+- `record.json` gains an `export_privacy` annotation indicating GPS EXIF inclusion and coordinate-bearing JSON.
+- Manual location input can now be cleared with **Switch back to device GPS**, which requests a fresh fix.
+- The camera's service worker cache advanced to `cpc-field-camera-0.5.4` to avoid stale offline HTML.
+- **Executed checks:** 30 cemetery geometry resolver + 35 camera integration/privacy + 17 cemetery relationship = **82 passing assertions**; inline camera script parses.
+- This validates source behavior, not a physical iPhone/ZIP-export execution. Production, Cloudflare Worker deployment and D1 schema remain unchanged.
+
+### Outstanding safety issue
+A private ZIP includes precise location in its JSON even when GPS EXIF is disabled. A separate **public, coordinate-redacted export** and backend access controls should precede any sharing or public import. Device permission testing and external source review remain necessary.
