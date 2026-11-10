@@ -1,0 +1,57 @@
+{
+  "schema": "cpc-geology-source-registry-v1",
+  "purpose": "Reference and provenance sources for human-reviewed stone identification; sources are not evidence of an individual monument's quarry",
+  "asOf": "2026-11-10",
+  "sources": [
+    {
+      "id": "usgs-public-domain",
+      "title": "USGS public-domain data and publications",
+      "url": "https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted",
+      "use": "geological reference descriptions and verified public-domain specimen photos",
+      "license": "US Federal public domain for USGS-authored material; third-party content excluded",
+      "needsAssetRightsCheck": true,
+      "enabled": true
+    },
+    {
+      "id": "massgis-bedrock",
+      "title": "MassGIS Bedrock Lithology",
+      "url": "https://www.mass.gov/info-details/massgis-data-bedrock-lithology",
+      "use": "generalized Massachusetts bedrock lithology; context, not quarry attribution",
+      "license": "check dataset metadata and MassGIS reuse terms",
+      "scale": "1:100,000 to 1:500,000; ~1.5 km spatial accuracy",
+      "enabled": true
+    },
+    {
+      "id": "massgeo-survey",
+      "title": "Massachusetts Geological Survey bedrock map",
+      "url": "https://www.umass.edu/geological-survey/resources/bedrock-geologic-map-massachusetts",
+      "use": "regional bedrock geologic context",
+      "license": "check specific publication and assets",
+      "enabled": true
+    },
+    {
+      "id": "macrostrat",
+      "title": "Macrostrat public geological API",
+      "url": "https://dev.macrostrat.org/docs/data-services",
+      "use": "future location-based geologic units and lithology API",
+      "license": "CC BY 4.0 per API documentation; attribution required",
+      "enabled": true
+    },
+    {
+      "id": "usgs-mrds",
+      "title": "USGS Mineral Resources Data System (historic)",
+      "url": "https://www.usgs.gov/publications/mineral-resources-data-system-mrds",
+      "use": "historic mineral occurrences and deposits; verify quarries individually",
+      "license": "USGS-authored public domain; check source provenance",
+      "enabled": true
+    },
+    {
+      "id": "mindat",
+      "title": "Mindat",
+      "url": "https://www.mindat.org/",
+      "use": "future approved mineral and locality lookups",
+      "license": "permission pending; no AI grounding or database import",
+      "enabled": false
+    }
+  ]
+}
