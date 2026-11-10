@@ -123,3 +123,12 @@ The second command is an optional broader test sweep; `test_bedlith_offline.py` 
 **Saved products:** [processed geology folder](https://drive.google.com/drive/folders/1S02FCcz8uny9ac0PmyA6QQd-4S-l1_Of) contains the complete unreviewed point-query JSON, 18-location review CSV, 322-symbol list, SHA-256 manifest, separate **nonproduction** SQLite research database, processing script, and [real-data validation report](./MASSGIS_REAL_DATA_IMPORT_REPORT_2026-11-10.md).
 
 **Remaining work:** independently verify the Pine Grove coordinate and boundary against a detailed source; resolve the original Zen 1983 `Ops` legend; scrutinize unit naming and spatial error; import only reviewed sources to staged D1; then validate Stone Camera UI. Do not claim a verified cemetery lithology or production integration yet.
+
+
+## 12. Publisher crosswalk and proximity audit (2026-11-10)
+
+USGS Bulletin 1605-A and the published OFR 2006-1272 Massachusetts unit metadata independently establish **Ops = Partridge Formation (sulfidic mica schist)** and **Dl = Littleton Formation**. See [CPC's detailed boundary report](./PINE_GROVE_BOUNDARY_REVIEW_2026-11-10.md) and machine-readable [radius results](../data/geology/pine_grove_boundary_review.json).
+
+At P01's approximate coordinates, original MassGIS polygons place the point inside `Ops` only **43.58 m** from `Dl`. Both polygon types intersect a 100-m radius. `Dlf` enters within 1,000 m and five distinct map symbols intersect within 1,500 m. Because MassGIS estimates **~1,500 m spatial accuracy**, actual bedrock at Pine Grove cannot be asserted from the mapped point. No quarry or gravestone material identification follows.
+
+Added: reproducible [boundary review script](../scripts/geology/build_boundary_review.py), [two offline synthetic tests](../tests/test_boundary_review.py), and **nonproduction** [publisher-symbol SQL seed](../db/seeds/0006_ma_zen1983_symbol_crosswalk.sql). SQL was verified idempotent on temporary SQLite; two unit-definition rows carry `transcribed` status; no site-context rows. The Stone Camera pilot now shows the qualified source definitions alongside the historical source, without representing its optional live Macrostrat query as independent validation. Production D1 remains untouched.
