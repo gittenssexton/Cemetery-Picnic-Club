@@ -7,6 +7,8 @@ const secret = 'synthetic-authorization-token-longer-than-32-chars';
 const hits = [];
 const env = {
   CPC_API_TOKEN: secret,
+  CPC_ENVIRONMENT: 'staging',
+  CPC_ALLOWED_HOST: 'preview.example.invalid',
   CPC_DB: {
     prepare(sql) {
       hits.push({sql});
@@ -33,10 +35,18 @@ assert.equal(r.status,401);
 assert.equal(hits.length,0);
 r = await call(url,secret,'POST');
 assert.equal(r.status,405);
-r = await call(url,secret,'GET',{CPC_API_TOKEN:secret});
+r = await call(url,secret,'GET',{CPC_API_TOKEN:secret,CPC_ENVIRONMENT:'staging',CPC_ALLOWED_HOST:'preview.example.invalid'});
 assert.equal(r.status,503);
+r = await call(url,secret,'GET',{...env,CPC_ENVIRONMENT:'production'});
+assert.equal(r.status,503);
+r = await call(url,secret,'GET',{...env,CPC_ALLOWED_HOST:'production.example.invalid'});
+assert.equal(r.status,503);
+assert.equal(hits.length,0);
 r = await call('https://preview.example.invalid/internal/evidence-links?entity_ref=IMG:photo_original:test%27%20OR%201%3D1',secret);
 assert.equal(r.status,400);
+assert.equal(hits.length,0);
+const withOrigin = await worker.fetch(new Request(url,{headers:{Authorization:'Bearer '+secret,Origin:'https://evil.example'}}),env);
+assert.equal(withOrigin.status,403);
 assert.equal(hits.length,0);
 r = await call(url,secret);
 assert.equal(r.status,200);
