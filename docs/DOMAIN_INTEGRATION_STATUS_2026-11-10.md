@@ -179,3 +179,11 @@ Do not merge to main or deploy until live migration history and all schema, cont
 
 
 - Added offline `scripts/export_warren_review_sheet.py` and `tests/test_warren_review_sheet.py`. The CSV has 75 original candidate IDs, source pages, G.S.2 flags, OCR notes, record SHA values, and intentionally empty named-reviewer / scan-image / corrected-line / decision fields. It refuses to overwrite a prior worksheet, and does not promote entries. Verified **107 Python tests passed**: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42858564986 .
+
+
+## Public digitization page-locator reconciliation (2026-11-10)
+- Cross-checked the Library of Congress public Warren 1910 digitization gallery (https://www.loc.gov/resource/gdcmassbookdig.vitalrecordsofwa00war/?st=gallery) against the Cornell-derived extracted PDF text. **LOC Image 13 corresponds to printed p. 9; Image 14 to p. 10; Image 15 to p. 11.** A structured locator-only record is now at `data/vital-records/warren-1910-loc-page-locators.json`.
+- Exposed **two material OCR conflicts**, NOT scan adjudications: p. 9 ABBOT George's mother `Jemama` (Cornell extraction) versus `Jemima` (LOC indexed OCR); p. 11 BARNES Charles year `1849` (Cornell text) versus `1840` (LOC gallery index). The original printed page pixels must decide. Other p. 10 ASHLEY dual-year/BAKER middle-initial ambiguities remain.
+- Repeated screenshot requests for the Cornell PDF pages returned cache misses, and fetching the external PDF bytes was unavailable in this runtime. **No visual verification, scan SHA-256, reviewer attestation, correction to raw candidate JSON, or accepted event occurred.**
+- Source-specific comparison report `docs/WARREN_SOURCE_OCR_COMPARISON_2026-11-10.md`. New regression tests ensure LOC image-index locators cannot be mistaken for scan review or modify the 75 original OCR candidate states.
+- CI **109 passing Python tests**: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42861827156. Staging and production data were not modified by this comparison.
