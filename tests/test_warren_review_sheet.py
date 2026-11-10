@@ -11,12 +11,12 @@ from scripts.stage_warren_ocr_review import ROOT, FILES
 
 
 class WarrenReviewSheetTests(unittest.TestCase):
-    def test_selected_75_entries_and_empty_attestation_fields(self):
+    def test_all_101_entries_and_empty_attestation_fields(self):
         rows=build_rows([ROOT/"data/vital-records"/n for n in FILES])
-        self.assertEqual(len(rows),75)
-        self.assertEqual(len({x["candidate_id"] for x in rows}),75)
-        self.assertEqual(sum(x["gs2_dependent"]=="YES" for x in rows),14)
-        self.assertEqual(sum(bool(x["ocr_notes"]) for x in rows),13)
+        self.assertEqual(len(rows),101)
+        self.assertEqual(len({x["candidate_id"] for x in rows}),101)
+        self.assertEqual(sum(x["gs2_dependent"]=="YES" for x in rows),17)
+        self.assertEqual(sum(bool(x["ocr_notes"]) for x in rows),16)
         for x in rows:
             for field in HEADERS[10:]:
                 self.assertEqual(x[field],"",field)
