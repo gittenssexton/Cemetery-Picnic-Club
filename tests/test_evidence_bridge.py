@@ -106,12 +106,52 @@ class EvidenceBridgeTests(unittest.TestCase):
                reviewed_at='2026-11-10T15:00:00Z',
                access_scope='public',publication_permission='permitted'
            WHERE id='link-001'""")
+        # A link's own permission alone is insufficient.
+        self.assertEqual(bridge.list_links(self.db,"VIT:event:record-001",public=True), [])
+        self.db.execute("UPDATE images SET rights_basis='own_photo',publish_authorized=1 WHERE id='photo'")
+        self.db.execute("UPDATE vital_record_entries SET review_status='reviewed' WHERE id='event'")
+        self.db.execute("UPDATE sources SET access_scope='public' WHERE id='citation'")
         rows = bridge.list_links(self.db,"VIT:event:record-001",public=True)
         self.assertEqual(len(rows),1)
         self.assertNotIn("evidence_note",rows[0])
         self.assertNotIn("evidence_locator",rows[0])
         self.assertNotIn("evidence_ref",rows[0])
         self.assertEqual(rows[0]["review_status"],"reviewed")
+
+
+    def test_public_link_with_private_source_is_hidden(self):
+        self.register_two()
+        self.link()
+        self.db.execute("""UPDATE domain_evidence_links
+          SET review_status='reviewed', reviewer='r', reviewed_at='2026-11-10T15:00:00Z',
+          access_scope='public', publication_permission='permitted'
+          WHERE id='link-001'""")
+        self.db.execute("UPDATE images SET rights_basis='own_photo', publish_authorized=1 WHERE id='photo'")
+        self.db.execute("UPDATE vital_record_entries SET review_status='reviewed' WHERE id='event'")
+        # A restricted evidence citation vetoes the public link.
+        self.assertEqual(bridge.list_links(self.db,"IMG:photo_original:photo",public=True), [])
+        self.db.execute("UPDATE sources SET access_scope='public' WHERE id='citation'")
+        self.assertEqual(len(bridge.list_links(self.db,"IMG:photo_original:photo",public=True)), 1)
+        self.db.execute("UPDATE vital_record_entries SET privacy_status='restricted' WHERE id='event'")
+        self.assertEqual(bridge.list_links(self.db,"IMG:photo_original:photo",public=True), [])
+        self.db.execute("UPDATE vital_record_entries SET privacy_status='public_historical' WHERE id='event'")
+        self.db.execute("UPDATE images SET publish_authorized=0 WHERE id='photo'")
+        self.assertEqual(bridge.list_links(self.db,"VIT:event:record-001",public=True), [])
+
+    def test_field_draft_never_public_even_after_link_review(self):
+        self.db.execute("INSERT INTO field_drafts(id,data_json) VALUES ('draft','{}')")
+        bridge.register_reference(self.db,"IMG:field_draft:draft","draft")
+        bridge.register_reference(self.db,"VIT:event:record-001","event")
+        bridge.create_candidate_link(self.db,link_id="draft-link",
+            source_ref="IMG:field_draft:draft",target_ref="VIT:event:record-001",
+            relation="possible_subject",evidence_source_id="citation",
+            evidence_locator="synthetic p. 1")
+        self.db.execute("""UPDATE domain_evidence_links SET review_status='reviewed',
+          reviewer='r', reviewed_at='2026-11-10T15:00:00Z',
+          access_scope='public', publication_permission='permitted'""")
+        self.db.execute("UPDATE sources SET access_scope='public' WHERE id='citation'")
+        self.db.execute("UPDATE vital_record_entries SET review_status='reviewed' WHERE id='event'")
+        self.assertEqual(bridge.list_links(self.db,"VIT:event:record-001",public=True), [])
 
     def test_invalid_domain_and_uncited_relation(self):
         with self.assertRaises(ValueError):
