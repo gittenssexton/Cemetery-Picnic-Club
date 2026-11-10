@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cemetery-picnic-club.example/contracts/GEO/v1/record.schema.json",
+  "title": "CPC GEO evidence record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entity_ref",
+    "domain",
+    "record_type",
+    "source_local_id",
+    "source_ref",
+    "evidence_locator",
+    "confidence",
+    "review_status",
+    "observed_at",
+    "rights",
+    "links"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "entity_ref": {
+      "type": "string",
+      "pattern": "^GEO:[a-z][a-z0-9_-]*:[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "domain": {
+      "const": "GEO"
+    },
+    "record_type": {
+      "enum": [
+        "geologic_map",
+        "unit",
+        "material_candidate",
+        "quarry_candidate",
+        "site_context"
+      ]
+    },
+    "source_local_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "enum": [
+        "unknown",
+        "tentative",
+        "supported",
+        "documented"
+      ]
+    },
+    "review_status": {
+      "enum": [
+        "unreviewed",
+        "candidate",
+        "in_review",
+        "reviewed",
+        "rejected",
+        "disputed"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "valid_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geo_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gps_accuracy_m": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "gps_datum": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "access",
+        "analysis",
+        "publication"
+      ],
+      "properties": {
+        "access": {
+          "enum": [
+            "unknown",
+            "public",
+            "restricted",
+            "permission_required"
+          ]
+        },
+        "analysis": {
+          "enum": [
+            "unknown",
+            "permitted",
+            "prohibited"
+          ]
+        },
+        "publication": {
+          "enum": [
+            "unknown",
+            "permitted",
+            "prohibited"
+          ]
+        }
+      }
+    },
+    "independently_observed": {
+      "type": "boolean"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target_ref",
+          "relationship",
+          "evidence_ref",
+          "review_status"
+        ],
+        "properties": {
+          "target_ref": {
+            "type": "string",
+            "pattern": "^(CEM|VIT|GEO|ICO|CAR|IMG|HIS|KIN|LOC|CON):[a-z][a-z0-9_-]*:[A-Za-z0-9][A-Za-z0-9._-]*$"
+          },
+          "relationship": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "review_status": {
+            "enum": [
+              "candidate",
+              "in_review",
+              "reviewed",
+              "rejected"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
