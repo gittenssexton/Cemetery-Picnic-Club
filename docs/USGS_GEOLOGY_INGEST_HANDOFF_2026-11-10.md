@@ -84,3 +84,15 @@ Do **not** enter the 1983 image color values as `geology_units`. Each assigned s
 
 ## 8. First concrete build milestone
 **MA phase 1:** a verified source catalog plus Massachusetts geology tiles and *one* trustworthy point query at Warren, with the exact map unit name, source legend symbol, source citation and resolution caveat. If only a raster is available, show the raster *without claiming automated lithology identification*. This is the point where CPC begins to own a reproducible, independently stored geological reference system.
+
+
+## 9. Validated execution checkpoint (2026-11-10)
+The initial plan above is preserved for provenance. The following supersedes its pending-status statements:
+
+- **Originals processed, not just inventoried.** SHA-256 and CRC verification passed for the 37.6 MB ZIP and 8.7 MB KMZ. The 2.55 MB NH PDF SHA-256 was recorded. See [actual-file validation report](./USGS_GEOLOGY_VALIDATION_2026-11-10.md).
+- **GCP fit and warp actually run.** Four EPSG:5069 control points; RMS fit 54.958 m; maximum LOOCV 366.322 m (neither is independently confirmed positional accuracy). Decimation-8 EPSG:3857 and EPSG:4326 reference TIFFs exist, and a Pine Grove reference crop was produced. All outputs stored in [processed GIS folder](https://drive.google.com/drive/folders/1S02FCcz8uny9ac0PmyA6QQd-4S-l1_Of); originals remain untouched.
+- **Pipeline restored:** [raster processing script](../scripts/geology/ma_zen1983_pipeline.py), [five offline tests](../tests/test_geology_processing.py), [sample points](../data/geology/qa_sample_points_ma.csv), [MassGIS query script](../scripts/geology/query_massgis_bedlith.py), and [source-only D1 seed](../db/seeds/0005_geology_map_sources.sql) committed on feature branch. Five offline tests passed locally. No repository-wide test-suite claim.
+- **Camera pilot adjusted:** Warren example now uses the approximate Pine Grove centroid and links to the separately labeled *unreviewed reference* raster. The existing Macrostrat API remains a live external lookup, not a locally verified D1 result.
+- **Still blocked:** original MassGIS attributed bedrock polygons are not available to this execution environment, so P01 source unit, legend, independent alignment and 18 real point queries are **unverified**. No geologic unit or quarry is assigned to any gravestone, no XYZ tile service has been deployed, and no D1 production migration has run.
+
+**Do not promote this reference imagery to vetted geological polygons or claim phase 1 is fully complete until the real feature query, map-symbol review, independent georeferencing QA, staging and review gates pass.**
