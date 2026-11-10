@@ -23,6 +23,17 @@ The provisional source pilot now includes **four page-complete candidate sets** 
 - No foreign-key violations. All entries remain `requires_page_image_check`, and no human signoff has been fabricated.
 - The API Worker has NOT been deployed. Its private internal read-only route supports page `9|10|11|12` and a bounded `after` keyset cursor, so it no longer truncates pages with over 25 entries.
 
+## Faster setup: build directly from the audited source PDF
+
+Use the original Cornell PDF from the connected Drive; the tool checks it against SHA-256 `59c84a3f62810733555d7631c02ad7fd9f5cebd8dce6891f57f69192f4f830b6`. It renders printed pages 9–12 directly and embeds them into a **private local HTML review workspace**:
+
+```bash
+python3 -m pip install pymupdf
+python3 -m scripts.build_warren_review_workspace --pdf "/path/to/Vital_records_of_Warren_Cornell.pdf" --output warren-review-private.html
+```
+
+Open the resulting HTML locally. This option requires no separate PNG extraction, no authentication and no server. It refuses mismatched PDFs rather than making assumptions about printed-page offsets. **Do not upload the generated scan-embedded HTML to public GitHub**. It exports only unsigned review drafts, not approved events.
+
 ## Run a private local review workspace
 
 From the integration branch root, with Python 3:
