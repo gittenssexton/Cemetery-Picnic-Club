@@ -29,7 +29,7 @@
       "event_date_verbatim": "1785-10-11",
       "date_precision": "day",
       "parent_1": "Daniel",
-      "parent_2": "Jemima",
+      "parent_2": "Jemama [text-layer reading; needs scan check]",
       "relationship_note": "son",
       "printed_source_code": null,
       "original_source_class": "town_book",
@@ -37,7 +37,7 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Prior 'Jemima' mother-name normalization was not faithful to scan text layer; source appears 'Jemama'. Keep uncertain until visual review.",
       "evidence_lineage_status": "provisionally_town_book_unverified",
       "source_image_verified": false
     },
@@ -690,5 +690,6 @@
       "source_image_verified": false
     }
   ],
-  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified."
+  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified.",
+  "coverage_note": "Selected structured entries, NOT a complete or consecutive transcription of every printed entry on this page. Do not infer page completeness."
 }
