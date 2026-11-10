@@ -97,13 +97,13 @@
     <div class="panel live-only"><div class="panel-title"><strong>3 · Live Discovery</strong><small>Experimental on-device preview</small></div><div class="panel-body">
       <label class="toggle"><input type="checkbox" id="liveDiscovery" checked /> Run on-device detection while camera is active</label>
       <div class="twocol">
-        <label class="toggle"><input type="checkbox" id="liveMonuments" checked /> Pixel-following contours</label>
+        <label class="toggle"><input type="checkbox" id="liveMonuments" checked /> Outline visible regions</label>
         <label class="toggle"><input type="checkbox" id="liveLettering" checked /> Text-like detail</label>
         <label class="toggle"><input type="checkbox" id="liveDetails" checked /> Carving / surface details</label>
         <label class="toggle"><input type="checkbox" id="livePreviewEnhance" checked /> Auto-enhance preview only</label>
       </div>
       <p class="muted compact" id="liveQuality" aria-live="polite">Live quality suggestions appear after camera starts. Original capture stays unchanged.</p>
-      <p class="muted" id="discoveryStatus" role="status">On-device analysis begins when the camera starts. Mint: tentative contours that follow segmented pixels. Blue: text-like underlines. Details are counted without floating circles. These are <strong>not</strong> verified gravestones, inscriptions or carver identifications.</p>
+      <p class="muted" id="discoveryStatus" role="status">On-device analysis begins when the camera starts. Mint: shapes that might be monuments. Faint gray: other visible regions. Blue: text-like underlines. All boundaries are provisional pixel groupings, <strong>not</strong> verified objects or gravestones.</p>
       <div class="review-buttons"><button class="btn soft" id="markSymbol" type="button">Mark a symbol</button><button class="btn ghost" id="clearSymbols" type="button">Clear marks</button></div>
       <div id="markPanel" hidden><div class="field"><label for="symbolChoice">What carving do you see?</label><select id="symbolChoice"><option value="">Choose from illustrated reference…</option></select></div><p class="muted" id="symbolDescription">Meanings based on your illustrated cemetery symbolism guide; interpretations vary.</p>
        <input id="markX" type="hidden"><input id="markY" type="hidden"><div class="review-buttons"><button class="btn primary" id="saveSymbol" type="button">Add reference mark</button><button class="btn ghost" id="cancelSymbol" type="button">Cancel</button></div></div>
@@ -273,7 +273,7 @@ state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width
   $('workspace').classList.add('is-review');ui.stage.classList.add('review');$('viewLabel').textContent=r.shot_type==='overview'?'Original overview':'Processed reference';$('toggleProcessedBtn').textContent=r.shot_type==='overview'?'Show isolation':'Show original';$('traceBtn').textContent='Trace 4 corners';$('traceStatus').textContent='Processed preview (full-frame original remains preserved).';
   const url=URL.createObjectURL(r.originalBlob);try{const img=new Image();state.image=await new Promise((resolve,reject)=>{img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}finally{URL.revokeObjectURL(url)}
   ui.canvas.width=r.photo.width;ui.canvas.height=r.photo.height;
-  if(r.shot_type==='overview'){const small=document.createElement('canvas');small.width=160;small.height=200;const cx=small.getContext('2d',{willReadFrequently:true});cx.drawImage(state.image,0,0,160,200);try{state.overviewProposals=window.CPCPixelContours.analyze(cx.getImageData(0,0,160,200).data,160,200)}catch(e){state.overviewProposals=[]} $('overviewSelectionStatus').textContent=state.selectedTarget?'Selected stone highlighted. Tap again to change it.':'Tap the intended stone in the photograph. Experimental proposals may be wrong.';}
+  if(r.shot_type==='overview'){const small=document.createElement('canvas');small.width=160;small.height=200;const cx=small.getContext('2d',{willReadFrequently:true});cx.drawImage(state.image,0,0,160,200);try{state.overviewProposals=window.CPCPixelContours.analyzeScene(cx.getImageData(0,0,160,200).data,160,200).regions}catch(e){state.overviewProposals=[]} $('overviewSelectionStatus').textContent=state.selectedTarget?'Selected stone highlighted. Tap again to change it.':'Tap the intended stone in the photograph. All visible regions are provisional, not identified gravestones.';}
   await updateGuidedProgress();renderReview(true);}
 function polygonPath(ctx,points){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()}
 function backgroundStyle(ctx,w,h){
@@ -297,7 +297,7 @@ function renderReview(showGuide){
  const ctx=ui.canvas.getContext('2d');composite(ctx,state.processed,state.capture.shot_type==='overview'?false:showGuide);
  if(state.capture.shot_type==='overview'){
    const w=ui.canvas.width,h=ui.canvas.height;
-   for(const p of state.overviewProposals){if(!p.points?.length)continue;ctx.save();ctx.setLineDash([]);ctx.strokeStyle='#9ad6c3';ctx.lineWidth=Math.max(3,w/500);ctx.beginPath();ctx.moveTo(p.points[0][0]*w,p.points[0][1]*h);for(let i=1;i<p.points.length;i++)ctx.lineTo(p.points[i][0]*w,p.points[i][1]*h);ctx.closePath();ctx.stroke();ctx.restore();}
+   for(const p of state.overviewProposals){if(!p.points?.length)continue;ctx.save();ctx.setLineDash([]);ctx.strokeStyle=p.classification==='possible_monument_shape'?'#9ad6c3':'rgba(192,205,220,.65)';ctx.lineWidth=Math.max(2,w/(p.classification==='possible_monument_shape'?500:750));ctx.setLineDash(p.classification==='possible_monument_shape'?[]:[8,10]);ctx.beginPath();ctx.moveTo(p.points[0][0]*w,p.points[0][1]*h);for(let i=1;i<p.points.length;i++)ctx.lineTo(p.points[i][0]*w,p.points[i][1]*h);ctx.closePath();ctx.stroke();ctx.restore();}
    const r=state.selectedTarget||state.capture.overview_target;
    if(r){ctx.save();ctx.strokeStyle='#f4cc70';ctx.lineWidth=Math.max(5,w/240);const selectedContour=state.selectedTargetContour||state.capture.overview_target_polygon;if(selectedContour?.length){ctx.beginPath();ctx.moveTo(selectedContour[0][0]*w,selectedContour[0][1]*h);for(let i=1;i<selectedContour.length;i++)ctx.lineTo(selectedContour[i][0]*w,selectedContour[i][1]*h);ctx.closePath();ctx.stroke()}else ctx.strokeRect(r.x*w,r.y*h,r.w*w,r.h*h);ctx.fillStyle='#f4cc70';ctx.fillRect(r.x*w,Math.max(0,r.y*h-27),Math.min(240,r.w*w),27);ctx.fillStyle='#1a2825';ctx.font=Math.max(13,w/85)+'px sans-serif';ctx.fillText('SELECTED STONE',r.x*w+4,Math.max(18,r.y*h-7));ctx.restore();}
  }
