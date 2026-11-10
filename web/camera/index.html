@@ -373,7 +373,7 @@ async function queueDriveSync(){
  }catch(e){notify('Drive sync: '+e.message)}
  finally{driveSyncRunning=false;driveStatus()}
 }
-$('driveClientId').value=window.CPCDriveSync?.load?.().configured?'':'';
+$('driveClientId').value=window.CPCDriveSync?.load?.().clientId||'';
 $('driveAuto').checked=window.CPCDriveSync?.status?.().enabled||false;
 $('driveAuto').addEventListener('change',()=>{
  try{
