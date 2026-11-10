@@ -143,7 +143,7 @@ function updateSiteMatch(g){
   selector.replaceChildren(new Option('Unknown / not confirmed',''));
   const choices=(state.siteMatch?.candidates||[]).map(c=>c.entity_id);
   for(const entity of sites){
-    if(choices.includes(entity.id) || chosen===entity.id)selector.add(new Option(entity.name+' (not verified)',entity.id));
+    selector.add(new Option(entity.name+(choices.includes(entity.id)?' (nearby; not verified)':' (catalog; not nearby)'),entity.id));
   }
   selector.value=chosen&&[...selector.options].some(o=>o.value===chosen)?chosen:'';
 }
@@ -184,13 +184,13 @@ async function refreshRecords(){if(!state.db)return;try{const rs=await records()
 function generateRecord(g,blob,w,h,polygon){return{
   location_observation_id:'LOC:observation:'+new Date().toISOString().replace(/[:.]/g,'-'),
   cemetery_match:g&&g.source==='device_gps'?(state.siteMatch||null):null,
-  cemetery_assignment:{cemetery_entity_id:state.siteSelection||null,assignment_method:state.siteSelection?'user_confirmed':null,verification_state:'unverified',source_id:state.siteSelection?'user_selection':null},
+  cemetery_assignment:{cemetery_entity_id:state.siteSelection||null,assignment_method:state.siteSelection?'user_selected_unverified':null,verification_state:'unverified',source_id:state.siteSelection?'user_selection':null},
   cemetery_candidate_catalog_version:window.CPCCemeterySites?.version||null,id:'CPC-'+new Date().toISOString().replace(/[:.]/g,'-'),schema_version:'0.5',software:'CPC Field Camera 0.5',shot_type:state.shotType,monument_group_id:$('groupId').value.trim()||null,captured_at:new Date().toISOString(),cemetery:$('cemetery').value.trim()||null,monument:$('monument').value.trim()||null,material_hypothesis:$('material').value,monument_type:$('category').value,notes:$('notes').value.trim()||null,location:g?{...g}:null,location_status:g?(g.source==='manual'?'manual_unverified':'device_gps_observed'):'location_missing',photo:{format:'image/jpeg',width:w,height:h,source:'browser_video_frame',original_is_full_frame:true},polygon:polygon,live_discovery_annotations:window.CPCDiscovery?.getAnnotations?.()||[],originalBlob:blob}}
 function blobFromCanvas(canvas,q=.92){return new Promise(resolve=>canvas.toBlob(b=>resolve(b),'image/jpeg',q))}
 async function capture(unlocated){if(!state.stream||ui.video.readyState<2){notify('Start your camera first.');return}const g=unlocated?null:getLocation();if(!g&&!unlocated){notify('Location is required. Enable GPS, add surveyed coordinates or use the explicit no-GPS override.');return}
   const w=ui.video.videoWidth,h=ui.video.videoHeight;if(!w||!h){notify('Camera preview not ready.');return}
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=getGuidePolygon(w,h);
-  const r=generateRecord(g,blob,w,h,polygon);try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}
+  updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}
 async function openReview(r){state.capture=r;state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.8*r.photo.height],[.2*r.photo.width,.8*r.photo.height]];state.tracing=false;state.trace=[];state.processed=true;
   $('workspace').classList.add('is-review');ui.stage.classList.add('review');$('viewLabel').textContent='Processed reference';$('toggleProcessedBtn').textContent='Show original';$('traceBtn').textContent='Trace 4 corners';$('traceStatus').textContent='Processed preview (full-frame original remains preserved).';
   const url=URL.createObjectURL(r.originalBlob);try{const img=new Image();state.image=await new Promise((resolve,reject)=>{img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}finally{URL.revokeObjectURL(url)}
