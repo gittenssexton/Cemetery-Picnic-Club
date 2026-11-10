@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_warren_review_workspace import build, candidates, image_payload
+from scripts.build_warren_review_workspace import build, candidates, image_payload, pdf_payload
 
 
 class WarrenReviewWorkspaceTests(unittest.TestCase):
@@ -31,6 +31,13 @@ class WarrenReviewWorkspaceTests(unittest.TestCase):
             self.assertNotIn("indexedDB",html)
             with self.assertRaises(FileExistsError):
                 build(path)
+
+    def test_incorrect_pdf_checksum_is_rejected_before_render(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake=Path(tmp)/"wrong.pdf"
+            fake.write_bytes(b"%PDF-1.4\\nnot the original book")
+            with self.assertRaisesRegex(ValueError,"PDF checksum differs"):
+                pdf_payload(fake)
 
     def test_scan_image_not_required_or_uploadable(self):
         with tempfile.TemporaryDirectory() as tmp:
