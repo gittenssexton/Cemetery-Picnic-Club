@@ -5,6 +5,7 @@
  */
 window.CPCCemeterySites=Object.freeze({
  version:'warren-pilot-point-only-2026-11-10',
+ relationships:[], // No real local complex link has been verified yet.
  entities:[{
    id:'cem-pine-grove-warren',
    name:'Pine Grove Cemetery',
