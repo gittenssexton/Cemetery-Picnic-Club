@@ -71,6 +71,38 @@ class CameraZipTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validator.validate_camera_zip(self.path)
 
+
+    def test_gps_source_must_match_location_status(self):
+        r=record()
+        r["location_status"]="manual_unverified"
+        r["location"]={"latitude":42.2,"longitude":-72.2,"source":"device_gps"}
+        self.write(r)
+        with self.assertRaises(ValueError):
+            validator.validate_camera_zip(self.path)
+        r["location_status"]="device_gps_observed"
+        r["location"]["source"]="manual"
+        self.write(r)
+        with self.assertRaises(ValueError):
+            validator.validate_camera_zip(self.path)
+
+    def test_invalid_accuracy_is_rejected(self):
+        r=record()
+        r["location_status"]="device_gps_observed"
+        r["location"]={"latitude":42.2,"longitude":-72.2,
+                       "source":"device_gps","accuracy_m":-1}
+        self.write(r)
+        with self.assertRaises(ValueError):
+            validator.validate_camera_zip(self.path)
+        r["location"]["accuracy_m"]=True
+        self.write(r)
+        with self.assertRaises(ValueError):
+            validator.validate_camera_zip(self.path)
+
+    def test_no_gps_record_must_not_contain_geotagged_derivative(self):
+        self.write(extra={ID+"/"+ID+"_geotagged.jpg":ORIGINAL})
+        with self.assertRaises(ValueError):
+            validator.validate_camera_zip(self.path)
+
     def test_unexpected_path_rejected(self):
         self.write(extra={"../escape.txt":"unsafe"})
         with self.assertRaises(ValueError):
