@@ -41,3 +41,10 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - Verified green integration workflow on commit `f8ab874ee116e1b7e3d06086f0b905692e14eadd`: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42842111929
 - Cloudflare connection inspection found only one D1 database, `cartoveyra-research-staging`, in the currently connected account. No Cemetery Picnic Club D1 database was listed; a CPC migration ledger therefore could not be inspected there. This does **not** prove no CPC D1 exists in another account.
 - Remaining: production account identification and D1 ledger if applicable; deployment of isolated CPC staging database; live source acquisition and licenses; phone Safari field-camera tests; end-to-end geologic unit extraction and vital entry review. No staging D1 migration or production deployment performed by this session.
+
+## Session continuation: validated integration work
+- Resolved a **second** schema collision: `0002_global_research_core.sql` and the camera migration both defined `motif_interpretations` with incompatible columns. Camera-specific table is now `marker_motif_interpretation_candidates`; earlier scholarly table remains unchanged.
+- Added GEO, VIT and IMG v1 JSON Schema contracts, ownership READMEs, and contract tests rejecting wrong namespace, invalid rights, malformed dates and uncited links.
+- Added in-memory migration and domain-ingestion smoke tests, candidate withdrawal preservation and SQLite FK/integrity checks.
+- GitHub Actions successfully completed **45 tests** in run https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42842111929 . This verifies a fresh SQLite integration, **not** Cloudflare D1 deployment history or staging D1 migration.
+- No production changes or real-data bulk ingest. Domain adapters, source-specific authorized ingestion and staged D1 remain future work.
