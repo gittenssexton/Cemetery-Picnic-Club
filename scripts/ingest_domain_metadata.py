@@ -61,7 +61,10 @@ def plan(records):
         if record["entity_ref"] in seen:
             raise ValueError(f"record {n}: duplicate canonical entity_ref")
         seen.add(record["entity_ref"])
-        id_value = record["entity_ref"]
+        # Source-owned tables keep their local primary keys. The full
+        # <domain>:<type>:<id> reference belongs in domain_entity_refs,
+        # registered only after the underlying row has been inserted.
+        id_value = record["source_local_id"]
         if key == ("IMG", "field_draft"):
             # Keep source and rights metadata; no cloud sync or photo file ingestion.
             values = (id_value, json.dumps(record, sort_keys=True), "local_only")
