@@ -20,6 +20,7 @@ EXPECTED = [
     "0007_domain_evidence_links.sql",
     "0008_metadata_import_audit.sql",
     "0009_vital_ocr_review_queue.sql",
+    "0010_vital_manual_review_evidence.sql",
 ]
 
 
@@ -37,7 +38,7 @@ class IntegrationMigrationTests(unittest.TestCase):
         self.db = fresh_database()
         self.addCleanup(self.db.close)
 
-    def test_all_nine_migrations_exist_in_order(self):
+    def test_all_ten_migrations_exist_in_order(self):
         self.assertEqual(sorted(p.name for p in MIGRATIONS.glob("*.sql")), EXPECTED)
 
     def test_fk_integrity_and_clean_start(self):
