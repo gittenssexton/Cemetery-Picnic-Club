@@ -9,7 +9,7 @@ Status: GPS candidate matching integrated in the browser field camera; **not dep
 - `web/camera/index.html`: no longer preselects Pine Grove; live candidate results display by GPS reading; user can pick a catalog candidate or leave unknown. Selection **does not** mean verified cemetery assignment.
 - Field `record.json` now includes `location_observation_id`, full candidate result, `cemetery_assignment` (with explicit `unverified` state), and registry version. GPS candidates are recomputed immediately before record creation. Existing export code serializes these fields.
 - `web/camera/sw.js`: resolver and registry cached offline with cache version bump.
-- `tests/test_cemetery_gps_resolver.js`: synthetic geometry and point-only policy assertions. A direct JavaScript execution of this test source passed 14 assertions on 2026-11-10; embedded camera script syntax parsed successfully.
+- `tests/test_cemetery_gps_resolver.js`: synthetic geometry and point-only policy assertions. A direct JavaScript execution of this test source passed 23 assertions on 2026-11-10; embedded camera script syntax parsed successfully.
 
 ## Outstanding / blockers before production
 1. iPhone Safari physical GPS and camera permission test, including airplane/offline mode and GPS-denied export.
@@ -22,3 +22,14 @@ Status: GPS candidate matching integrated in the browser field camera; **not dep
 
 ## Evidence policy
 Never present a camera GPS point as a surveyed burial plot. User-selected cemetery does not verify a marker or person, point-only centroid is not a boundary, and distinct grounds are not merged by name or proximity.
+
+## Follow-up hardening (same date)
+- Fixed a real point-to-segment distance bug found by the synthetic tests.
+- Parent complexes no longer imply resolution of an unidentified child ground: `complex_child_unresolved` with `parent_complex_ids` and `unresolved_child` is returned.
+- Multiple plausible child cemeteries sharing a parent remain `multiple_candidates`; the parent relation never merges them.
+- A stale GPS fix now receives an explicit camera warning and a distinct captured-record status; manually typed positions display as unverified entries rather than surveyed facts.
+- Starting the next monument clears the previously selected cemetery, preventing accidental carryover across records.
+- Checked JavaScript syntax and executed 23 resolver assertions with a lightweight JS harness; this does not replace physical-device field testing, privacy review or full build CI.
+
+## QA note
+The existing static preview deployment was not updated as part of these commits; production is untouched.
