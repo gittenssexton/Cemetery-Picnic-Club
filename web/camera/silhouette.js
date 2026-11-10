@@ -16,7 +16,7 @@
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
    const v=pix(x,y),fg=dist(v,center),bg=Math.min(dist(v,left),dist(v,right));
    // Compare foreground vs background appearance; limit overly dark shadows and bright highlights.
-   if(fg<Math.max(42,contrast*.93)&&fg<bg*.96)prob[y*W+x]=1;
+   if(x>W*.04&&x<W*.96&&y>H*.04&&y<H*.96&&fg<Math.max(38,Math.min(66,contrast*.62))&&fg<bg*.84)prob[y*W+x]=1;
   }
   // Morphologically close small holes in the stone caused by lettering / lichen.
   const dilated=new Uint8Array(n),closed=new Uint8Array(n);
@@ -42,7 +42,7 @@
    }
   }
   const fraction=tail/n;
-  if(fraction<.07||fraction>.79||minX<=2||maxX>=W-3||minY<=1||maxY>=H-2){return{ok:false,reason:'Segmentation ambiguous or stone touches frame boundary',contrast:+contrast.toFixed(1),coverage:+fraction.toFixed(2)}}
+  if(fraction<.07||fraction>.79||minX<=2||maxX>=W-3||minY<=1||maxY>=H*.90){return{ok:false,reason:'Segmentation ambiguous or stone touches frame boundary',contrast:+contrast.toFixed(1),coverage:+fraction.toFixed(2)}}
   // Trace approximate left/right boundary per horizontal strip, retaining the top arc profile.
   const ptsLeft=[],ptsRight=[],stride=3;for(let y=minY;y<=maxY;y+=stride){let l=W,r=-1;
    for(let x=minX;x<=maxX;x++){if(seen[y*W+x]){l=Math.min(l,x);r=Math.max(r,x)}}
