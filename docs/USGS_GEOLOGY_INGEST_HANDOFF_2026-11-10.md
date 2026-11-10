@@ -112,3 +112,14 @@ python -m unittest discover -s tests -p 'test_*geology*.py' -v
 ```
 
 The second command is an optional broader test sweep; `test_bedlith_offline.py` should also be selected explicitly by filename. Check the symbol/legend and independent point-location quality before treating any imported record as reviewed. No new Google/Mindat credentials are required to obtain MassGIS open GIS data. An accessible official download is a data dependency, not an account permission dependency.
+
+
+## 11. MassGIS official shapefile located and genuinely processed (2026-11-10)
+
+**Important correction to section 10:** The user had already uploaded the complete MassGIS bedrock shapefile as **separate component files** under [Cemetery Picnic Club / bedlith](https://drive.google.com/drive/folders/1FidVq3NzOMb2bbrNAKR9IPHjhrL9uOuw), not as a ZIP. No further download or account connection is needed for Massachusetts. The `.shp`, `.shx`, `.dbf`, `.prj`, and `.shp.xml` were successfully recovered and read, without altering Drive originals.
+
+**Actual-source results:** 2,886 polygons, EPSG:26986, 322 unique unreviewed symbols, and all 18 test locations matched one polygon. P01 approximate Pine Grove centroid maps to `Ops` and source classification `Sulfidic Schists`, but lies **43.58 m** from a polygon boundary. The source's own estimated ~1.5 km spatial positional accuracy makes this a boundary-sensitive result, not a verified outcrop or bedrock attribution for the cemetery. 17 of 18 test points fall within 1.5 km of a polygon edge, using a cautionary heuristic rather than a statistical confidence score. No geological result identifies gravestone stone or quarry provenance.
+
+**Saved products:** [processed geology folder](https://drive.google.com/drive/folders/1S02FCcz8uny9ac0PmyA6QQd-4S-l1_Of) contains the complete unreviewed point-query JSON, 18-location review CSV, 322-symbol list, SHA-256 manifest, separate **nonproduction** SQLite research database, processing script, and [real-data validation report](./MASSGIS_REAL_DATA_IMPORT_REPORT_2026-11-10.md).
+
+**Remaining work:** independently verify the Pine Grove coordinate and boundary against a detailed source; resolve the original Zen 1983 `Ops` legend; scrutinize unit naming and spatial error; import only reviewed sources to staged D1; then validate Stone Camera UI. Do not claim a verified cemetery lithology or production integration yet.
