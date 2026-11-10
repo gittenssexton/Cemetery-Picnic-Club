@@ -63,6 +63,22 @@ class MetadataAdapterTests(unittest.TestCase):
             bridge.register_reference(self.db, sample["entity_ref"], sample["source_local_id"]),
             "GEO:geologic_map:fixture-001")
         self.assertEqual(self.db.execute("SELECT count(*) FROM domain_entity_refs").fetchone()[0], 1)
+        vit = record("VIT", "collection", {
+            "title": "Synthetic collection", "repository": "Fixture archive",
+            "state_code": "MA", "canonical_url": "https://example.invalid/ledger"})
+        metadata.insert(self.db, metadata.plan([vit]))
+        bridge.register_reference(self.db, vit["entity_ref"], vit["source_local_id"])
+        self.db.execute("""INSERT INTO sources(id,title,source_type,access_scope)
+            VALUES ('fixture-source','Synthetic source','test','internal')""")
+        bridge.create_candidate_link(
+            self.db, link_id="synthetic-geo-vital-link",
+            source_ref=sample["entity_ref"], target_ref=vit["entity_ref"],
+            relation="unverified_source_context", evidence_source_id="fixture-source",
+            evidence_locator="synthetic test citation")
+        self.assertEqual(self.db.execute(
+            "SELECT review_status FROM domain_evidence_links").fetchone()[0], "candidate")
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM persons").fetchone()[0], 0)
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM claims").fetchone()[0], 0)
         self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
 
     def test_duplicate_import_rolls_back_as_one_transaction(self):
