@@ -43,6 +43,24 @@ export default {
       if (!await authorized(request, env.CPC_API_TOKEN)) return respond({error:'unauthorized'}, 401);
       if (!env.CPC_DB || typeof env.CPC_DB.prepare !== 'function')
         return respond({error:'db_not_configured'},503);
+      if (url.pathname === '/internal/warren-ocr-review') {
+        const page = url.searchParams.get('page');
+        const status = url.searchParams.get('status') || 'requires_page_image_check';
+        if (!['9','10','11'].includes(page) ||
+            !['requires_page_image_check','in_review','rejected','scan_checked'].includes(status))
+          return respond({error:'invalid_review_filter'},400);
+        const sql = "SELECT id,printed_page,name_verbatim,date_verbatim,"
+          + " printed_source_code,original_source_class,review_status,"
+          + " source_image_verified,source_batch,record_sha256"
+          + " FROM vital_ocr_review_candidates"
+          + " WHERE collection_id=? AND printed_page=? AND review_status=?"
+          + " ORDER BY id LIMIT 25";
+        const result = await env.CPC_DB.prepare(sql)
+          .bind('ma-warren-1849-rice1910',Number(page),status).all();
+        return respond({collection:'ma-warren-1849-rice1910',
+          page:Number(page),status,review_required:true,
+          page_complete:false,candidates:result.results||[]});
+      }
       if (url.pathname !== '/internal/evidence-links')
         return respond({error:'not_found'},404);
       const ref = url.searchParams.get('entity_ref');
