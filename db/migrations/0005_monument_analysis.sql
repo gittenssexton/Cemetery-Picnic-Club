@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS lettering_style_observations (
  evidence_note TEXT, review_status TEXT NOT NULL DEFAULT 'unreviewed'
 );
 
-CREATE TABLE IF NOT EXISTS motif_interpretations (
+CREATE TABLE IF NOT EXISTS marker_motif_interpretations (
  id TEXT PRIMARY KEY, marker_id TEXT NOT NULL REFERENCES markers(id),
  motif_id TEXT REFERENCES motifs(id), image_id TEXT REFERENCES images(id),
  location_on_marker TEXT, visual_description TEXT NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS motif_interpretations (
  review_status TEXT NOT NULL DEFAULT 'unreviewed'
 );
 
--- Candidate matches are suggestions only; sourced historical claims belong in claims/claim_evidence.
+-- Distinct from global motif_interpretations (meaning vocabulary) in 0002.\n-- Candidate matches are suggestions only; sourced historical claims belong in claims/claim_evidence.
 CREATE TABLE IF NOT EXISTS carver_attribution_candidates (
  id TEXT PRIMARY KEY, marker_id TEXT NOT NULL REFERENCES markers(id),
  craftsperson_id TEXT REFERENCES craftspeople(id), workshop_label TEXT,
@@ -78,6 +78,6 @@ CREATE TABLE IF NOT EXISTS marker_similarity_evidence (
 CREATE INDEX IF NOT EXISTS idx_form_marker ON marker_form_observations(marker_id);
 CREATE INDEX IF NOT EXISTS idx_carving_marker ON carving_feature_observations(marker_id);
 CREATE INDEX IF NOT EXISTS idx_lettering_marker ON lettering_style_observations(marker_id);
-CREATE INDEX IF NOT EXISTS idx_motif_marker ON motif_interpretations(marker_id);
+CREATE INDEX IF NOT EXISTS idx_motif_marker ON marker_motif_interpretations(marker_id);
 CREATE INDEX IF NOT EXISTS idx_carver_marker ON carver_attribution_candidates(marker_id);
 CREATE INDEX IF NOT EXISTS idx_similarity_marker_a ON marker_similarity_evidence(marker_a_id);
