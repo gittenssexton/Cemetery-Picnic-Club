@@ -6,7 +6,7 @@ import unittest
 import geopandas as gpd
 from shapely.geometry import Point, box
 
-SCRIPT = Path(__file__).with_name('build_boundary_review.py')
+SCRIPT = Path(__file__).resolve().parents[1] / 'scripts' / 'geology' / 'build_boundary_review.py'
 spec=importlib.util.spec_from_file_location('boundary_review',SCRIPT)
 mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
