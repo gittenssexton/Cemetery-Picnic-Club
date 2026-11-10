@@ -40,3 +40,8 @@ The camera workstream owns `web/camera/`, camera export helper, and the camera p
 - Committed `tests/test_camera_export_archive.js`, a Node regression that extracts the actual ZIP writer and checks synthetic public content; **not yet executed through GitHub CI**. `tests/test_camera_export_privacy.js` remains available.
 - Device testing still required for actual private and shareable v0.6 exports, JPEG EXIF/XMP metadata audit, SHA-256 manifest verification, and iPhone Safari Files round-trip.
 - **Ownership remains camera workstream; no production or D1 database change.**
+
+### CI wiring — 2026-11-10
+- Updated `.github/workflows/schema-check.yml` on the camera feature branch to run Node 20, `node tests/test_camera_export_privacy.js` and `node tests/test_camera_export_archive.js` on push/PR test changes, alongside the pre-existing Python SQLite checks.
+- The authored ZIP test exercises the actual repository ZIP writer with synthetic data, verifies entries and a central directory, and checks forbidden public tokens; it **does not** substitute for real JPEG metadata and browser ZIP inspection.
+- No completed GitHub Actions run for the latest workflow commit was confirmed during this session. **Do not report CI green until the GitHub run completes and is inspected.**
