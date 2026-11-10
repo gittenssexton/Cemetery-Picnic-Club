@@ -28,4 +28,9 @@ for(const item of ['data-shot="overview"','overviewPickerPanel','overviewSelecti
   assert.ok(html.includes(item),'Missing '+item);
 }
 assert.ok(html.includes("state.shotType==='overview'?[[0,0],[w,0],[w,h],[0,h]]"));
+assert.ok(html.includes('id="screenTestMode"'));
+assert.ok(html.includes("const g=(unlocated||screenTest)?null:getLocation()"));
+assert.ok(html.includes("r.shot_type==='overview'?'Original overview':'Processed reference'"));
+assert.ok(html.includes('reference_image_no_site_attribution'));
+assert.ok(g.propose(new Uint8Array(160*200*4),160,200).length<=3);
 console.log('Guided capture rules and camera wiring checks passed');
