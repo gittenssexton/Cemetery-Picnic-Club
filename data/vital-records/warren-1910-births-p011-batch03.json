@@ -589,7 +589,7 @@
         "source_text_lines": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_vitalrecordsofwa00war%29.pdf"
       },
       "event_type": "birth",
-      "name_verbatim": "BARWUM Albert Rice",
+      "name_verbatim": "BARNUM Albert Rice",
       "event_date_iso": "1841-12-25",
       "event_date_verbatim": "1841-12-25",
       "date_precision": "day",
@@ -602,7 +602,7 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction from PDF text layer",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Corrected prior OCR-derived surname BARWUM to BARNUM based on Cornell public-domain PDF text layer, printed page 11; original image verification pending.",
       "evidence_lineage_status": "provisionally_town_book_unverified",
       "source_image_verified": false
     },
@@ -616,7 +616,7 @@
         "source_text_lines": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_vitalrecordsofwa00war%29.pdf"
       },
       "event_type": "birth",
-      "name_verbatim": "BARWUM Harriet Adelaide",
+      "name_verbatim": "BARNUM Harriet Adelaide",
       "event_date_iso": "1846-06-29",
       "event_date_verbatim": "1846-06-29",
       "date_precision": "day",
@@ -629,7 +629,7 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction from PDF text layer",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Corrected prior OCR-derived surname BARWUM to BARNUM based on Cornell public-domain PDF text layer, printed page 11; original image verification pending.",
       "evidence_lineage_status": "provisionally_town_book_unverified",
       "source_image_verified": false
     },
@@ -643,7 +643,7 @@
         "source_text_lines": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_vitalrecordsofwa00war%29.pdf"
       },
       "event_type": "birth",
-      "name_verbatim": "BARWUM Harriet Noyes",
+      "name_verbatim": "BARNUM Harriet Noyes",
       "event_date_iso": "1830-12-29",
       "event_date_verbatim": "1830-12-29",
       "date_precision": "day",
@@ -656,7 +656,7 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction from PDF text layer",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Corrected prior OCR-derived surname BARWUM to BARNUM based on Cornell public-domain PDF text layer, printed page 11; original image verification pending.",
       "evidence_lineage_status": "provisionally_town_book_unverified",
       "source_image_verified": false
     },
@@ -670,7 +670,7 @@
         "source_text_lines": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_vitalrecordsofwa00war%29.pdf"
       },
       "event_type": "birth",
-      "name_verbatim": "BARWUM Henry Sumner",
+      "name_verbatim": "BARNUM Henry Sumner",
       "event_date_iso": "1837-12-03",
       "event_date_verbatim": "1837-12-03",
       "date_precision": "day",
@@ -683,10 +683,21 @@
       "record_level": "ocr_candidate",
       "transcription_method": "OCR-assisted manual extraction from PDF text layer",
       "review_status": "requires_page_image_check",
-      "notes": null,
+      "notes": "Corrected prior OCR-derived surname BARWUM to BARNUM based on Cornell public-domain PDF text layer, printed page 11; original image verification pending.",
       "evidence_lineage_status": "provisionally_town_book_unverified",
       "source_image_verified": false
     }
   ],
-  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified."
+  "lineage_policy": "Never assert source independence based only on no G.S.2 mark; record evidence lineage as provisional until original source verified.",
+  "ocr_corrections": [
+    {
+      "date": "2026-11-10",
+      "printed_page": "11",
+      "affected_entries": 4,
+      "previous_reading": "BARWUM",
+      "corrected_reading": "BARNUM",
+      "evidence": "https://upload.wikimedia.org/wikipedia/commons/6/69/...Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_cu31924028839573%29.pdf",
+      "verification": "text-layer corroboration; page images not yet reviewed"
+    }
+  ]
 }
