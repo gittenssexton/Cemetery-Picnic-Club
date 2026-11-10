@@ -51,14 +51,28 @@
     }
     return best;
   }
+  function isCoordinate(p){
+    return Array.isArray(p) && p.length>=2 && Number.isFinite(p[0]) &&
+      Number.isFinite(p[1]) && Math.abs(p[0])<=180 && Math.abs(p[1])<=90;
+  }
+  function validPolygon(rings){
+    return Array.isArray(rings) && rings.length>0 && rings.every(ring=>
+      Array.isArray(ring) && ring.length>=4 && ring.every(isCoordinate) &&
+      ring[0][0]===ring[ring.length-1][0] &&
+      ring[0][1]===ring[ring.length-1][1]
+    );
+  }
   function geometryResult(point,geometry){
     if(!geometry) return null;
-    if(geometry.type==='Point') return {inside:false,distance_m:distance(point,geometry.coordinates),kind:'point'};
+    if(geometry.type==='Point'){
+      if(!isCoordinate(geometry.coordinates))return null;
+      return {inside:false,distance_m:distance(point,geometry.coordinates),kind:'point'};
+    }
     if(!['Polygon','MultiPolygon'].includes(geometry.type)) return null;
     const polys=geometry.type==='Polygon'?[geometry.coordinates]:geometry.coordinates;
+    if(!Array.isArray(polys)||!polys.length||!polys.every(validPolygon))return null;
     let inside=false,min=Infinity;
     for(const rings of polys){
-      if(!rings.length||!rings[0].length)continue;
       if(polygonContains(point,rings)) inside=true;
       min=Math.min(min,boundaryDistance(point,rings));
     }
@@ -76,7 +90,7 @@
       if(!geo)continue;
       const intersects=geo.kind==='polygon' && (geo.inside||geo.distance_m<=radius);
       if(!intersects && geo.distance_m>radius+nearby)continue;
-      const verified=entity.geometry_status==='verified_boundary' && geo.kind==='polygon';
+      const verified=entity.geometry_status==='verified_boundary' && geo.kind==='polygon' && !!entity.source_id;
       const safelyInside=verified && geo.inside && geo.boundary_distance_m>radius && !stale;
       matches.push({
         entity_id:entity.id,name:entity.name||entity.id,
@@ -95,12 +109,19 @@
     }
     // Never mark any independently named child verified if another plausible child overlaps.
     const plausible=matches.filter(m=>m.intersects_accuracy_circle);
+    // Point-only names close enough to lie within the accuracy circle can
+    // compete as discovery hypotheses, but can never establish containment.
+    const overlappingPoints=matches.filter(m=>
+      m.geometry_status!=='verified_boundary' &&
+      m.reasons.includes('point_only_discovery') && m.distance_m<=radius);
     const siteCandidates=plausible.filter(m=>m.entity_kind!=='cemetery_complex');
+    const competingNames=[...siteCandidates,...overlappingPoints.filter(m=>m.entity_kind!=='cemetery_complex')];
     // Any two separately identified possible child grounds remain ambiguous, even if
     // they share a parent. A complex itself is not a competing child cemetery.
-    const multiple=siteCandidates.length>1;
-    if(multiple) for(const m of siteCandidates){
-      m.status='possible_within';m.reasons.push('competing_site');
+    const multiple=new Set(competingNames.map(m=>m.entity_id)).size>1;
+    if(multiple) for(const m of competingNames){
+      if(m.intersects_accuracy_circle)m.status='possible_within';
+      m.reasons.push('competing_site');
     }
     // A parent boundary never establishes the child ground identity.
     const parentOnly=plausible.length>0 && siteCandidates.length===0 &&
