@@ -63,17 +63,17 @@
       <p class="read-hint">A separate transparent cutout and enhanced reading image are included in each ZIP. All treatments are derived images, never historical evidence originals.</p>
       <p id="traceStatus" class="muted compact">Isolation mask active. Tap "Show original" to compare.</p>
     </div></div>
-    <div class="panel"><div class="panel-title"><strong>Google Drive backup</strong><small>Individual files, no ZIP required</small></div>
+    <div class="panel"><div class="panel-title"><strong>Automatic Drive backup</strong><small>JPEG + JSON, no ZIP needed</small></div>
     <div class="panel-body">
-      <p class="muted">Each photo stays safely on this device first. After you connect Google, the camera can upload the original JPEG and its private JSON evidence record into an app-created <strong>Cemetery Picnic Club - Camera Uploads</strong> folder in your Google Drive. This is private research data, potentially including GPS; do not make the Drive folder public.</p>
+      <p class="muted">Every capture is saved on this device immediately. Once Drive is connected, each new capture automatically uploads its original JPEG and private JSON evidence record into an app-created <strong>Cemetery Picnic Club - Camera Uploads</strong> folder in your Google Drive. This is private research data, potentially including GPS; do not make the Drive folder public.</p>
       <p class="read-hint"><strong>One-time setup:</strong> In Google Cloud, enable Drive API and create a Web OAuth client, adding this camera preview URL as an authorized JavaScript origin. Paste its public client ID below, then Connect. The app requests the limited <code>drive.file</code> scope, never your Google password. It creates its own Drive folder.</p>
       <div class="field"><label for="driveClientId">Google OAuth Web Client ID</label><input id="driveClientId" type="text" autocomplete="off" placeholder="123456789-xyz.apps.googleusercontent.com"></div>
-      <label class="toggle"><input type="checkbox" id="driveAuto" /> Auto-upload saved photos when connected</label>
+      <label class="toggle"><input type="checkbox" id="driveAuto" checked /> Automatically back up every capture (on by default)</label>
       <div class="review-buttons"><button type="button" class="btn primary" id="driveConnectBtn">Connect Google Drive</button><button type="button" class="btn soft" id="driveSyncBtn">Upload pending records now</button></div>
       <p class="muted" id="driveStatus" role="status">Not connected. All photos remain on this phone until enabled.</p>
-      <p class="muted">Uploads resume only while the app is open, online, and authorized. Expired access requires reconnecting. The ZIP export below remains an optional offline archive.</p>
+      <p class="muted">No prompts per photograph. Uploads resume while this app is open and connected; if authorization expires, reconnect Google. The private ZIP export is an optional extra backup.</p>
     </div></div>
-    <div class="panel"><div class="panel-title"><strong>Evidence preserved on this device</strong><small id="recordCount">0 records</small></div><div class="panel-body"><div id="recentList" class="recent"><p class="muted">No captures yet.</p></div><div class="helper"><p class="info">Originals and observations are saved locally first. If Google Drive auto-upload is connected and enabled, individual JPEG/JSON files upload while the app is open. Otherwise use the optional ZIP archive before clearing browser data.</p></div></div></div>
+    <div class="panel"><div class="panel-title"><strong>Evidence preserved on this device</strong><small id="recordCount">0 records</small></div><div class="panel-body"><div id="recentList" class="recent"><p class="muted">No captures yet.</p></div><div class="helper"><p class="info">All captures save locally immediately. Once connected to Google Drive, individual JPEG/JSON files upload automatically without export questions. Until Drive is connected, files remain only on this device; the private ZIP is an optional extra backup.</p></div></div></div>
   </div>
   <div class="right">
     <div class="panel"><div class="panel-title"><strong>1 · Location validation</strong><small>Required by default</small></div><div class="panel-body">
@@ -403,7 +403,7 @@ $('driveAuto').addEventListener('change',()=>{
 $('driveConnectBtn').addEventListener('click',async()=>{
  try{
   const client=$('driveClientId').value.trim(),current=window.CPCDriveSync.status();
-  if(!current.configured||client)window.CPCDriveSync.configure(client||' ', $('driveAuto').checked);
+  if(!current.configured||client&&client!==current.clientId)window.CPCDriveSync.configure(client||' ', $('driveAuto').checked);
   // Google popup is initiated directly by this button; no background OAuth prompts.
   await window.CPCDriveSync.auth();driveStatus();notify('Drive authorized. You can upload individual records now.');queueDriveSync();
  }catch(e){driveStatus();notify('Google Drive: '+e.message)}
