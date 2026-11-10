@@ -53,3 +53,11 @@ python3 -m scripts.stage_warren_ocr_review --apply --database /path/to/prepared-
 ```
 
 The first command validates and performs **no write**. The second requires a previously migrated local SQLite DB and the `0006` vital bibliography seed. It stages provisional candidates only. Production remains unchanged.
+
+
+## Additional public-source access check
+
+- The separate Cornell/Wikimedia PDF text layer was accessible through a public search result. It displays the publisher's statement that sources include supplements to town records; the abbreviations confirm `G.S.2` is Pine Grove gravestone material. Pages labeled 9–11 include the flagged ABBOT `Jemama` / `Jemima`, ASHLEY dual-year notation, BAKER middle initial and BARNUM surnames in machine-extracted text.
+- **Not scan-verified:** attempts to obtain rendered PDF page screenshots (page indexes 16–18) returned a cache-miss error; a separate Internet Archive PDF request was inaccessible. Consequently **no candidate was promoted**, and `source_image_verified` remains false for all 75.
+- Public reference: https://upload.wikimedia.org/wikipedia/commons/6/69/...Vital_records_of_Warren_%28formerly_Western%29%2C_Massachusetts%2C_to_the_end_of_the_year_1849_%28IA_cu31924028839573%29.pdf
+- Reading the OCR/text layer is useful for prioritization but must not be called visual confirmation of print or independent corroboration.
