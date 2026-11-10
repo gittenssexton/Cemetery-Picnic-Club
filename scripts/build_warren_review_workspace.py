@@ -39,6 +39,39 @@ def candidates():
     return sorted(output,key=lambda x:(x["printed_page"],x["id"]))
 
 
+PDF_SHA256 = "59c84a3f62810733555d7631c02ad7fd9f5cebd8dce6891f57f69192f4f830b6"
+
+
+def pdf_payload(pdf):
+    """Render source pages from the exact known Cornell public-domain scan."""
+    pdf=Path(pdf)
+    if not pdf.is_file():
+        raise FileNotFoundError(pdf)
+    data=pdf.read_bytes()
+    if hashlib.sha256(data).hexdigest()!=PDF_SHA256:
+        raise ValueError("PDF checksum differs from the audited Warren source; refuse page-index guess")
+    try:
+        import fitz
+    except ImportError as exc:
+        raise RuntimeError("PDF render requires PyMuPDF: pip install pymupdf") from exc
+    book=fitz.open(stream=data,filetype="pdf")
+    if len(book)<=15:
+        raise ValueError("Unexpected truncated Warren source PDF")
+    output={}
+    for page in (9,10,11,12):
+        index=page+3
+        original=book[index]
+        if "WARREN BIRTHS" not in original.get_text().upper():
+            raise ValueError("Unexpected content at printed page "+str(page))
+        png=original.get_pixmap(matrix=fitz.Matrix(2,2),alpha=False).tobytes("png")
+        output[str(page)]={
+            "data":"data:image/png;base64,"+base64.b64encode(png).decode("ascii"),
+            "sha256":hashlib.sha256(png).hexdigest()
+        }
+    book.close()
+    return output
+
+
 def image_payload(directory):
     out={}
     if directory is None:return out
@@ -153,9 +186,9 @@ refreshPage();
 </script></body></html>"""
 
 
-def build(output, scans=None):
+def build(output, scans=None, pdf=None):
     rows=candidates()
-    payload=json.dumps({"rows":rows,"scans":image_payload(scans)},ensure_ascii=False,
+    payload=json.dumps({"rows":rows,"scans":pdf_payload(pdf) if pdf else image_payload(scans)},ensure_ascii=False,
                        separators=(",",":")).replace("<","\\u003c")
     if output.exists():
         raise FileExistsError("Refusing to overwrite existing review drafts HTML")
@@ -167,8 +200,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--scan-dir",type=Path,help="Private folder with warren_scan_p09.png ... p12.png")
+    parser.add_argument("--pdf",type=Path,help="Exact known Cornell PDF, checksum-verified and privately rendered")
     args=parser.parse_args()
-    n=build(args.output,args.scan_dir)
+    if args.pdf and args.scan_dir:
+        parser.error("Choose either --pdf or --scan-dir")
+    n=build(args.output,args.scan_dir,args.pdf)
     print(f"Created private offline draft review workspace for {n} provisional entries.")
 
 if __name__=="__main__":
