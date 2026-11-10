@@ -33,6 +33,16 @@ class TestOffline(unittest.TestCase):
             shp=Path(t)/'demo.shp';self._fixture(shp)
             result=m.analyze(shp,[{'point_id':'P02','place':'Synthetic','latitude':'40.0','longitude':'-72.1966','location_basis':'synthetic'}])
             self.assertEqual(result['qa_points'][0]['query_status'],'no_intersection')
+    def test_valid_zip_source(self):
+        with tempfile.TemporaryDirectory() as t:
+            shp=Path(t)/'demo.shp';self._fixture(shp)
+            zpath=Path(t)/'fixture.zip'
+            with zipfile.ZipFile(zpath,'w') as z:
+                for p in Path(t).glob('demo.*'):
+                    z.write(p,p.name)
+            result=m.analyze(zpath,[{'point_id':'P01','place':'Synthetic','latitude':'42.20909','longitude':'-72.1966','location_basis':'synthetic'}])
+            self.assertEqual(result['qa_points'][0]['matches'][0]['BEDROCK_1'],'TEST_ONLY')
+
     def test_zip_missing_sidecars(self):
         with tempfile.TemporaryDirectory() as t:
             p=Path(t)/'bad.zip'
