@@ -31,3 +31,12 @@ The camera workstream owns `web/camera/`, camera export helper, and the camera p
 
 **Preview:** https://cemetery-picnic-camera-preview.gittens-sexton.workers.dev/
 **Handoff:** docs/CPC_CAMERA_PRIVATE_PUBLIC_EXPORT_HANDOFF_2026-11-10.md
+
+## Validation continuation — camera sub-workstream, 2026-11-10
+
+- Executed public allowlist helper dynamically against the committed source in a JavaScript tool runtime: **20/20 checks passed**, covering review requirement, removal of private marker ID, GPS coordinates, private notes and original reference, opt-ins and rejection of manually pasted decimal coordinate pairs.
+- Exercised the **actual `packageZIP()` implementation** extracted from the committed camera HTML using a synthetic public JSON record and a four-byte mock JPEG payload. Parsed the two local entries and checked the ZIP central directory and that private test tokens were absent. **Passed**. This does **not** validate actual browser JPEG re-encoding, EXIF removal or iPhone downloads.
+- Inspected a separate real historical v0.1 ZIP available in the development runtime with Python `zipfile.testzip()`: no CRC errors, but that archive predates v0.6 and includes a GPS-tagged JPEG. It is **not** a test of either new export profile.
+- Committed `tests/test_camera_export_archive.js`, a Node regression that extracts the actual ZIP writer and checks synthetic public content; **not yet executed through GitHub CI**. `tests/test_camera_export_privacy.js` remains available.
+- Device testing still required for actual private and shareable v0.6 exports, JPEG EXIF/XMP metadata audit, SHA-256 manifest verification, and iPhone Safari Files round-trip.
+- **Ownership remains camera workstream; no production or D1 database change.**
