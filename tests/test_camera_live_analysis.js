@@ -18,7 +18,7 @@ for(const term of ['id="liveDiscovery" checked','id="liveMonuments" checked','id
   assert.ok(html.includes(term),'Missing camera UI hook: '+term);
 }
 const discovery=fs.readFileSync(path.join(__dirname,'../web/camera/discovery.js'),'utf8');
-for(const term of ["window.CPCLiveAnalysis","window.CPCGuidedCapture?.propose?.","video.style.filter=","canvas.classList.add('enabled')","canvas.classList.remove('enabled')","snapshot:"]){
+for(const term of ["window.CPCLiveAnalysis","window.CPCPixelContours","video.style.filter=","canvas.classList.add('enabled')","canvas.classList.remove('enabled')","snapshot:"]){
   assert.ok(discovery.includes(term),'Missing live analysis hook: '+term);
 }
 new Function(html.slice(html.lastIndexOf('<script>\n')+9,html.lastIndexOf('</script>')));
