@@ -46,6 +46,10 @@
       </div>
       <div class="toolbar live-only" id="cameraToolbar"><button class="btn soft" id="startBtn">Enable camera + GPS</button><button class="btn primary" id="captureBtn" disabled>Capture monument</button><button class="btn ghost" id="unlocatedBtn" disabled>Without GPS</button></div>
       <div class="toolbar review-only"><button class="btn primary" id="exportBtn">Export record ZIP</button><button class="btn soft" id="newBtn">Next monument</button></div>
+      <div class="panel-body review-only" role="status" aria-live="polite">
+        <strong>Saved location evidence</strong>
+        <p class="muted" id="savedSiteEvidence">Site identity not verified.</p>
+      </div>
     </div>
     <div class="panel review-only"><div class="panel-title"><strong>Refine the isolation</strong><small>Original remains untouched</small></div><div class="panel-body">
       <p class="muted compact">The app starts with a centered focus rectangle. Tap <strong>Trace 4 corners</strong>, then tap four points around the stone in the photograph. Background pixels are softened only in the processed copy.</p>
@@ -214,7 +218,17 @@ async function capture(unlocated){if(!state.stream||ui.video.readyState<2){notif
   const w=ui.video.videoWidth,h=ui.video.videoHeight;if(!w||!h){notify('Camera preview not ready.');return}
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=getGuidePolygon(w,h);
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}
-async function openReview(r){state.capture=r;state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.8*r.photo.height],[.2*r.photo.width,.8*r.photo.height]];state.tracing=false;state.trace=[];state.processed=true;
+async function openReview(r){state.capture=r;
+  const selected=r.cemetery_assignment?.cemetery_entity_id||null;
+  const savedMatch=r.cemetery_match?.status||'no_gps_match';
+  const evidence=r.cemetery_match?.candidates?.find(c=>c.entity_id===selected);
+  $('savedSiteEvidence').textContent=
+    (r.cemetery||'Cemetery unknown')+
+    ' · '+(selected?'User selected site (not verified)':'No site ID assigned')+
+    ' · GPS result: '+savedMatch.replaceAll('_',' ')+
+    (evidence?' · '+(evidence.source_id||'Source missing'):'')+
+    ' · Position is not a verified grave coordinate.';
+state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.2*r.photo.height],[.8*r.photo.width,.8*r.photo.height],[.2*r.photo.width,.8*r.photo.height]];state.tracing=false;state.trace=[];state.processed=true;
   $('workspace').classList.add('is-review');ui.stage.classList.add('review');$('viewLabel').textContent='Processed reference';$('toggleProcessedBtn').textContent='Show original';$('traceBtn').textContent='Trace 4 corners';$('traceStatus').textContent='Processed preview (full-frame original remains preserved).';
   const url=URL.createObjectURL(r.originalBlob);try{const img=new Image();state.image=await new Promise((resolve,reject)=>{img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}finally{URL.revokeObjectURL(url)}
   ui.canvas.width=r.photo.width;ui.canvas.height=r.photo.height;renderReview(true);}
