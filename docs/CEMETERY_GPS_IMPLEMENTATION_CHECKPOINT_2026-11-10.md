@@ -33,3 +33,19 @@ Never present a camera GPS point as a surveyed burial plot. User-selected cemete
 
 ## QA note
 The existing static preview deployment was not updated as part of these commits; production is untouched.
+
+## GPS accuracy and evidence hardening (2026-11-10, further session)
+- Reject malformed or non-closed polygon rings and invalid GeoJSON coordinate points rather than accepting an untrustworthy boundary.
+- A boundary marked `verified_boundary` must also have a nonempty source ID to count as verified.
+- A separate point-only cemetery name falling within the GPS accuracy radius can block exclusive attribution to a polygon-defined site; no point can alone prove boundary containment.
+- Added tests for missing boundary provenance, malformed geometry, MultiPolygon containment, and conflicting point candidates.
+- New camera records include UUID observation/record IDs, device position observations with fix age, accuracy, provider, timestamps, explicit `restricted_by_default` visibility, and the statement that phone position is not a grave survey.
+- Preserved free-text cemetery provenance independently from user selection; exported silhouette mask metadata now reflects whether a manual contour or initial rectangle was used.
+- Added static camera integration and privacy guard assertions (`tests/test_camera_gps_contract.js`).
+- **Executed:** 30 geometry resolver assertions + 21 camera contract assertions = **51 passing source-level assertions** in a JavaScript test harness; browser camera/ZIP field QA not yet done.
+
+## Remaining release blockers
+- Review physical iPhone camera/GPS/ZIP samples, confirm EXIF behavior and no coordinate leakage to publicly reachable endpoints.
+- Obtain defensible real source polygons; current Pine Grove data are still point-only.
+- Inspect D1 production migrations before schema additions; no deployment/migration conducted.
+- Verify complex hierarchy, historical names, effective dates, map rights and source licensing before import.
