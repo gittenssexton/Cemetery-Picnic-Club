@@ -25,3 +25,7 @@ jobs:
         run: node tests/test_camera_export_privacy.js
       - name: Test camera ZIP writer and redaction
         run: node tests/test_camera_export_archive.js
+      - name: Test guided photo sequence
+        run: node tests/test_guided_capture.js
+      - name: Test live on-device analysis
+        run: node tests/test_camera_live_analysis.js
