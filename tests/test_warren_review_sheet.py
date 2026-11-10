@@ -30,7 +30,7 @@ class WarrenReviewSheetTests(unittest.TestCase):
             self.assertEqual(first.returncode,0,first.stderr)
             with out.open(encoding="utf-8-sig",newline="") as source:
                 rows=list(csv.DictReader(source))
-            self.assertEqual(len(rows),75)
+            self.assertEqual(len(rows),101)
             self.assertFalse(any(x["review_decision"] for x in rows))
             second=subprocess.run(cmd,cwd=ROOT,text=True,capture_output=True)
             self.assertNotEqual(second.returncode,0)
