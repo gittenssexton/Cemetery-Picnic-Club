@@ -31,7 +31,7 @@ export default {
     try {
       const url = new URL(request.url);
       if (request.method !== 'GET') return respond({error:'method_not_allowed'}, 405);
-      if (url.pathname === '/health') return respond({service:'cpc-integration-staging',ready:true});
+      if (url.pathname === '/health') return respond({service:'cpc-integration-staging',status:'alive'});
       if (!await authorized(request, env.CPC_API_TOKEN)) return respond({error:'unauthorized'}, 401);
       if (!env.CPC_DB || typeof env.CPC_DB.prepare !== 'function')
         return respond({error:'db_not_configured'},503);
