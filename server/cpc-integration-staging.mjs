@@ -46,7 +46,7 @@ export default {
       if (url.pathname === '/internal/warren-ocr-review') {
         const page = url.searchParams.get('page');
         const status = url.searchParams.get('status') || 'requires_page_image_check';
-        if (!['9','10','11'].includes(page) ||
+        if (!['9','10','11','12'].includes(page) ||
             !['requires_page_image_check','in_review','rejected','scan_checked'].includes(status))
           return respond({error:'invalid_review_filter'},400);
         // Stable keyset pagination covers the 26/35/40 candidates per page
