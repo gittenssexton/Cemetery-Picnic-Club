@@ -42,7 +42,7 @@
   function segmentDistance(point,a,b){
     const p=xy(point,point),x=xy(a,point),y=xy(b,point),dx=y[0]-x[0],dy=y[1]-x[1];
     const t=Math.max(0,Math.min(1,-(x[0]*dx+x[1]*dy)/(dx*dx+dy*dy||1)));
-    return Math.hypot(x[0]+t*dx,y[1]+t*dy);
+    return Math.hypot(x[0]+t*dx,x[1]+t*dy);
   }
   function boundaryDistance(point,rings){
     let best=Infinity;
