@@ -63,7 +63,17 @@
       <p class="read-hint">A separate transparent cutout and enhanced reading image are included in each ZIP. All treatments are derived images, never historical evidence originals.</p>
       <p id="traceStatus" class="muted compact">Isolation mask active. Tap "Show original" to compare.</p>
     </div></div>
-    <div class="panel"><div class="panel-title"><strong>Evidence preserved on this device</strong><small id="recordCount">0 records</small></div><div class="panel-body"><div id="recentList" class="recent"><p class="muted">No captures yet.</p></div><div class="helper"><p class="info">All images and records stay on this device until you export them. Export each record before clearing browser data or switching devices. Nothing is uploaded automatically.</p></div></div></div>
+    <div class="panel"><div class="panel-title"><strong>Google Drive backup</strong><small>Individual files, no ZIP required</small></div>
+    <div class="panel-body">
+      <p class="muted">Each photo stays safely on this device first. After you connect Google, the camera can upload the original JPEG and its private JSON evidence record into an app-created <strong>Cemetery Picnic Club - Camera Uploads</strong> folder in your Google Drive. This is private research data, potentially including GPS; do not make the Drive folder public.</p>
+      <p class="read-hint"><strong>One-time setup:</strong> In Google Cloud, enable Drive API and create a Web OAuth client, adding this camera preview URL as an authorized JavaScript origin. Paste its public client ID below, then Connect. The app requests the limited <code>drive.file</code> scope, never your Google password. It creates its own Drive folder.</p>
+      <div class="field"><label for="driveClientId">Google OAuth Web Client ID</label><input id="driveClientId" type="text" autocomplete="off" placeholder="123456789-xyz.apps.googleusercontent.com"></div>
+      <label class="toggle"><input type="checkbox" id="driveAuto" /> Auto-upload saved photos when connected</label>
+      <div class="review-buttons"><button type="button" class="btn primary" id="driveConnectBtn">Connect Google Drive</button><button type="button" class="btn soft" id="driveSyncBtn">Upload pending records now</button></div>
+      <p class="muted" id="driveStatus" role="status">Not connected. All photos remain on this phone until enabled.</p>
+      <p class="muted">Uploads resume only while the app is open, online, and authorized. Expired access requires reconnecting. The ZIP export below remains an optional offline archive.</p>
+    </div></div>
+    <div class="panel"><div class="panel-title"><strong>Evidence preserved on this device</strong><small id="recordCount">0 records</small></div><div class="panel-body"><div id="recentList" class="recent"><p class="muted">No captures yet.</p></div><div class="helper"><p class="info">Originals and observations are saved locally first. If Google Drive auto-upload is connected and enabled, individual JPEG/JSON files upload while the app is open. Otherwise use the optional ZIP archive before clearing browser data.</p></div></div></div>
   </div>
   <div class="right">
     <div class="panel"><div class="panel-title"><strong>1 · Location validation</strong><small>Required by default</small></div><div class="panel-body">
@@ -119,7 +129,7 @@
 </main>
 <div class="modal-backdrop" id="unlocatedModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><h2 id="modalTitle">Capture without coordinates?</h2><p>The field record will be flagged <strong>LOCATION UNVERIFIED</strong>. This is useful when service is unavailable, but the position will need to be surveyed later.</p><div class="actions"><button class="btn ghost" id="cancelUnlocated">Cancel</button><button class="btn danger" id="confirmUnlocated">Capture unlocated</button></div></div></div>
 <div role="status" aria-live="polite" id="toast"></div>
-<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="discovery.js" defer></script>
+<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="https://accounts.google.com/gsi/client" async defer></script><script src="drive-sync.js"></script><script src="discovery.js" defer></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id); const ui={video:$('video'),stage:$('cameraStage'),canvas:$('reviewCanvas')};
@@ -204,7 +214,7 @@ function getGuidePolygon(w,h){const st=ui.stage.getBoundingClientRect();const cw
 function idb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('cpc-field-camera',1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('records'))req.result.createObjectStore('records',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function storage(mode,operation){return new Promise((resolve,reject)=>{const tx=state.db.transaction('records',mode),store=tx.objectStore('records'),req=operation(store);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function records(){return (await storage('readonly',s=>s.getAll())).reverse()}
-async function refreshRecords(){if(!state.db)return;try{const rs=await records();$('recordCount').textContent=`${rs.length} record${rs.length===1?'':'s'}`;const list=$('recentList');list.innerHTML='';if(!rs.length){list.innerHTML='<p class="muted">No captures yet.</p>';return}for(const r of rs.slice(0,20)){const el=document.createElement('div');el.className='recent-item';const body=document.createElement('div');const head=document.createElement('strong');head.textContent=r.monument||r.id;const label=document.createElement('small');label.textContent=`${new Date(r.captured_at).toLocaleString()} · ${r.location?'Located':'NO GPS'}`;body.append(head,label);const btn=document.createElement('button');btn.textContent='Open';btn.addEventListener('click',()=>openReview(r));el.append(body,btn);list.appendChild(el)}}catch(e){notify('Local record listing unavailable: '+e.message)}}
+async function refreshRecords(){if(!state.db)return;try{const rs=await records();$('recordCount').textContent=`${rs.length} record${rs.length===1?'':'s'}`;const list=$('recentList');list.innerHTML='';if(!rs.length){list.innerHTML='<p class="muted">No captures yet.</p>';return}for(const r of rs.slice(0,20)){const el=document.createElement('div');el.className='recent-item';const body=document.createElement('div');const head=document.createElement('strong');head.textContent=r.monument||r.id;const label=document.createElement('small');label.textContent=`${new Date(r.captured_at).toLocaleString()} · ${r.location?'Located':'NO GPS'} · Drive ${r.drive_sync?.status||'pending'}`;body.append(head,label);const btn=document.createElement('button');btn.textContent='Open';btn.addEventListener('click',()=>openReview(r));el.append(body,btn);list.appendChild(el)}}catch(e){notify('Local record listing unavailable: '+e.message)}}
 function generateRecord(g,blob,w,h,polygon){return{
   location_observation_id:'LOC:observation:'+crypto.randomUUID(),
   location_observation:g?{
@@ -231,7 +241,7 @@ async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||
   const original=document.createElement('canvas');original.width=w;original.height=h;original.getContext('2d').drawImage(ui.video,0,0,w,h);const blob=await blobFromCanvas(original);if(!blob){notify('Capture failed.');return}const polygon=state.shotType==='overview'?[[0,0],[w,0],[w,h],[0,h]]:getGuidePolygon(w,h);
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);
   if(screenTest){r.capture_source='photograph_of_display_reference_test';r.location=null;r.location_observation=null;r.location_status='reference_image_no_site_attribution';r.cemetery_match=null;r.cemetery_assignment={cemetery_entity_id:null,assignment_method:null,verification_state:'unverified',source_id:null,reviewed_at:null};r.cemetery=null;r.cemetery_relationships_at_capture=null;r.site_name_entry='reference_image_not_site_evidence';}
-  try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();notify(screenTest?'Saved as a screen/reference test, not evidence of phone GPS at the depicted cemetery.':g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}finally{state.captureBusy=false}}
+  try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();queueDriveSync();notify(screenTest?'Saved as a screen/reference test, not evidence of phone GPS at the depicted cemetery.':g?'Captured with location information. Export the ZIP for a durable copy.':'Captured WITHOUT location; record flagged for follow-up.');}finally{state.captureBusy=false}}
 async function openReview(r){$('shareReviewPanel').hidden=true;$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
   const selected=r.cemetery_assignment?.cemetery_entity_id||null;
   const savedMatch=r.cemetery_match?.status||'no_gps_match';
@@ -343,7 +353,53 @@ async function exportCurrent(){const r=state.capture;if(!r)return;try{$('exportB
 $('startBtn').addEventListener('click',async()=>{requestGPS();await startCamera()});$('retryGpsBtn').addEventListener('click',requestGPS);
 $('clearManualGpsBtn').addEventListener('click',()=>{state.manualGps=null;state.gps=null;state.siteMatch=null;redrawGPS();requestGPS();notify('Manual location cleared. Requesting a fresh device GPS fix.');});
 $('manualGpsBtn').addEventListener('click',()=>{const lat=$('latInput').value.trim(),lon=$('lonInput').value.trim(),a=Number(lat),b=Number(lon);if(!lat||!lon||!Number.isFinite(a)||!Number.isFinite(b)||Math.abs(a)>90||Math.abs(b)>180){notify('Enter valid latitude (−90 to 90) and longitude (−180 to 180).');return}state.manualGps={latitude:a,longitude:b,accuracy_m:null,source:'manual',timestamp:Date.now()};redrawGPS();notify('Manual coordinates recorded; they are NOT independently surveyed or verified.')});
-$('captureBtn').addEventListener('click',()=>capture(false));$('unlocatedBtn').addEventListener('click',()=>$('unlocatedModal').classList.add('visible'));$('cancelUnlocated').addEventListener('click',()=>$('unlocatedModal').classList.remove('visible'));$('confirmUnlocated').addEventListener('click',()=>{$('unlocatedModal').classList.remove('visible');capture(true)});$('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);$('continueMonumentBtn').addEventListener('click',continueMonument);
+$('captureBtn').addEventListener('click',()=>capture(false));$('unlocatedBtn').addEventListener('click',()=>$('unlocatedModal').classList.add('visible'));$('cancelUnlocated').addEventListener('click',()=>$('unlocatedModal').classList.remove('visible'));$('confirmUnlocated').addEventListener('click',()=>{$('unlocatedModal').classList.remove('visible');capture(true)});let driveSyncRunning=false;
+function driveStatus(){
+ const d=window.CPCDriveSync?.status?.();
+ if(!d)return;
+ $('driveStatus').textContent=(d.authorized?'Drive connected':'Drive not authorized')+
+   (d.enabled?' · Automatic uploads enabled':' · Automatic uploads off')+
+   (d.folderId?' · Destination folder ready':' · Folder created after first upload')+
+   (driveSyncRunning?' · Uploading…':'');
+}
+async function queueDriveSync(){
+ if(driveSyncRunning||!state.db||!navigator.onLine)return;
+ const d=window.CPCDriveSync;if(!d?.status().enabled||!d.status().authorized)return;
+ driveSyncRunning=true;driveStatus();
+ try{
+  const all=await records(),result=await d.sync(all,async r=>storage('readwrite',store=>store.put(r)),()=>driveStatus());
+  if(result.failed)notify(result.failed+' Drive upload(s) still pending. Reconnect or retry.');
+  await refreshRecords();
+ }catch(e){notify('Drive sync: '+e.message)}
+ finally{driveSyncRunning=false;driveStatus()}
+}
+$('driveClientId').value=window.CPCDriveSync?.load?.().configured?'':'';
+$('driveAuto').checked=window.CPCDriveSync?.status?.().enabled||false;
+$('driveAuto').addEventListener('change',()=>{
+ try{
+  const d=window.CPCDriveSync;
+  if($('driveAuto').checked&&!d.status().configured){d.configure($('driveClientId').value,true)}
+  else d.enabled($('driveAuto').checked);
+  driveStatus();if($('driveAuto').checked)queueDriveSync();
+ }catch(e){$('driveAuto').checked=false;notify(e.message)}
+});
+$('driveConnectBtn').addEventListener('click',async()=>{
+ try{
+  const client=$('driveClientId').value.trim(),current=window.CPCDriveSync.status();
+  if(!current.configured||client)window.CPCDriveSync.configure(client||' ', $('driveAuto').checked);
+  // Google popup is initiated directly by this button; no background OAuth prompts.
+  await window.CPCDriveSync.auth();driveStatus();notify('Drive authorized. You can upload individual records now.');queueDriveSync();
+ }catch(e){driveStatus();notify('Google Drive: '+e.message)}
+});
+$('driveSyncBtn').addEventListener('click',async()=>{
+ if(!window.CPCDriveSync.status().authorized){notify('Connect Google Drive first.');return}
+ if(!window.CPCDriveSync.status().enabled){window.CPCDriveSync.enabled(true);$('driveAuto').checked=true}
+ await queueDriveSync();
+});
+window.addEventListener('online',queueDriveSync);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueDriveSync()});
+driveStatus();
+$('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);$('continueMonumentBtn').addEventListener('click',continueMonument);
 const hints=window.CPCGuidedCapture.DIRECTIONS;
 $('captureModes').addEventListener('click',e=>{const b=e.target.closest('button[data-shot]');if(!b)return;switchShotMode(b.dataset.shot)});
 $('targetWidth').addEventListener('input',()=>{if(state.capture?.shot_type==='overview'&&state.selectedTarget){const r=state.selectedTarget;state.selectedTarget=window.CPCGuidedCapture.rectangle(r.x+r.w/2,r.y+r.h/2,Number($('targetWidth').value)/100,Number($('targetHeight').value)/100);state.capture.overview_target=state.selectedTarget;state.selectedTargetContour=null;state.capture.overview_target_polygon=null;storage('readwrite',store=>store.put(state.capture)).catch(()=>{});renderReview(false)}});
@@ -357,7 +413,7 @@ $('traceBtn').addEventListener('click',()=>{state.traceMode='four';$('finishCont
 $('finishContourBtn').addEventListener('click',saveTracedPolygon);
 $('resetShapeBtn').addEventListener('click',()=>{const r=state.capture;if(!r)return;state.polygon=[[r.photo.width*.2,r.photo.height*.11],[r.photo.width*.8,r.photo.height*.11],[r.photo.width*.8,r.photo.height*.89],[r.photo.width*.2,r.photo.height*.89]];r.polygon=state.polygon;r.polygon_provenance={method:'reset_rectangle',status:'unverified',updated_at:new Date().toISOString()};state.tracing=false;state.trace=[];storage('readwrite',s=>s.put(r)).catch(()=>{});$('traceStatus').textContent='Default rectangle restored.';renderReview(true)});ui.canvas.addEventListener('click',reviewTouch);
 window.addEventListener('pagehide',()=>{if(state.stream)state.stream.getTracks().forEach(t=>t.stop());if(state.watchId!=null)navigator.geolocation.clearWatch(state.watchId)});
-(async()=>{switchShotMode('overview');redrawGPS();if(!window.isSecureContext){$('cameraState').textContent='HTTPS needed';notify('Camera and GPS require HTTPS or localhost.');}try{state.db=await idb();await refreshRecords()}catch(e){notify('Local storage unavailable: '+e.message)}})();
+(async()=>{switchShotMode('overview');redrawGPS();if(!window.isSecureContext){$('cameraState').textContent='HTTPS needed';notify('Camera and GPS require HTTPS or localhost.');}try{state.db=await idb();await refreshRecords();queueDriveSync()}catch(e){notify('Local storage unavailable: '+e.message)}})();
 if('serviceWorker' in navigator && window.isSecureContext)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
 </script>
