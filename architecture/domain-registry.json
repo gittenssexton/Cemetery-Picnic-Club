@@ -380,7 +380,8 @@
       "0006_new_england_vital_records.sql",
       "0007_domain_evidence_links.sql",
       "0008_metadata_import_audit.sql",
-      "0009_vital_ocr_review_queue.sql"
+      "0009_vital_ocr_review_queue.sql",
+      "0010_vital_manual_review_evidence.sql"
     ],
     "policy": "Never renumber an already-applied production migration. Reconcile staging branch migrations prior to first production rollout; for any deployed migration use a new append-only version."
   }
