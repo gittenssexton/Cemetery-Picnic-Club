@@ -4,6 +4,9 @@ on:
     paths:
       - "db/**"
       - "tests/**"
+      - "architecture/**"
+      - "scripts/validate_domains.py"
+      - "docs/DOMAIN_ARCHITECTURE.md"
       - ".github/workflows/schema-check.yml"
   pull_request:
     paths:
@@ -15,5 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install contract validator
+        run: python3 -m pip install 'jsonschema>=4.18,<5'
       - name: Run SQLite migration and seed tests
-        run: python3 -m unittest discover -s tests -v
+        run: |
+          python3 scripts/validate_domains.py
+          python3 -m unittest discover -s tests -v
+
+      - name: Verify camera JPEG GPS export without changing original bytes
+        run: node tests/test_camera_exif.mjs
+      - name: Verify staging API authentication and read-only query contract
+        run: node tests/test_staging_worker.mjs

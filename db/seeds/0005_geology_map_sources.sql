@@ -1,0 +1,17 @@
+-- USGS/MassGIS source inventory; metadata only; no unit or geometry attribution.
+-- Apply only after migration 0004; keep this seed idempotent.
+INSERT OR IGNORE INTO geology_map_sources
+(id,title,authors,year,publisher,scale_denominator,region,source_url,provider,
+ rights_note,citation_text,geometry_status,validation_status,notes) VALUES
+('usgs-ma-bedrock-zen-1983','Bedrock geologic map of Massachusetts','Zen, E-an, ed., et al.',1983,'USGS',250000,'Massachusetts','https://doi.org/10.3133/70046713','USGS','Review third-party/state components before redistribution','Zen, E-an, ed. (1983), Bedrock geologic map of Massachusetts, 1:250,000.','raster_only','inventory_only','Three sheets; original scanned TIFF in Drive'),
+('usgs-nh-bedrock-lyons-1997','Bedrock geologic map of New Hampshire','Lyons, Bothner, Moench and Thompson',1997,'USGS',250000,'New Hampshire','https://pubs.usgs.gov/publication/70211051','USGS','Review embedded rights before redistribution','Lyons et al. (1997), Bedrock geologic map of New Hampshire.','raster_only','inventory_only','Uploaded PDF; title sheet must be reviewed'),
+('usgs-ofr-03-225-ne-lithology','Bedrock lithogeochemistry of New England / MassGIS bedlith','Robinson and Kapo',2003,'USGS and MassGIS',250000,'Massachusetts','https://www.mass.gov/info-details/massgis-data-bedrock-lithology','MassGIS','MassGIS metadata states no access/use constraints','Robinson and Kapo (2003), USGS OFR 03-225; MassGIS Bedrock Lithology.','candidate_vector','inventory_only','BEDROCK_1 original unit symbol; ~1.5 km stated spatial accuracy'),
+('usgs-ofr-2006-1272-ne-integrated','Preliminary integrated geologic map databases of northeastern states','Nicholson et al.',2006,'USGS',250000,'Northeastern US','https://pubs.usgs.gov/of/2006/1272','USGS','Check package metadata','Nicholson et al. (2006), USGS OFR 2006-1272.','candidate_vector','inventory_only','Unit and lithology reference tables; unprocessed'),
+('usgs-ds-215-nh-bedrock','Digital bedrock geologic map of New Hampshire','Bennett, Lyons, Wittkop and Dicken',2006,'USGS',250000,'New Hampshire','https://doi.org/10.3133/ds215','USGS','Check package metadata','Bennett et al. (2006), USGS Data Series 215.','candidate_vector','inventory_only','Preferred NH digital mapping source'),
+('usgs-ma-metamorphic-weinmann-walsh-2025','Metamorphic map of Massachusetts','Weinmann and Walsh',2025,'USGS',500000,'Massachusetts','https://doi.org/10.5066/P1JDB3YE','USGS','Check package metadata','Weinmann and Walsh (2025), Metamorphic map of Massachusetts.','candidate_vector','inventory_only','Metamorphic facies; not lithologic provenance');
+INSERT OR IGNORE INTO geology_map_assets
+(id,map_id,original_filename,drive_file_id,format,sha256,byte_size,width_px,height_px,role,status)
+VALUES
+('asset-ma-zen1983-zip','usgs-ma-bedrock-zen-1983','USGS_ngm16357.zip','1RcXdi8XiAjeCaTwzu8Tob6WzHLpcWbZz','zip','a48efc79baef0d9a468e14773bd4c66c1b261bd0bec9ddf521b232f8fbff418f',37644226,17476,12370,'original_archive','unprocessed'),
+('asset-ma-zen1983-kmz','usgs-ma-bedrock-zen-1983','USGS_ngm16357_1.kmz','170lDnGOw7NeDEJFkJGTrns26EQSDaQnF','kmz','e95b1fbb87d1d613cce8ddbc81011f7d114d839aecad2c58f38db1f3c3a0fd6c',8664436,10000,10000,'google_earth_overlay','unprocessed'),
+('asset-nh-lyons1997-pdf','usgs-nh-bedrock-lyons-1997','geo-nhx-250000-bmap-pg1-lyons1997.pdf','1pt7_FWSXy7yvbcQzZQdIyIfiN5PWQ0d9','pdf',NULL,2552473,NULL,NULL,'published_pdf','unprocessed');

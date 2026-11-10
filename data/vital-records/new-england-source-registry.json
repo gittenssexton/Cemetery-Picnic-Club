@@ -1,0 +1,101 @@
+{
+  "schema": "cpc-vital-source-inventory-v1",
+  "as_of": "2026-11-10",
+  "pilot": "MA-Warren",
+  "states": [
+    {
+      "code": "MA",
+      "state": "Massachusetts",
+      "priority": 1,
+      "coverage": "Pre-1841 town records; statewide archives 1841–1935; modern 1936–present restricted access workflows",
+      "primary_url": "https://www.sec.state.ma.us/divisions/archives/collections/vital-records.htm",
+      "first_sources": [
+        {
+          "id": "ma-warren-1849-rice1910",
+          "title": "Vital records of Warren (formerly Western), Massachusetts, to the end of the year 1849",
+          "year": 1910,
+          "url": "https://www.loc.gov/item/10008543/",
+          "loc_iiif": "https://www.loc.gov/resource/gdcmassbookdig.vitalrecordsofwa00war/",
+          "status": "bibliography_verified",
+          "license": "Public domain (LOC collection)",
+          "special_note": "GS2 stands for Pine Grove gravestone; treat as cemetery-derived source, NOT independent gravestone confirmation"
+        },
+        {
+          "id": "ma-spencer-1849-rice1909",
+          "title": "Vital records of Spencer, Massachusetts, to the end of the year 1849",
+          "year": 1909,
+          "url": "https://www.loc.gov/resource/gdcmassbookdig.vitalrecordsofsp00spencer/",
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "code": "CT",
+      "state": "Connecticut",
+      "priority": 2,
+      "coverage": "Town registers before statewide collection (1897), state office July 1 1897 onward",
+      "primary_url": "https://portal.ct.gov/dph/resources-and-records/vital-records",
+      "status": "source_discovery"
+    },
+    {
+      "code": "RI",
+      "state": "Rhode Island",
+      "priority": 3,
+      "coverage": "State archive open births/marriages older than 101 years and deaths older than 51 years; town and pre-1853 records separately",
+      "primary_url": "https://www.sos.ri.gov/divisions/state-archives/VitalRecords",
+      "status": "source_discovery"
+    },
+    {
+      "code": "NH",
+      "state": "New Hampshire",
+      "priority": 4,
+      "coverage": "Genealogical vault holds records dating to about 1640; check eligibility and use restrictions record by record",
+      "primary_url": "https://www.sos.nh.gov/vital-records/",
+      "status": "source_discovery"
+    },
+    {
+      "code": "VT",
+      "state": "Vermont",
+      "priority": 5,
+      "coverage": "Historical records from about 1760; some 1760–2008 accessible via partner sites; legal public-access status does not grant redistribution rights to partner images",
+      "primary_url": "https://sos.vermont.gov/vsara/explore/people/vital-records",
+      "status": "source_discovery"
+    },
+    {
+      "code": "ME",
+      "state": "Maine",
+      "priority": 6,
+      "coverage": "Local pre-1892 records; statewide registration January 1 1892 onward",
+      "primary_url": "https://www3.maine.gov/dhhs/mecdc/vital-records",
+      "status": "source_discovery"
+    }
+  ],
+  "partner_discovery": [
+    {
+      "name": "Library of Congress",
+      "url": "https://www.loc.gov/apis/",
+      "api": "Metadata JSON and selected OCR/image services; record-specific availability",
+      "rights": "per-item rights statement and source attribution"
+    },
+    {
+      "name": "Digital Commonwealth",
+      "url": "https://www.digitalcommonwealth.org/api",
+      "api": "metadata discovery; endpoints and allowable bulk usage require testing",
+      "rights": "per-item/collection"
+    },
+    {
+      "name": "FamilySearch",
+      "url": "https://www.familysearch.org/",
+      "api": "requires approved integration; not a default ingestion source",
+      "rights": "respect platform and collection restrictions"
+    }
+  ],
+  "rules": [
+    "Store each printed entry and page citation independently from person identity",
+    "Retain verbatim dates, names, abbreviations, spelling and uncertain OCR",
+    "Track gravestone-derived evidence and prevent circular corroboration",
+    "Do not scrape restricted modern records",
+    "Require reviewer before merging persons or linking markers",
+    "Keep a record even if no person has been identified"
+  ]
+}

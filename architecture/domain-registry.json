@@ -1,0 +1,388 @@
+{
+  "schema": "cpc-domain-registry-v1",
+  "version": "1.0.0",
+  "status": "proposed_contract_not_deployed",
+  "shared": {
+    "canonical_entities": [
+      "cemetery",
+      "marker",
+      "person",
+      "burial",
+      "image",
+      "source",
+      "claim"
+    ],
+    "common_fields": [
+      "id",
+      "source_ref",
+      "evidence_locator",
+      "confidence",
+      "review_status",
+      "rights_status",
+      "observed_at",
+      "valid_time",
+      "recorded_at"
+    ],
+    "entity_ref_format": "<domain>:<entity-type>:<stable-id>",
+    "contract_version_field": "schema_version",
+    "cross_domain_link_rule": "Typed, evidence-backed link; never infer identity from a matching name, motif, photo or geology alone",
+    "event_rule": "Append evidence events; do not overwrite source reading without preserving history",
+    "cross_domain_link_tables": [
+      "domain_entity_refs",
+      "domain_evidence_links"
+    ]
+  },
+  "domains": [
+    {
+      "code": "CEM",
+      "name": "Cemetery inventory",
+      "prefix": "cem_",
+      "entities": [
+        "cemetery",
+        "section",
+        "plot",
+        "marker",
+        "burial"
+      ],
+      "terms": {
+        "marker": "physical memorial object",
+        "burial": "interment event/association",
+        "plot": "cemetery location unit"
+      },
+      "tables": [
+        "cemeteries",
+        "markers",
+        "burials",
+        "marker_person_links",
+        "marker_positions"
+      ],
+      "validation": [
+        "marker != burial != person",
+        "locations carry accuracy and publication scope"
+      ],
+      "imports": [
+        "municipal ledger",
+        "field survey"
+      ],
+      "status": "baseline"
+    },
+    {
+      "code": "VIT",
+      "name": "Vital and civil records",
+      "prefix": "vit_",
+      "entities": [
+        "event",
+        "jurisdiction",
+        "collection",
+        "source_document",
+        "page_ref",
+        "participant",
+        "match_candidate"
+      ],
+      "terms": {
+        "event": "source-described occurrence; not necessarily a verified fact",
+        "match_candidate": "possible link requiring reviewer"
+      },
+      "tables": [
+        "vital_jurisdictions",
+        "vital_record_collections",
+        "vital_source_documents",
+        "vital_source_page_refs",
+        "vital_record_entries",
+        "vital_entry_participants",
+        "vital_entity_match_candidates"
+      ],
+      "validation": [
+        "birth/death/marriage/burial are distinct event types",
+        "preserve original spelling and dates",
+        "GS2 cemetery citation is not independent of same gravestone"
+      ],
+      "imports": [
+        "public-domain town volumes",
+        "licensed archives"
+      ],
+      "branch": "feature/new-england-vital-records-core",
+      "status": "staged_unmerged"
+    },
+    {
+      "code": "GEO",
+      "name": "Geology and stone material",
+      "prefix": "geo_",
+      "entities": [
+        "geologic_map",
+        "map_asset",
+        "unit",
+        "geometry",
+        "specimen",
+        "material_candidate",
+        "quarry_candidate"
+      ],
+      "terms": {
+        "geologic_unit": "map-described bedrock/surficial context",
+        "material_candidate": "hypothesized monument substance",
+        "quarry_candidate": "historically proposed source of stone"
+      },
+      "tables": [
+        "material_types",
+        "stone_observations",
+        "stone_material_candidates",
+        "material_provenance_hypotheses",
+        "geology_map_sources",
+        "geology_units",
+        "geology_site_context"
+      ],
+      "validation": [
+        "mapped bedrock is not gravestone material",
+        "photo cannot verify a quarry",
+        "spatial map scale and accuracy recorded"
+      ],
+      "imports": [
+        "USGS",
+        "MassGIS",
+        "quarry archives"
+      ],
+      "branch": "feature/stone-camera-pilot",
+      "status": "partly_staged_unmerged"
+    },
+    {
+      "code": "ICO",
+      "name": "Funerary iconography",
+      "prefix": "ico_",
+      "entities": [
+        "motif",
+        "observation",
+        "interpretation",
+        "tradition",
+        "comparative_feature"
+      ],
+      "terms": {
+        "motif": "observable visual design",
+        "interpretation": "time-and-culture-bound meaning claim"
+      },
+      "tables": [
+        "motifs",
+        "marker_motifs",
+        "motif_interpretations",
+        "interpretation_citations"
+      ],
+      "validation": [
+        "multiple interpretations allowed",
+        "no motif implies maker or belief"
+      ],
+      "imports": [
+        "scholarly publications",
+        "field annotations"
+      ],
+      "status": "baseline_plus_camera_branch"
+    },
+    {
+      "code": "CAR",
+      "name": "Carvers and craftsmanship",
+      "prefix": "car_",
+      "entities": [
+        "craftsperson",
+        "workshop",
+        "signature",
+        "lettering_style",
+        "attribution_candidate"
+      ],
+      "terms": {
+        "attribution_candidate": "reviewable maker/workshop hypothesis",
+        "signature": "inscription as observed, not inherently authenticated"
+      },
+      "tables": [
+        "craftspeople",
+        "maker_research_links",
+        "carver_attribution_candidates",
+        "lettering_style_observations"
+      ],
+      "validation": [
+        "signed/documented evidence outranks style resemblance",
+        "preserve contradictory candidates"
+      ],
+      "imports": [
+        "signed-marker studies",
+        "workshop histories"
+      ],
+      "branch": "feature/field-camera-pilot",
+      "status": "partly_staged_unmerged"
+    },
+    {
+      "code": "IMG",
+      "name": "Field capture and visual analysis",
+      "prefix": "img_",
+      "entities": [
+        "photo_original",
+        "derivative",
+        "image_region",
+        "capture_session",
+        "visual_candidate"
+      ],
+      "terms": {
+        "original": "unaltered captured asset",
+        "derivative": "processing output linked to original",
+        "visual_candidate": "on-device region proposal, not semantic recognition"
+      },
+      "tables": [
+        "images",
+        "field_drafts",
+        "marker_form_observations",
+        "carving_feature_observations"
+      ],
+      "validation": [
+        "originals immutable",
+        "metadata GPS != plot GPS",
+        "rights before publish or analysis"
+      ],
+      "imports": [
+        "iPhone field photos",
+        "licensed archives"
+      ],
+      "branch": "feature/field-camera-pilot",
+      "status": "partly_staged_unmerged"
+    },
+    {
+      "code": "HIS",
+      "name": "Scholarly sources and history",
+      "prefix": "his_",
+      "entities": [
+        "work",
+        "citation",
+        "collection",
+        "source_item",
+        "claim"
+      ],
+      "terms": {
+        "work": "bibliographic publication entity",
+        "claim": "assertion anchored to one or more evidence sources"
+      },
+      "tables": [
+        "research_works",
+        "research_citations",
+        "research_collections",
+        "claims",
+        "claim_evidence"
+      ],
+      "validation": [
+        "citation does not confer image rights",
+        "metadata-only != full-text reviewed"
+      ],
+      "imports": [
+        "academic catalog",
+        "historic books",
+        "archive metadata"
+      ],
+      "status": "baseline"
+    },
+    {
+      "code": "KIN",
+      "name": "Genealogy and identity",
+      "prefix": "kin_",
+      "entities": [
+        "person",
+        "name_variant",
+        "relationship_candidate",
+        "identity_match"
+      ],
+      "terms": {
+        "identity_match": "hypothesis not automatic merge",
+        "name_variant": "source-preserved name representation"
+      },
+      "tables": [
+        "persons",
+        "marker_person_links",
+        "vital_entity_match_candidates"
+      ],
+      "validation": [
+        "name/date similarity insufficient for identity",
+        "living-person privacy restrictions"
+      ],
+      "imports": [
+        "vital records",
+        "probate",
+        "family registers"
+      ],
+      "status": "partly_staged_unmerged"
+    },
+    {
+      "code": "LOC",
+      "name": "Geospatial and historic place",
+      "prefix": "loc_",
+      "entities": [
+        "place",
+        "historic_name",
+        "coordinate_observation",
+        "map_source"
+      ],
+      "terms": {
+        "coordinate_observation": "location with datum, uncertainty, method and date"
+      },
+      "tables": [
+        "geographic_scopes",
+        "marker_positions",
+        "geology_site_context"
+      ],
+      "validation": [
+        "GPS accuracy mandatory when known",
+        "historical place alias preserved",
+        "sensitive sites visibility-controlled"
+      ],
+      "imports": [
+        "survey",
+        "GIS map",
+        "historic gazetteer"
+      ],
+      "status": "baseline_plus_geology_branch"
+    },
+    {
+      "code": "CON",
+      "name": "Conservation and stewardship",
+      "prefix": "con_",
+      "entities": [
+        "condition_observation",
+        "intervention_proposal",
+        "authorization",
+        "stewardship_event"
+      ],
+      "terms": {
+        "condition_observation": "recorded feature distinct from diagnosis",
+        "authorization": "permission from responsible authority"
+      },
+      "tables": [
+        "condition_observations"
+      ],
+      "validation": [
+        "observation not a diagnosis",
+        "no work without authorization"
+      ],
+      "imports": [
+        "inspection",
+        "municipal policy",
+        "conservation literature"
+      ],
+      "status": "baseline"
+    }
+  ],
+  "migrations": {
+    "existing_main": [
+      "0001_initial.sql",
+      "0002_global_research_core.sql",
+      "0003_stone_identification.sql"
+    ],
+    "unmerged_collisions": [
+      "feature/stone-camera-pilot:0004_geological_map_core.sql",
+      "feature/field-camera-pilot:0004_monument_analysis.sql",
+      "feature/new-england-vital-records-core:0005_new_england_vital_records.sql"
+    ],
+    "integration_plan": [
+      "0004_geological_map_core.sql",
+      "0005_monument_analysis.sql",
+      "0006_new_england_vital_records.sql",
+      "0007_domain_evidence_links.sql",
+      "0008_metadata_import_audit.sql",
+      "0009_vital_ocr_review_queue.sql",
+      "0010_vital_manual_review_evidence.sql"
+    ],
+    "policy": "Never renumber an already-applied production migration. Reconcile staging branch migrations prior to first production rollout; for any deployed migration use a new append-only version."
+  }
+}

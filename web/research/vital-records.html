@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#173e33"><title>Historical Record Research · CPC Pilot</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f8f7f1;color:#20392e;font:16px/1.5 system-ui,-apple-system,sans-serif}header{background:#173e33;color:#fff;padding:25px max(20px,calc((100vw - 770px)/2))}h1,h2{font-family:Georgia,serif;font-weight:normal}h1{margin:3px 0;font-size:2rem}main{max-width:770px;margin:auto;padding:18px}section{padding:18px;border:1px solid #d8e1d6;border-radius:13px;background:white;margin-bottom:14px}h2{font-size:1.4rem;margin:0 0 10px}.muted{color:#52695d;font-size:.9rem}.notice{background:#fff4e1;border-left:4px solid #a87d3b;padding:12px}label{display:block;margin:14px 0 6px;font-weight:600}input{font:inherit;width:100%;padding:12px;border:1px solid #8da699;border-radius:10px}button{font:inherit;padding:11px 16px;border-radius:10px;background:#173e33;color:white;border:0;cursor:pointer}a{color:#126149}li{padding:4px 0}.linkbox{background:#f3f7f1;padding:12px;border-radius:10px;margin-top:12px}.mini{font-size:.84rem;color:#53685b}</style></head><body>
+<header><div style="font-size:.8rem;letter-spacing:.1em">CEMETERY PICNIC CLUB · RESEARCH PILOT</div><h1>Historical vital records</h1><div>Evidence-led research for cemetery field observations</div></header>
+<main>
+<section><h2>Search a historical name</h2>
+<p class="notice">This is an archival discovery tool, <strong>not</strong> an automatic identity matcher. Search terms go to the external archive only when you open its link. No camera photo, GPS, or local cemetery record is transmitted by this page.</p>
+<label for="name">Person's name or surname</label><input id="name" type="search" maxlength="120" autocomplete="off" placeholder="Enter a historical surname">
+<div style="margin-top:14px"><button type="button" id="search">Prepare archive searches</button></div>
+<div id="searchResults" aria-live="polite"></div>
+<p class="mini">The currently staged 75 Warren birth-entry candidates have not been accepted as verified events. They are intentionally not published here.</p>
+</section>
+<section><h2>New England source collections</h2>
+<ul><li><strong>Massachusetts:</strong> <a href="https://www.loc.gov/resource/gdcmassbookdig.vitalrecordsofwa00war/" target="_blank" rel="noopener noreferrer">Warren (formerly Western), vital records to 1849</a> · <a href="https://www.sec.state.ma.us/divisions/archives/collections/vital-records.htm" target="_blank" rel="noopener noreferrer">Massachusetts Archives</a></li>
+<li><strong>Connecticut:</strong> <a href="https://portal.ct.gov/dph/resources-and-records/vital-records" target="_blank" rel="noopener noreferrer">Vital records</a></li>
+<li><strong>Rhode Island:</strong> <a href="https://www.sos.ri.gov/divisions/state-archives/VitalRecords" target="_blank" rel="noopener noreferrer">State Archives</a></li>
+<li><strong>New Hampshire:</strong> <a href="https://www.sos.nh.gov/vital-records/" target="_blank" rel="noopener noreferrer">Vital records</a></li>
+<li><strong>Vermont:</strong> <a href="https://sos.vermont.gov/vsara/explore/people/vital-records" target="_blank" rel="noopener noreferrer">VSARA</a></li>
+<li><strong>Maine:</strong> <a href="https://www3.maine.gov/dhhs/mecdc/vital-records" target="_blank" rel="noopener noreferrer">Vital records</a></li></ul>
+<p class="muted">Different state and collection rules apply. For historical sources, preserve each record's original text, page number and source abbreviation. In the Warren book, G.S.2 identifies entries copied from Pine Grove gravestones; those entries do not independently verify that gravestone.</p>
+</section>
+<section><h2>Connect evidence carefully</h2><p>A source entry, person, grave marker and burial are distinct records. A name/date resemblance creates a research lead, not a confirmed match. Review the source page and original inscription before making any link.</p>
+<p><a href="../camera/">Return to field camera</a> · <a href="../index.html">Field notebook</a></p></section>
+</main>
+<script>
+(()=>{
+const byId=id=>document.getElementById(id);
+byId("search").onclick=()=>{
+const name=byId("name").value.trim();const host=byId("searchResults");host.replaceChildren();
+if(name.length<2||name.length>120||!(/^[\p{L}\p{M} .,'-]+$/u.test(name))){host.textContent="Enter at least two letters (name punctuation is allowed).";return;}
+const results=[{label:"Search Library of Congress",url:"https://www.loc.gov/search/?q="+encodeURIComponent(name+" vital records")},{label:"Search Digital Commonwealth",url:"https://www.digitalcommonwealth.org/search?search_field=all_fields&q="+encodeURIComponent(name)}];
+const box=document.createElement("div");box.className="linkbox";const intro=document.createElement("p");intro.textContent="Open an external archival search (only the typed name is sent):";box.append(intro);
+for(const item of results){const p=document.createElement("p"),link=document.createElement("a");link.textContent=item.label;link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";p.append(link);box.append(p);}
+host.append(box);
+};
+})();
+</script></body></html>
