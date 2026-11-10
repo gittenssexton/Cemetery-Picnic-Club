@@ -81,3 +81,11 @@ Do not merge to main or deploy until live migration history and all schema, cont
 - Added `tests/test_domain_ref_adapter.py` covering missing source row, invalid ID, duplicate-safe reference registration, citation requirement, candidate rejection/removal, original image preservation, and no implicit publishing.
 - GitHub Actions succeeded at commit `50a60dc65a1f3978ba7979fb97579864674337c0`: https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42844288760
 - This Python adapter is a tested integration/library interface, not yet a deployed Worker API. No real-source imports or app sync are claimed.
+
+## Further integration — evidence bridge runtime guards
+- The branch already contained `0007_domain_evidence_links.sql`. A schema-only canonical reference does not guarantee the polymorphic underlying record exists, so `scripts/domain_evidence_bridge.py` now checks allowed domain/table ownership and the actual source row before registering a canonical ref.
+- Candidate links require an existing `sources` citation and nonblank locator, valid registered endpoints, and remain restricted/unpublished by default. No automatic person merge or geology attribution.
+- Rejection preserves the reviewed link, original image/source record, and historical entry. A read-only public view includes only explicitly reviewed, publicly permitted links and omits raw citation notes and locators. **Page-level photo/record/GPS permissions still need separate application checks.**
+- The new `tests/test_evidence_bridge.py` includes missing-row, invented-citation, mistaken namespace, duplicate mapping, rejection-retention and privacy/redaction cases.
+- Verified successful GitHub Actions run: **64 tests passing**, https://github.com/gittenssexton/Cemetery-Picnic-Club/actions/runs/42844481860 .
+- No CPC staging D1 was created; no production change. Next: integrate the reviewed application API with these guards and separately verify a dedicated CPC staging DB and field-camera capture behavior.
