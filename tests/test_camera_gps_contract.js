@@ -41,6 +41,9 @@ has("strip.export_privacy={gps_exif_copy_included:false");
 has('strip.export_privacy.gps_exif_copy_included=true');
 has("async function openReview(r){$('exportGpsExif').checked=false;");
 has('record_json_contains_coordinates:!!r.location');
+has('id="clearManualGpsBtn"');
+has("state.manualGps=null;state.gps=null;state.siteMatch=null;redrawGPS();requestGPS()");
+
 absent('<span>GPS embedded in JPEG</span><strong>When available</strong>');
 
 
