@@ -1,0 +1,228 @@
+{
+  "schema_version": "0.1",
+  "scope": "historical New England grave marker form and silhouette training labels; hypotheses, not identity determinations",
+  "source_policy": "Source categories summarized into original machine-readable labels; no third-party photographs embedded.",
+  "source_ids": {
+    "farber": {
+      "title": "Jessie Lie Farber, Early American Gravestones: Introduction to the Farber Gravestone Collection",
+      "url": "https://www.americanantiquarian.org/sites/default/files/2026-04/farber.pdf",
+      "rights": "Copyright 2003 American Antiquarian Society; free to read/download, not blanket permission for AI training or commercial reuse",
+      "relevant_topics": [
+        "size and shape",
+        "carver attribution",
+        "regional and chronological variation"
+      ]
+    },
+    "forbes": {
+      "title": "Harriette Merrifield Forbes, Gravestones of Early New England and the Men Who Made Them, 1653–1800 (1927)",
+      "url": "https://books.google.com/books?id=ZawgAAAAMAAJ",
+      "rights": "1927 US edition is likely public domain in the United States; verify scan/edition and photographs separately before republishing",
+      "relevant_topics": [
+        "stonecutters",
+        "design",
+        "materials",
+        "symbolism"
+      ]
+    },
+    "nps": {
+      "title": "NPS Preservation Brief 48: Preserving Grave Markers in Historic Cemeteries",
+      "url": "https://www.nps.gov/subjects/ncptt/upload/Preserving-Grave-Markers-in-Historic-Cemeteries.pdf",
+      "rights": "US government text often public domain, but third-party figures/photos may be separately credited",
+      "relevant_topics": [
+        "marker types",
+        "material",
+        "condition"
+      ]
+    },
+    "user_reference": {
+      "title": "Cemetery Picnic Club Scan Nov 8 2026 at 7.00 PM",
+      "rights": "User-provided scan; do not publish illustrative art without rights review",
+      "relevant_topics": [
+        "carved symbols",
+        "meaning"
+      ]
+    }
+  },
+  "form_types": [
+    {
+      "id": "fieldstone",
+      "name": "Natural fieldstone",
+      "broader": "single_element",
+      "definition": "Unworked or lightly modified natural stone"
+    },
+    {
+      "id": "headstone_tablet",
+      "name": "Upright tablet / headstone",
+      "broader": "single_element",
+      "definition": "Standing, single slab with one principal inscribed face"
+    },
+    {
+      "id": "footstone",
+      "name": "Footstone",
+      "broader": "single_element",
+      "definition": "Smaller marker at foot of grave"
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "broader": "single_element",
+      "definition": "Flat slab lying over grave"
+    },
+    {
+      "id": "obelisk",
+      "name": "Obelisk",
+      "broader": "multiple_element",
+      "definition": "Tall tapered shaft, frequently stacked bases"
+    },
+    {
+      "id": "column",
+      "name": "Column",
+      "broader": "multiple_element",
+      "definition": "Column with shaft and capital"
+    },
+    {
+      "id": "cross",
+      "name": "Cross",
+      "broader": "single_or_multiple",
+      "definition": "Cross-shaped memorial"
+    },
+    {
+      "id": "box_tomb",
+      "name": "Box tomb",
+      "broader": "structure",
+      "definition": "Rectangular masonry form above grave"
+    },
+    {
+      "id": "table_tomb",
+      "name": "Table tomb",
+      "broader": "structure",
+      "definition": "Horizontal tablet on supports"
+    },
+    {
+      "id": "mausoleum",
+      "name": "Mausoleum",
+      "broader": "structure",
+      "definition": "Above-ground burial structure"
+    },
+    {
+      "id": "other",
+      "name": "Other form",
+      "broader": "unknown",
+      "definition": "Needs human classification"
+    }
+  ],
+  "silhouette_features": {
+    "top_profile": [
+      "tripartite_three_lobed",
+      "semicircular_arch",
+      "segmental_arch",
+      "ogee_arch",
+      "pointed_gothic",
+      "pediment",
+      "stepped",
+      "flat_rectangular",
+      "irregular",
+      "unknown"
+    ],
+    "shoulders": [
+      "paired_rounded",
+      "paired_squared",
+      "ornate_curved",
+      "ogee",
+      "asymmetric",
+      "none",
+      "damaged",
+      "unknown"
+    ],
+    "finials": [
+      "paired_round",
+      "paired_volute",
+      "pointed",
+      "floral",
+      "missing",
+      "none",
+      "uncertain"
+    ],
+    "outline_condition": [
+      "intact",
+      "broken_tip",
+      "broken_shoulder",
+      "buried_base",
+      "obscured",
+      "unknown"
+    ],
+    "panel": [
+      "rectangular",
+      "arched",
+      "shaped",
+      "none",
+      "unknown"
+    ],
+    "border_style": [
+      "none",
+      "incised_line",
+      "scroll",
+      "foliate",
+      "geometric",
+      "other",
+      "unknown"
+    ],
+    "measurement_method": [
+      "physical_measured",
+      "photogrammetry_calibrated",
+      "pixel_ratio_only",
+      "unavailable"
+    ]
+  },
+  "reference_patterns": [
+    {
+      "id": "colonial_tripartite",
+      "features": {
+        "top_profile": "tripartite_three_lobed",
+        "shoulders": "paired_rounded"
+      },
+      "historical_note": "Common seventeenth to early eighteenth-century New England pattern; many regional and artisan variations",
+      "sources": [
+        "farber"
+      ]
+    },
+    {
+      "id": "ornate_later_eighteenth",
+      "features": {
+        "shoulders": "ornate_curved"
+      },
+      "historical_note": "Later eighteenth-century variation; date estimates must rely on other evidence",
+      "sources": [
+        "farber"
+      ]
+    },
+    {
+      "id": "neoclassical_round_crown_square_shoulder",
+      "features": {
+        "top_profile": "semicircular_arch",
+        "shoulders": "paired_squared"
+      },
+      "historical_note": "Simplified neoclassical forms appear around 1800, with regional overlap",
+      "sources": [
+        "farber"
+      ]
+    }
+  ],
+  "capture_requirements": [
+    "full_outline_visible",
+    "straight_on_view",
+    "document_base_and_groundline",
+    "close_up_crest",
+    "both_shoulders",
+    "inscription_panel",
+    "material_close_up",
+    "back_and_side_optional"
+  ],
+  "evidence_controls": {
+    "never_infer_carver_from_silhouette_alone": true,
+    "do_not_infer_century_without_context": true,
+    "distinguish_occluded_from_missing": true,
+    "reference_image_rights_per_item": true,
+    "confidence_or_abstain_required": true
+  }
+}
