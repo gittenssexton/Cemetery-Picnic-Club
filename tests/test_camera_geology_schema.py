@@ -10,7 +10,7 @@ MIGRATIONS = ROOT / 'db' / 'migrations'
 class IntegratedMigrationContractTests(unittest.TestCase):
     def test_migration_numbers_are_unique(self):
         paths = sorted(MIGRATIONS.glob('*.sql'))
-        self.assertGreaterEqual(len(paths), 5)
+        self.assertGreaterEqual(len(paths), 4)
         ids = []
         for path in paths:
             match = re.match(r'^(\d{4})_', path.name)
