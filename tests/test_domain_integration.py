@@ -15,7 +15,7 @@ class DomainIntegrationTests(unittest.TestCase):
         self.db.execute("PRAGMA foreign_keys=ON")
         files = sorted((ROOT / "db/migrations").glob("*.sql"))
         self.assertEqual([p.name[:4] for p in files],
-                         ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"])
+                         ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009"])
         for file in files:
             with self.subTest(migration=file.name):
                 self.db.executescript(file.read_text(encoding="utf-8"))
