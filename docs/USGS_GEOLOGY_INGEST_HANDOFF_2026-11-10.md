@@ -1,0 +1,86 @@
+# Cemetery Picnic Club — USGS geology ingestion & own-database handoff
+**Date:** 2026-11-10  
+**Scope:** Massachusetts first (Pine Grove / Warren pilot), New Hampshire second.  
+**Branch:** `feature/stone-camera-pilot`  
+**Production status:** Planning schema and inventory only; **no D1 migration run, no geologic tile service deployed, no unit attribution or automatic rock recognition claimed**.
+
+## 1. Purpose
+Create a source-verified, citation-aware **CPC geology reference database** that can show mapped bedrock and surficial geology, classify the material of a monument tentatively, and investigate **independently supported** historical quarry origins. Treat these as separate entities. Use USGS, Massachusetts and other documented reference sources, not Mindat material until written permission and terms allow it.
+
+## 2. Source files — verified and organized
+All three uploads were moved **without renaming, overwriting or modifying originals** into:
+
+Cemetery Picnic Club / `08_Geography_Maps_GIS/01_GIS_Survey_Data`  
+https://drive.google.com/drive/folders/1Jfu7hl2HrrTKtgYJKJ4jAhbzATvP-O7E
+
+**USGS_ngm16357.zip** — [Drive](https://drive.google.com/file/d/1RcXdi8XiAjeCaTwzu8Tob6WzHLpcWbZz/view)
+- USGS NGMDB *Bedrock geologic map of Massachusetts*, E-an Zen and colleagues, 1983, 1:250,000.
+- Contains `USGS_ngm16357_1.tif` (**17,476 × 12,370 pixels**), `USGS_ngm16357_1.tif.aux.xml`, `USGS_ngm16357_1.tif.txt`, and `README.txt`.
+- README identifies the USGS/AASG National Geologic Map Database download and citation. Auxiliary XML identifies `NAD_1927_Contiguous_USA_Albers` (EPSG:5069) and **four control points** for a first-order polynomial transformation.
+- ZIP SHA-256: `a48efc79baef0d9a468e14773bd4c66c1b261bd0bec9ddf521b232f8fbff418f`.
+
+**USGS_ngm16357_1.kmz** — [Drive](https://drive.google.com/file/d/170lDnGOw7NeDEJFkJGTrns26EQSDaQnF/view)
+- `doc.kml`, a **10,000 × 10,000** overlay JPG, and branding/image assets; **not** geological vector polygons.
+- KML bounds: N 42.8868011971, S 41.2273004221, E -69.9162474005, W -73.5082464435 (WGS84-style latitude/longitude).
+- KMZ SHA-256: `e95b1fbb87d1d613cce8ddbc81011f7d114d839aecad2c58f38db1f3c3a0fd6c`.
+- Overlay coverage is approximate and includes surrounding map labels/legend; do **not** assume each point can be assigned a map-unit solely by querying a JPG pixel.
+
+**geo-nhx-250000-bmap-pg1-lyons1997.pdf** — [Drive](https://drive.google.com/file/d/1pt7_FWSXy7yvbcQzZQdIyIfiN5PWQ0d9/view)
+- New Hampshire bedrock map and descriptive legend, 1:250,000 (Lyons et al., 1997 per filename; verify citation against the title sheet).
+- Readable legend includes granites, diorites, gabbros, syenites and metamorphic rocks; extracted text is imperfect due to map typography. It is **not** yet a structured geological-unit file.
+
+## 3. What is established versus not established
+**Verified:** file identities, directory and embedded asset lists, TIFF/JPG pixel dimensions, Massachusetts scale/year/authors from README, KML footprint, 4 GCPs and projected CRS in the auxiliary file, ZIP/KMZ checksums, successful Drive moves.
+
+**Unverified:** registration accuracy at known benchmarks, actual rock at Pine Grove, automatically mapped geological unit at any coordinate, geological unit polygons, exact NH bibliographic citation, any historical quarry provenance, photo-classifier accuracy, production D1 state.
+
+The supplied map is an image; it needs an appropriately licensed **attributed vector bedrock dataset** or human-verified unit polygon digitization before reliable point-to-rock-type lookups can be offered from our own local DB.
+
+## 4. Target data model and terminology
+The new **`db/migrations/0004_geological_map_core.sql`** extends existing research, material, marker, photo and quarry tables (including `0003_stone_identification.sql`).
+
+- `geology_map_sources` — publication, year, map scale, region, reference system, rights, provenance and QA state.
+- `geology_map_assets` — original Drive ID, filename, checksum, file dimensions, image/raster/tiles status, source linkage.
+- `geology_units` — reviewed map symbol, formation name, lithology, age, legend locator and review status.
+- `geology_unit_geometries` — **only** sourced/verified GeoJSON geometry, geographic CRS, digitization provenance and reviewer.
+- `geology_site_context` — field observation coordinate, optional mapped unit evidence, source and caveat, **never equivalent to marker provenance**.
+- Existing `material_types`, `stone_material_candidates`, `material_provenance_hypotheses`, `quarries`, `sources`, `research_works` stay authoritative for marker analysis.
+
+Do **not** enter the 1983 image color values as `geology_units`. Each assigned symbol must come from a map legend and reproducible polygon / valid authoritative geodata. Maintain `review_status`.
+
+## 5. Extraction and processing workflow
+1. **Freeze originals** in the Drive GIS Survey Data folder; cite Drive ID and checksum. All processing in separate generated folders, never overwrite.
+2. **Extract the archive locally**; verify member names, zip integrity and checksums. Keep the TIFF and `.aux.xml` together.
+3. **Check georeferencing** using GDAL `gdalinfo` / `gdalwarp` on the raster with its auxiliary file. Four GCPs are not proof of good accuracy. Inspect map corners/known intersections and residuals. Convert NAD27 Albers (EPSG:5069) to EPSG:3857 for map tiles or EPSG:4326 for geographic data. Do not confuse image-pixel coordinates with map coordinates.
+4. **Make low-zoom tiles** (COG or XYZ tiles) after cropping sheet margins carefully, or retain full sheet as a separately labeled historical reference overlay. Publish lightweight derivatives through Cloudflare R2 / static assets, not a 37 MB ZIP in browser code.
+5. **Search for an attributed authoritative vector dataset** of Massachusetts bedrock geologic units, ideally MassGIS with documented unit field and scale. Prefer this to manual tracing. Where no vectors exist, digitize polygons from the scanned map with reviewer QA, marking them derived and approximate.
+6. **Enter legends** (symbol, lithologic description, formation/unit name, geological age) with page/legend locator and source ID. NH PDF typography requires manual confirmation.
+7. **Validate** 15–30 sampled points including Warren, neighboring municipalities, sheet edges, river valleys and boundaries against independent maps. Record QA residuals and unresolved areas.
+8. **Populate D1** map metadata, legend, vetted polygons and locally stored geographic unit references (separate rollout). Use immutable source IDs and record extraction version.
+9. **Integrate** with the existing Stone Camera Pilot: show site geology next to tentative photo material, without implying that a gravestone uses nearby bedrock.
+10. **Add historic quarries** through independent quarry and transportation records, cited and confidence-labeled, before suggesting likely procurement region.
+
+## 6. Quality gates
+- No production deployment before staging map QA.
+- No records marked verified based solely on map color similarity or AI transcription.
+- No geologic point lookup without provenance, map scale and uncertainty.
+- No exact quarry attribution without quarry/archival evidence; gravestones often use transported materials.
+- Keep photo original separate from interpretations, transformations and derivative images.
+- Mindat source remains disabled pending permission, not required for this work.
+- USGS-authored works are generally US federal public-domain, but examine third-party map elements and state contributions before redistribution and include full citation.
+
+## 7. Delivery structure and responsibilities
+**Drive originals:** `08_Geography_Maps_GIS/01_GIS_Survey_Data` (moved and verified).
+
+**GitHub source code and planning on feature branch:**
+- `data/geology-usgs-upload-inventory-2026-11-10.json` — detailed machine-readable inventory with checksums.
+- `db/migrations/0004_geological_map_core.sql` — database schema; **not executed in production**.
+- `docs/USGS_GEOLOGY_INGEST_HANDOFF_2026-11-10.md` — this handoff.
+- `web/stone-camera.html` — existing photo + optional Macrostrat geological lookup preview.
+
+**Future generated folders (create only once processing begins):**
+`generated/geology/ma_zen1983/{warp,tiles,geounits,qa}/`;
+`generated/geology/nh_lyons1997/{georef,legend,qa}/`.
+
+## 8. First concrete build milestone
+**MA phase 1:** a verified source catalog plus Massachusetts geology tiles and *one* trustworthy point query at Warren, with the exact map unit name, source legend symbol, source citation and resolution caveat. If only a raster is available, show the raster *without claiming automated lithology identification*. This is the point where CPC begins to own a reproducible, independently stored geological reference system.
