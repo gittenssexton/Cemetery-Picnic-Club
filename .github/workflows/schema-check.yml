@@ -4,6 +4,9 @@ on:
     paths:
       - "db/**"
       - "tests/**"
+      - "architecture/**"
+      - "scripts/validate_domains.py"
+      - "docs/DOMAIN_ARCHITECTURE.md"
       - ".github/workflows/schema-check.yml"
   pull_request:
     paths:
@@ -16,4 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run SQLite migration and seed tests
-        run: python3 -m unittest discover -s tests -v
+        run: |
+          python3 scripts/validate_domains.py
+          python3 -m unittest discover -s tests -v
