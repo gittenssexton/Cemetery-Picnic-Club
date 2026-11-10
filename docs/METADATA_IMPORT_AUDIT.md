@@ -41,3 +41,7 @@ These SQL seeds are **not themselves imported through the v8 audited JSON adapte
 Before enabling a remote importer: add authenticated caller identity, authorized domain-level permissions, privacy redaction, rate limits, record-level rights checks, durable source-asset checksums, and safe idempotent D1 transactions. Before accepting Warren entries: verify the scanned page, text, source-code lineage (especially G.S.2) and completeness; never infer identity from a matching name alone.
 
 Production, existing Cloudflare Workers, and original photographs remain unchanged.
+
+## Command-line acceptance
+
+The test suite now runs the documented `python3 -m scripts.ingest_audited_metadata` command against a temporary local SQLite database. It verifies a zero-write dry run, one real insert, exact replay as a duplicate, missing-`--database` refusal, and refusal to overwrite altered source metadata. Test file: `tests/test_audited_cli.py`.
