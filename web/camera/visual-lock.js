@@ -66,7 +66,7 @@ function createTracker(){
   const overlap=(a,b)=>{const x=Math.max(a.x,b.x),y=Math.max(a.y,b.y),r=Math.min(a.x+a.w,b.x+b.w),bot=Math.min(a.y+a.h,b.y+b.h);const v=Math.max(0,r-x)*Math.max(0,bot-y);return v/Math.max(.000001,a.w*a.h+b.w*b.h-v)};
   let found=null;
   if(region){
-   let best=.22;
+   let best=region.user_selected?.6:.22;
    for(const c of good){const score=overlap(region.box,c.box);if(score>best){best=score;found=c}}
    // Do not jump to a different monument because it is now the largest shape.
    if(!found)return current(now);
@@ -88,7 +88,7 @@ function createTracker(){
    if(old&&old.points?.length===points.length){
     points=points.map((p,i)=>[old.points[i][0]*.38+p[0]*.62,old.points[i][1]*.38+p[1]*.62]);
    }
-   region={...found,points,persistent_lock_id:serial};
+   region={...found,points,persistent_lock_id:serial,user_selected:!!old?.user_selected};
    lastConfirmed=now;lastObserved=now;state='confirmed';pending=null;previous=copyGray(gray,w,h);
   }
   return current(now);
@@ -97,7 +97,7 @@ function createTracker(){
   if(!target?.points?.length||target.classification!=='possible_monument_shape'||!gray||gray.length<w*h)return null;
   // Tap must refer to an observed visual candidate, never an arbitrary invented rectangle.
   serial++;
-  region={...target,persistent_lock_id:serial};
+  region={...target,persistent_lock_id:serial,user_selected:true};
   lastConfirmed=now;lastObserved=now;state='confirmed';pending=null;
   previous=copyGray(gray,w,h);
   return current(now);
