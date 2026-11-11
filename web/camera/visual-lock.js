@@ -80,7 +80,7 @@ function createTracker(){
    if(first){
     if(pending&&overlap(pending.box,first.box)>.45){pending={box:first.box,hits:pending.hits+1};}
     else pending={box:first.box,hits:1};
-    if(pending.hits>=2)found=first;
+    if(pending.hits>=1)found=first; // Upstream contour tracker already required multiple matching segmentation frames.
    }
   }
   if(found){
