@@ -101,6 +101,11 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  // Evaluate exposure/patchy light/chromatic deposits on the candidate stone surface only.
  // These flags describe appearance; they never identify lichen, algae, mildew or stains.
  surfaceConditions=window.CPCSurfaceConditions?.analyze?.(p,160,200,candidate||null)||null;
+ // If the user enables preview enhancement, favor stone-face exposure over bright
+ // sky and dark vegetation around it. Only change the displayed video CSS filter.
+ if($('livePreviewEnhance')?.checked&&surfaceConditions?.preview){
+   video.style.filter='brightness('+surfaceConditions.preview.brightness+') contrast('+surfaceConditions.preview.contrast+')';
+ }
  ctx.clearRect(0,0,w,h);
  if($('liveMonuments')?.checked){
    ctx.save();ctx.lineWidth=2;
