@@ -73,7 +73,7 @@ function classifyCircularRegion(rgba,w,h,box){
  const directionalShift=Math.abs(best.shift);
  const hasOrganizedPattern=best.score>.52&&dispersion>=16;
  if(!hasOrganizedPattern)return null;
- const candidates=directionalShift>=2&&best.score-radialConsistency>.19?
+ const candidates=directionalShift>=2&&best.score-radialConsistency>.10?
  ['pinwheel','rosette']:['rosette','pinwheel'];
  return {kind:'circular_radial_ornament_candidate_unverified',
    candidates:candidates.map(id=>({id,label:byId[id].label,pdf_page:byId[id].pdf_page})),
