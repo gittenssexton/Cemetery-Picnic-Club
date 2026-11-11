@@ -164,7 +164,7 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  if($('liveSurfaceStatus'))$('liveSurfaceStatus').textContent=surfaceConditions?.flags?.length?'Surface observation: '+surfaceConditions.flags.map(f=>f.replaceAll('_',' ')).join('; ')+'. Color and lighting estimates only; no growth or moisture identified.':'Surface observation: no strong lighting or colored-patch flags in this view.';
  lastDraw=Date.now();
 }
-function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,1200);$('liveDiscovery').checked=true;}
+function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,750);$('liveDiscovery').checked=true;}
 function stop(){running=false;lockedTrackId=null;autoStoneId=null;autoStoneHits=0;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
  const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
