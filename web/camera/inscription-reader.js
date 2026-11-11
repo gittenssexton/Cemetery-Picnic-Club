@@ -94,7 +94,7 @@ function recognize(rgba,w,h,box=null){
  const attempts=[];
  for(const dark of [true,false]){
  const mask=new Uint8Array(sw*sh);let ink=0;
- for(let i=0;i<mask.length;i++){mask[i]=dark?(gray[i]<threshold?1:0):(gray[i]>threshold?1:0);ink+=mask[i]}
+ for(let i=0;i<mask.length;i++){mask[i]=dark?(gray[i]<=threshold?1:0):(gray[i]>=threshold?1:0);ink+=mask[i]}
  const fraction=ink/mask.length;
  if(fraction<.012||fraction>.55)continue;
  const lines=segment(mask,sw,sh),candidates=[];
