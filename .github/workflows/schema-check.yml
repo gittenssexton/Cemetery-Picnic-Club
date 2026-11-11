@@ -39,5 +39,7 @@ jobs:
         run: node tests/test_camera_motion_lock.js
       - name: Test fast persistent visual stone lock
         run: node tests/test_camera_visual_lock.js
+      - name: Test live contextual focus region anchored to gravestone
+        run: node tests/test_camera_focus_region.js
       - name: Test direct Drive photo and JSON synchronization
         run: node tests/test_camera_drive_sync.js
