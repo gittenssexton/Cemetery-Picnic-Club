@@ -2,7 +2,7 @@
 'use strict';const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const src=fs.readFileSync(path.join(__dirname,'../web/camera/surface-features.js'),'utf8');
 const ctx={module:{exports:{}}};vm.runInNewContext(src,ctx);const {VERSION,scan,tracker}=ctx.module.exports;
-assert.equal(VERSION,'CPC_SURFACE_FEATURES_V1');
+assert.equal(VERSION,'CPC_SURFACE_FEATURES_V2');
 const w=160,h=200,img=new Uint8Array(w*h*4);
 for(let i=0;i<w*h;i++){img[i*4]=130;img[i*4+1]=133;img[i*4+2]=128;img[i*4+3]=255}
 function black(x,y){const i=(y*w+x)*4;img[i]=img[i+1]=img[i+2]=20}
@@ -10,6 +10,7 @@ for(let c=0;c<4;c++){const start=35+c*14;for(let y=70;y<83;y++)for(let x=start;x
 for(let y=108;y<145;y++){black(55,y);black(75,y)}for(let x=55;x<76;x++){black(x,108);black(x,144)}
 const target={box:{x:.1,y:.2,w:.8,h:.65}};
 const found=scan(img,w,h,target);
+assert.ok(found.letters.some(f=>Array.isArray(f.strokes)&&f.strokes.length>0),'Letter overlays need actual connected stroke pixels');
 assert.ok(found.letters.length>=2,'Expected repeated stroke groups to yield letter-like candidates');
 assert.ok(found.details.length>=1,'Expected distinct larger carving structure');
 assert.ok(found.letters.every(f=>f.kind==='letter_like_stroke_unverified'));
