@@ -43,5 +43,7 @@ jobs:
         run: node tests/test_camera_focus_region.js
       - name: Test deterministic inscription reading and planar correction
         run: node tests/test_camera_inscription_reading.js
+      - name: Test source-grounded cemetery iconography matching
+        run: node tests/test_camera_iconography.js
       - name: Test direct Drive photo and JSON synchronization
         run: node tests/test_camera_drive_sync.js
