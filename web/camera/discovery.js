@@ -87,8 +87,9 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  const live=window.CPCLiveAnalysis;
  latestAnalysis=live?.analyzeRGBA?.(p,160,200)||null;
  const mode=document.querySelector('[data-shot][aria-pressed="true"]')?.dataset.shot||'front';
+ const motionState=window.CPCMotionLock?.status?.()||{motion:'unknown',may_add_feature_evidence:true};
  latestMonuments=$('liveMonuments')?.checked&&contourTracker?
-   contourTracker.update(window.CPCPixelContours.analyzeScene(p,160,200).regions):[];
+   contourTracker.update(window.CPCPixelContours.analyzeScene(p,160,200).regions,motionState):[];
  // Publicly visible live detection is tentative and never automatically labeled as a named stone.
  if($('livePreviewEnhance')?.checked&&latestAnalysis?.preview){
    const brightness=latestAnalysis.preview.brightness,contrast=latestAnalysis.preview.contrast;
@@ -104,7 +105,10 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  // Require several consecutive observations before auto-selecting a stone.
  // Once stable, prioritize that silhouette; do not draw many distracting scene contours.
  const candidate=selectedStone||(autoStoneHits>=2?topStone:null);
- liveFeatures=candidate&&($('liveLettering')?.checked||$('liveDetails')?.checked)?featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
+ // Suppress new internal-stroke assertions during rapid turns; visual silhouettes
+ // remain visible when a genuinely re-detected candidate exists.
+ liveFeatures=candidate&&motionState.may_add_feature_evidence&&($('liveLettering')?.checked||$('liveDetails')?.checked)?
+   featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
  // Evaluate exposure/patchy light/chromatic deposits on the candidate stone surface only.
  // These flags describe appearance; they never identify lichen, algae, mildew or stains.
  surfaceConditions=window.CPCSurfaceConditions?.analyze?.(p,160,200,candidate||null)||null;
@@ -159,7 +163,12 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  const letterFeatures=liveFeatures.filter(f=>f.kind==='letter_like_stroke_unverified').length;
  const carvings=liveFeatures.filter(f=>f.kind==='carving_or_surface_detail_unverified').length;
  status.textContent='LIVE: '+m+' outlines, '+potential+' monument-like shapes. '+(lockedTrackId!==null?'Target locked. ':'')+letterFeatures+' letter-like strokes, '+carvings+' surface details. Shapes are unverified; no name or symbol identified.';
- if($('liveTargetStatus'))$('liveTargetStatus').textContent=lockedTrackId!==null?'Stone manually locked; analyzing its inscriptions.':candidate?'Stone outline stabilized; tracing possible carved strokes.':'Looking for a stable upright stone; move closer if needed.';
+ if($('liveTargetStatus'))$('liveTargetStatus').textContent=
+  (lockedTrackId!==null?'Stone manually locked. ':candidate?'Stone outline acquired. ':'Seeking stable upright stone. ')+
+  (motionState.motion==='rapid'?'Phone turning quickly; hold steady to confirm details.':
+   motionState.motion==='moving'?'Phone moving; outline updates require stronger visual agreement.':
+   motionState.motion==='steady'?'Phone steady; refining inscription evidence.':
+   'Motion unavailable; using image-only tracking.');
  if($('liveQuality'))$('liveQuality').textContent=surfaceConditions?.advice?.[0]||latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
  if($('liveSurfaceStatus'))$('liveSurfaceStatus').textContent=surfaceConditions?.flags?.length?'Surface observation: '+surfaceConditions.flags.map(f=>f.replaceAll('_',' ')).join('; ')+'. Color and lighting estimates only; no growth or moisture identified.':'Surface observation: no strong lighting or colored-patch flags in this view.';
  lastDraw=Date.now();
@@ -183,7 +192,7 @@ $('liveLockTarget')?.addEventListener('click',()=>{
 });
 // No automatic label claims. Working visual-interest indicators and user-tagged references only.
 window.CPCDiscovery={start,stop,getAnnotations:()=>annotations.map(a=>({...a})),
- snapshot:()=>({analysis_version:latestAnalysis?.version||null,surface_conditions:surfaceConditions?{...surfaceConditions,preview:undefined}:null,surface_feature_version:window.CPCSurfaceFeatures?.VERSION||null,live_feature_count:liveFeatures.length,locked_target_track_id:lockedTrackId,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
+ snapshot:()=>({analysis_version:latestAnalysis?.version||null,motion_guidance:window.CPCMotionLock?.status?.()?.motion||'unknown',motion_assist_version:window.CPCMotionLock?.VERSION||null,surface_conditions:surfaceConditions?{...surfaceConditions,preview:undefined}:null,surface_feature_version:window.CPCSurfaceFeatures?.VERSION||null,live_feature_count:liveFeatures.length,locked_target_track_id:lockedTrackId,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
  clear:()=>{annotations=[];manual=false;canvas.classList.remove('enabled');$('markPanel').hidden=true},
  catalog:catalog.map(c=>({id:c[0],name:c[1],meaning:c[2],source_page:c[3]}))};
 })();
