@@ -46,7 +46,15 @@
       </div>
       <div class="toolbar live-only" id="cameraToolbar"><button class="btn soft" id="startBtn">Enable camera + GPS</button><button class="btn primary" id="captureBtn" disabled>Capture monument</button><button class="btn ghost" id="unlocatedBtn" disabled>Without GPS</button></div>
       
-      <div class="panel-body review-only" id="overviewPickerPanel" hidden><strong>Select the gravestone in the distance photograph</strong><p class="muted">Mint curves are tentative pixel boundaries, not confirmed gravestones. If they are inaccurate or absent, tap the intended gravestone yourself. The yellow target selection is an editable box, not an automatic outline.</p><div class="twocol"><div class="field"><label for="targetWidth">Selection width (%)</label><input type="range" id="targetWidth" min="5" max="75" value="24"></div><div class="field"><label for="targetHeight">Selection height (%)</label><input type="range" id="targetHeight" min="10" max="95" value="58"></div></div><p class="muted" id="overviewSelectionStatus">No stone selected yet. Tap the gravestone in the image.</p></div><div class="panel-body review-only" role="status" aria-live="polite" style="border-top:1px solid var(--line)">
+      <div class="panel-body review-only" id="inscriptionReadingPanel" style="border-top:1px solid var(--line)">
+  <strong>Experimental inscription reading</strong>
+  <p class="muted compact">On-device non-AI pattern matching. Select or trace the stone's engraved face first. These are unverified character candidates, never confirmed names.</p>
+  <div class="review-buttons"><button class="btn soft" id="readInscription2d" type="button">Attempt 2D reading</button><button class="btn soft" id="readInscriptionPlane" type="button">Read straightened stone face</button></div>
+  <p class="muted compact" id="readingStatus" role="status">No reading attempt yet. The original photograph remains unchanged.</p>
+  <pre id="readingCandidates" style="white-space:pre-wrap;overflow-wrap:anywhere;color:#ffe6aa;font-size:13px"></pre>
+  <p class="muted compact">Perspective correction assumes a flat stone face. Reading carved depth from multiple viewpoints requires a separate future 3D analysis stage.</p>
+ </div>
+ <div class="panel-body review-only" id="overviewPickerPanel" hidden><strong>Select the gravestone in the distance photograph</strong><p class="muted">Mint curves are tentative pixel boundaries, not confirmed gravestones. If they are inaccurate or absent, tap the intended gravestone yourself. The yellow target selection is an editable box, not an automatic outline.</p><div class="twocol"><div class="field"><label for="targetWidth">Selection width (%)</label><input type="range" id="targetWidth" min="5" max="75" value="24"></div><div class="field"><label for="targetHeight">Selection height (%)</label><input type="range" id="targetHeight" min="10" max="95" value="58"></div></div><p class="muted" id="overviewSelectionStatus">No stone selected yet. Tap the gravestone in the image.</p></div><div class="panel-body review-only" role="status" aria-live="polite" style="border-top:1px solid var(--line)">
  <strong id="captureSaveState">Saved on this phone</strong>
  <p class="muted" id="captureBackupState">Drive backup status will appear here.</p>
  <p class="muted compact">Taking the photograph saves it immediately to this phone's local camera records. No ZIP export needed.</p>
@@ -139,7 +147,7 @@
 </main>
 <div class="modal-backdrop" id="unlocatedModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><h2 id="modalTitle">Capture without coordinates?</h2><p>The field record will be flagged <strong>LOCATION UNVERIFIED</strong>. This is useful when service is unavailable, but the position will need to be surveyed later.</p><div class="actions"><button class="btn ghost" id="cancelUnlocated">Cancel</button><button class="btn danger" id="confirmUnlocated">Capture unlocated</button></div></div></div>
 <div role="status" aria-live="polite" id="toast"></div>
-<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="surface-features.js"></script><script src="surface-conditions.js"></script><script src="motion-lock.js"></script><script src="visual-lock.js"></script><script src="focus-region.js"></script><script src="https://accounts.google.com/gsi/client" async defer></script><script src="drive-sync.js"></script><script src="discovery.js" defer></script>
+<script src="cemetery-resolver.js"></script><script src="cemetery-sites.js"></script><script src="cemetery-relations.js"></script><script src="exif.js"></script><script src="export-privacy.js"></script><script src="silhouette.js"></script><script src="guided-capture.js"></script><script src="live-analysis.js"></script><script src="pixel-contours.js"></script><script src="surface-features.js"></script><script src="surface-conditions.js"></script><script src="motion-lock.js"></script><script src="visual-lock.js"></script><script src="focus-region.js"></script><script src="inscription-reader.js"></script><script src="reading-geometry.js"></script><script src="https://accounts.google.com/gsi/client" async defer></script><script src="drive-sync.js"></script><script src="discovery.js" defer></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -279,7 +287,7 @@ async function capture(unlocated){if(state.captureBusy)return;if(!state.stream||
   updateSiteMatch(g); const r=generateRecord(g,blob,w,h,polygon);
   if(screenTest){r.capture_source='photograph_of_display_reference_test';r.location=null;r.location_observation=null;r.location_status='reference_image_no_site_attribution';r.cemetery_match=null;r.cemetery_assignment={cemetery_entity_id:null,assignment_method:null,verification_state:'unverified',source_id:null,reviewed_at:null};r.cemetery=null;r.cemetery_relationships_at_capture=null;r.site_name_entry='reference_image_not_site_evidence';}
   try{await storage('readwrite',s=>s.put(r))}catch(e){notify('Saving on device failed: '+e.message);return}window.CPCDiscovery?.clear?.();await openReview(r);await refreshRecords();queueDriveSync();notify(screenTest?'Saved on this phone as a reference-screen test; the pictured site was not GPS-verified.':g?'Saved on this phone with GPS observation. Drive status is shown below the image.':'Saved on this phone without GPS; Drive status is shown below the image.');}finally{state.captureBusy=false}}
-async function openReview(r){$('shareReviewPanel').hidden=true;updateCaptureSaveStatus(r);$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
+async function openReview(r){$('shareReviewPanel').hidden=true;$('readingStatus').textContent='No reading attempt yet.';$('readingCandidates').textContent='';updateCaptureSaveStatus(r);$('exportGpsExif').checked=false;state.capture=r;state.overviewPick=r.shot_type==='overview';state.overviewProposals=[];$('overviewPickerPanel').hidden=r.shot_type!=='overview';if(r.shot_type==='overview')$('targetWidth').value=24;if(r.monument_group_id)$('groupId').value=r.monument_group_id;state.selectedTarget=r.overview_target||null;state.selectedTargetContour=r.overview_target_polygon||null;state.guidedSkipped=Array.isArray(r.guided_skipped)?r.guided_skipped.slice():[];state.guidedSkipReasons=r.guided_skip_reasons&&typeof r.guided_skip_reasons==='object'?{...r.guided_skip_reasons}:{};
   const selected=r.cemetery_assignment?.cemetery_entity_id||null;
   const savedMatch=r.cemetery_match?.status||'no_gps_match';
   const evidence=r.cemetery_match?.candidates?.find(c=>c.entity_id===selected);
@@ -295,6 +303,53 @@ state.polygon=r.polygon||[[.2*r.photo.width,.2*r.photo.height],[.8*r.photo.width
   ui.canvas.width=r.photo.width;ui.canvas.height=r.photo.height;
   if(r.shot_type==='overview'){const small=document.createElement('canvas');small.width=160;small.height=200;const cx=small.getContext('2d',{willReadFrequently:true});cx.drawImage(state.image,0,0,160,200);try{state.overviewProposals=window.CPCPixelContours.analyzeScene(cx.getImageData(0,0,160,200).data,160,200).regions}catch(e){state.overviewProposals=[]} $('overviewSelectionStatus').textContent=state.selectedTarget?'Selected stone highlighted. Tap again to change it.':'Tap the intended stone in the photograph. All visible regions are provisional, not identified gravestones.';}
   await updateGuidedProgress();renderReview(true);}
+async function attemptReadInscription(perspective){
+ if(!state.capture||!state.image)return;
+ const button=$('readInscription2d'),other=$('readInscriptionPlane');
+ button.disabled=true;other.disabled=true;
+ $('readingStatus').textContent='Checking visible character patterns in the captured image…';
+ $('readingCandidates').textContent='';
+ try{
+  const r=state.capture,source=state.image,scale=Math.min(1,1000/Math.max(source.width,source.height));
+  const sw=Math.max(12,Math.round(source.width*scale)),sh=Math.max(12,Math.round(source.height*scale));
+  const raw=document.createElement('canvas');raw.width=sw;raw.height=sh;const cx=raw.getContext('2d',{willReadFrequently:true});cx.drawImage(source,0,0,sw,sh);
+  const original=cx.getImageData(0,0,sw,sh);
+  const pts=Array.isArray(state.polygon)?state.polygon:[];
+  let data,w,h,method;
+  if(perspective){
+    if(pts.length!==4)throw Error('Perspective reading needs four corners. Use Trace 4 corners on the stone face.');
+    const quad=pts.map(p=>[p[0]*scale,p[1]*scale]);
+    const corrected=window.CPCReadingGeometry.rectify(original.data,sw,sh,quad,360,540);
+    data=corrected.data;w=corrected.width;h=corrected.height;method=corrected.method;
+  }else{
+    // Analyze selected monument bounds, not unrelated objects outside it.
+    const x0=Math.max(0,Math.min(sw-1,Math.floor(Math.min(...pts.map(p=>p[0]))*scale)));
+    const y0=Math.max(0,Math.min(sh-1,Math.floor(Math.min(...pts.map(p=>p[1]))*scale)));
+    const x1=Math.max(x0+1,Math.min(sw,Math.ceil(Math.max(...pts.map(p=>p[0]))*scale)));
+    const y1=Math.max(y0+1,Math.min(sh,Math.ceil(Math.max(...pts.map(p=>p[1]))*scale)));
+    const width=x1-x0,height=y1-y0;
+    const scan=document.createElement('canvas');scan.width=width;scan.height=height;
+    scan.getContext('2d').drawImage(raw,x0,y0,width,height,0,0,width,height);
+    data=scan.getContext('2d',{willReadFrequently:true}).getImageData(0,0,width,height).data;w=width;h=height;method='selected_stone_2d_crop';
+  }
+  const result=window.CPCInscriptionReader.recognize(data,w,h);
+  const attempt={...result,reading_method:method,attempted_at:new Date().toISOString(),
+    interpretation_status:'machine_proposed_unverified',human_confirmed:false};
+  // Keep local reading attempts in the record as hypotheses, never as a name
+  // or inscription assignment. Do not overwrite human notes or original image.
+  r.reading_attempts=[...(r.reading_attempts||[]),attempt].slice(-12);
+  await persistMergedRecord({id:r.id,reading_attempts:r.reading_attempts});
+  $('readingStatus').textContent=result.status==='unverified_template_reading'?
+   'Possible character patterns detected. Not a verified transcription; compare each letter with the original photo.':
+   'No reliable character sequence found in this photograph. Try a closer, steadier, side-lit view.';
+  $('readingCandidates').textContent=result.candidates?.length?
+   result.candidates.map((line,i)=>'Line '+(i+1)+': '+line.text+
+    '  ['+line.characters.map(c=>c.score.toFixed(2)).join(', ')+']').join('\\n'):
+   'No confident letters. The original photograph remains available.';
+  await refreshRecords();
+ }catch(err){$('readingStatus').textContent='Reading attempt could not complete: '+(err?.message||String(err));}
+ finally{button.disabled=false;other.disabled=false;}
+}
 function polygonPath(ctx,points){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()}
 function backgroundStyle(ctx,w,h){
  const mode=$('backgroundMode').value;
@@ -454,6 +509,7 @@ $('driveSyncBtn').addEventListener('click',async()=>{
 window.addEventListener('online',queueDriveSync);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueDriveSync()});
 driveStatus();
+$('readInscription2d').addEventListener('click',()=>attemptReadInscription(false));$('readInscriptionPlane').addEventListener('click',()=>attemptReadInscription(true));
 $('exportBtn').addEventListener('click',exportCurrent);$('shareReviewBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=false;$('shareConfirm').checked=false;$('shareImage').checked=false;$('shareInscription').checked=false;$('shareMaterial').checked=false;$('shareSite').checked=false;$('shareSiteName').value='';$('shareInscriptionText').value='';});$('shareCancelBtn').addEventListener('click',()=>{$('shareReviewPanel').hidden=true;});$('shareExportBtn').addEventListener('click',exportShareable);$('newBtn').addEventListener('click',resetToCapture);$('continueMonumentBtn').addEventListener('click',continueMonument);
 const hints=window.CPCGuidedCapture.DIRECTIONS;
 $('captureModes').addEventListener('click',e=>{const b=e.target.closest('button[data-shot]');if(!b)return;switchShotMode(b.dataset.shot)});
