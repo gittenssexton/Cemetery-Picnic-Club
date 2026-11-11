@@ -1,7 +1,7 @@
 /* CPC rules-based live surface feature proposals v1.
    No OCR, object recognition or confirmed iconography. All evidence remains provisional. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CPCSurfaceFeatures=api;})(typeof window!=='undefined'?window:null,function(){'use strict';
-const VERSION='CPC_SURFACE_FEATURES_V1';
+const VERSION='CPC_SURFACE_FEATURES_V2';
 function scan(rgba,w,h,region){
  if(!rgba||rgba.length<w*h*4||!region?.box)return {letters:[],details:[],motifs:[],version:VERSION};
  const b=region.box, x0=Math.max(2,Math.floor(b.x*w+4)),x1=Math.min(w-3,Math.ceil((b.x+b.w)*w-4)),
@@ -34,7 +34,20 @@ function scan(rgba,w,h,region){
  }
  const bw=maxX-minX+1,bh=maxY-minY+1;
  if(tail<4||tail>count*.21||bw<2||bh<2||bw>x1-x0-2||bh>y1-y0-2)continue;
- found.push({x:minX/w,y:minY/h,w:bw/w,h:bh/h,pixels:tail,aspect:bw/bh,
+ // Keep the exact edge pixels for a transparent overlay, never a rectangle-shaped fill.
+ // RLE rows are small and serializable; no camera pixels are modified.
+ const byRow=new Map();
+ for(let z=0;z<tail;z++){const v=queue[z],py=(v/w)|0,px=v%w;if(!byRow.has(py))byRow.set(py,[]);byRow.get(py).push(px);}
+ const strokes=[];
+ for(const [py,xs] of [...byRow].sort((a,b)=>a[0]-b[0])){
+   xs.sort((a,b)=>a-b);let startX=xs[0],last=xs[0];
+   for(let k=1;k<=xs.length;k++){
+     if(k<xs.length&&xs[k]<=last+1){last=xs[k];continue;}
+     strokes.push([startX,py,last-startX+1]);
+     if(k<xs.length){startX=xs[k];last=xs[k];}
+   }
+ }
+ found.push({strokes,x:minX/w,y:minY/h,w:bw/w,h:bh/h,pixels:tail,aspect:bw/bh,
   centerX:(minX+maxX)/2/w,centerY:(minY+maxY)/2/h});
  }
  // Glyph-like candidates are compact and repeated at compatible heights in a row.
@@ -59,11 +72,13 @@ function tracker(){
  return {update(features){
   const incoming=[...(features?.letters||[]),...(features?.details||[]),...(features?.motifs||[])],next=[],used=new Set();
   for(const old of tracks){
-   let pick=-1,best=.4;
+   let pick=-1,best=.065;
    for(let j=0;j<incoming.length;j++){
     if(used.has(j)||incoming[j].kind!==old.region.kind)continue;
     const o=incoming[j],dx=(o.centerX-old.region.centerX),dy=(o.centerY-old.region.centerY);
     const distance=Math.hypot(dx,dy);
+    const sizeRatio=Math.max(o.w/old.region.w,old.region.w/o.w,o.h/old.region.h,old.region.h/o.h);
+    if(sizeRatio>1.8)continue;
     if(distance<best){best=distance;pick=j;}
    }
    if(pick>=0){used.add(pick);next.push({id:old.id,region:incoming[pick],hits:Math.min(10,old.hits+1),misses:0});}
