@@ -33,13 +33,9 @@ function motionEstimate(prev,next,w,h,region){
   return n>=samples.length*.7?sum/n:Infinity;
  };
  let best={dx:0,dy:0,error:cmp(0,0)};
- // Coarse-to-fine search keeps computation bounded on phones.
- for(let dy=-maxShift;dy<=maxShift;dy+=2)for(let dx=-maxShift;dx<=maxShift;dx+=2){
-  const error=cmp(dx,dy);if(error<best.error)best={dx,dy,error};
- }
- const coarse=best;
- for(let dy=coarse.dy-1;dy<=coarse.dy+1;dy++)for(let dx=coarse.dx-1;dx<=coarse.dx+1;dx++){
-  if(Math.abs(dx)>maxShift||Math.abs(dy)>maxShift)continue;
+ // Examine integer shifts; carved grooves and thin lettering are high-frequency
+ // features, so skipping alternate pixels can miss the correct displacement.
+ for(let dy=-maxShift;dy<=maxShift;dy++)for(let dx=-maxShift;dx<=maxShift;dx++){
   const error=cmp(dx,dy);if(error<best.error)best={dx,dy,error};
  }
  if(best.error>36)return null;
