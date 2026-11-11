@@ -42,7 +42,7 @@ const catalog=[
 ];
 const $=id=>document.getElementById(id), video=$('video'),stage=$('cameraStage'),canvas=$('discoveryCanvas'),ctx=canvas.getContext('2d',{alpha:true}),status=$('discoveryStatus');
 const scan=document.createElement('canvas');scan.width=160;scan.height=200;const g=scan.getContext('2d',{willReadFrequently:true});
-let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,autoStoneId=null,autoStoneHits=0,liveFeatures=[],surfaceConditions=null,featureTracker=window.CPCSurfaceFeatures?.tracker?.(),visualTracker=window.CPCVisualLock?.createTracker?.(),scanTick=0,visualStone=null;let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
+let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,autoStoneId=null,autoStoneHits=0,liveFeatures=[],surfaceConditions=null,featureTracker=window.CPCSurfaceFeatures?.tracker?.(),visualTracker=window.CPCVisualLock?.createTracker?.(),scanTick=0,visualStone=null,lastGray=null,lastMapping=null,lastCandidateList=[];let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
@@ -51,6 +51,7 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  // The scanning canvas and phone viewport rarely share an aspect ratio.
  const point=(p)=>[vr.x+((p[0]*160-scanX)/sc)*vr.w/video.videoWidth,vr.y+((p[1]*200-scanY)/sc)*vr.h/video.videoHeight];
  const p=g.getImageData(0,0,160,200).data,gray=new Uint8Array(160*200);for(let i=0;i<gray.length;i++)gray[i]=(p[4*i]*77+p[4*i+1]*150+p[4*i+2]*29)>>8;
+ lastGray=gray;lastMapping={scanX,scanY,scale:sc,videoWidth:video.videoWidth,videoHeight:video.videoHeight,screenW:w,screenH:h,vr};
  const motionState=window.CPCMotionLock?.status?.()||{motion:'unknown',may_add_feature_evidence:true};
  const fullScan=(scanTick++%3===0)||!visualTracker?.current?.();
  if(fullScan){
@@ -95,6 +96,7 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
    contourTracker.update(window.CPCPixelContours.analyzeScene(p,160,200).regions,motionState):[];
  }
  const candidates=fullScan?latestMonuments.filter(r=>r.classification==='possible_monument_shape'&&r.box.h>.15&&r.box.w>.06):[];
+ if(fullScan)lastCandidateList=candidates;
  visualStone=fullScan?visualTracker?.confirm?.(candidates,gray,160,200):visualTracker?.advance?.(gray,160,200);
  // Publicly visible live detection is tentative and never automatically labeled as a named stone.
  if($('livePreviewEnhance')?.checked&&latestAnalysis?.preview){
@@ -174,13 +176,45 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  lastDraw=Date.now();
 }
 function start(){if(running)return;running=true;scanTick=0;cycle();timer=setInterval(cycle,240);$('liveDiscovery').checked=true;}
-function stop(){running=false;visualTracker?.reset?.();visualStone=null;scanTick=0;lockedTrackId=null;autoStoneId=null;autoStoneHits=0;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
+function stop(){running=false;visualTracker?.reset?.();visualStone=null;lastGray=null;lastMapping=null;lastCandidateList=[];scanTick=0;lockedTrackId=null;autoStoneId=null;autoStoneHits=0;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
  const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
 const chooser=$('symbolChoice');for(const c of catalog){let option=document.createElement('option');option.value=c[0];option.textContent=c[1];chooser.appendChild(option)}
 chooser.addEventListener('change',()=>{const c=catalog.find(c=>c[0]===chooser.value);$('symbolDescription').textContent=c?`${c[2]} — reference PDF p. ${c[3]}`:''});
+function pointInPolygon(x,y,polygon){
+ let inside=false;
+ for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+  const a=polygon[i],b=polygon[j];
+  if(((a[1]>y)!==(b[1]>y))&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+ }
+ return inside;
+}
+function tapTarget(event){
+ if(!running||manual||!lastMapping||!lastGray)return false;
+ const rect=canvas.getBoundingClientRect(),m=lastMapping;
+ const x=event.clientX-rect.left,y=event.clientY-rect.top;
+ const vx=(x-m.vr.x)/m.vr.w*m.videoWidth,vy=(y-m.vr.y)/m.vr.h*m.videoHeight;
+ const nx=(m.scanX+vx*m.scale)/160,ny=(m.scanY+vy*m.scale)/200;
+ if(nx<0||nx>1||ny<0||ny>1)return false;
+ const possible=[...(visualStone?[visualStone]:[]),...lastCandidateList];
+ const hits=possible.filter(c=>c?.points?.length&&
+   (pointInPolygon(nx,ny,c.points)||
+   (nx>=c.box.x-.013&&nx<=c.box.x+c.box.w+.013&&ny>=c.box.y-.013&&ny<=c.box.y+c.box.h+.013)));
+ if(!hits.length)return false;
+ // Choose the smallest overlapping detected region; this makes an explicitly tapped
+ // neighboring stone win over an overlapping larger stone when both are candidates.
+ hits.sort((a,b)=>a.box.w*a.box.h-b.box.w*b.box.h);
+ const found=visualTracker.select(hits[0],lastGray,160,200);
+ if(!found)return false;
+ visualStone=found;lockedTrackId=found.persistent_lock_id;featureTracker?.reset?.();
+ $('liveLockTarget').textContent='Unlock target';
+ if($('liveTargetStatus'))$('liveTargetStatus').textContent='Selected stone locked. Live analysis is focused inside its tracked outline.';
+ status.textContent='Selected stone. Tracking its outline and engraving; tap Unlock target to resume automatic selection.';
+ cycle();
+ return true;
+}
 $('markSymbol').addEventListener('click',()=>{if(!running){status.textContent='Enable live analysis and camera first.';return}manual=true;canvas.classList.add('enabled');status.textContent='Tap the carving in the camera view to place a reference annotation.'});
-canvas.addEventListener('click',e=>{if(!manual)return;const r=canvas.getBoundingClientRect();$('markX').value=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));$('markY').value=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));$('markPanel').hidden=false;manual=false;canvas.classList.remove('enabled')});
+canvas.addEventListener('click',e=>{if(!manual){tapTarget(e);return;}const r=canvas.getBoundingClientRect();$('markX').value=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));$('markY').value=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));$('markPanel').hidden=false;manual=false;canvas.classList.remove('enabled')});
 $('saveSymbol').addEventListener('click',saveAnnotation);$('cancelSymbol').addEventListener('click',()=>{$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled')});
 $('clearSymbols').addEventListener('click',()=>{annotations=[];cycle();status.textContent='Annotations cleared for next monument.'});
 $('liveDiscovery').addEventListener('change',e=>e.target.checked?start():stop());
