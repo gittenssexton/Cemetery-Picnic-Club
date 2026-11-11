@@ -108,10 +108,12 @@ function overlap(a,b){
 }
 function createTracker(){
  let tracks=[],nextId=1;
- return{update(candidates){
+ return{update(candidates,motionState){
+  // Motion alters persistence confidence; it does not fabricate a contour.
+  const motion=motionState?.motion||'unknown',requiredHits=motion==='rapid'?4:motion==='moving'?3:2;
   const used=new Set(),next=[];
   for(const old of tracks){
-   let hit=-1,score=.35;
+   let hit=-1,score=motion==='rapid'?.48:.35;
    for(let i=0;i<candidates.length;i++){
     if(used.has(i))continue;
     const c=candidates[i],ratio=Math.max(c.box.w/old.contour.box.w,old.contour.box.w/c.box.w,c.box.h/old.contour.box.h,old.contour.box.h/c.box.h);
@@ -124,7 +126,7 @@ function createTracker(){
   }
   for(let i=0;i<candidates.length;i++)if(!used.has(i))next.push({id:nextId++,contour:candidates[i],hits:1,misses:0});
   tracks=next.slice(0,25);
-  return tracks.filter(t=>t.hits>=2&&t.misses===0).slice(0,18).map(t=>({...t.contour,track_id:t.id}));
+  return tracks.filter(t=>t.hits>=requiredHits&&t.misses===0).slice(0,18).map(t=>({...t.contour,track_id:t.id}));
  },reset(){tracks=[];nextId=1;}};
 }
 return{VERSION,analyze,analyzeScene,overlap,createTracker};
