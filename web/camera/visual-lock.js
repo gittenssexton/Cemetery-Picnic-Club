@@ -93,11 +93,20 @@ function createTracker(){
   }
   return current(now);
  }
+ function select(target,gray,w,h,now=Date.now()){
+  if(!target?.points?.length||target.classification!=='possible_monument_shape'||!gray||gray.length<w*h)return null;
+  // Tap must refer to an observed visual candidate, never an arbitrary invented rectangle.
+  serial++;
+  region={...target,persistent_lock_id:serial};
+  lastConfirmed=now;lastObserved=now;state='confirmed';pending=null;
+  previous=copyGray(gray,w,h);
+  return current(now);
+ }
  function current(now=Date.now()){
   if(!region||now-lastConfirmed>MAX_UNCONFIRMED_MS)return null;
   return {...region,tracking_state:state,last_confirmed_ms_ago:Math.max(0,now-lastConfirmed)};
  }
- return {advance,confirm,current,reset,VERSION};
+ return {advance,confirm,select,current,reset,VERSION};
 }
 return{VERSION,createTracker,motionEstimate,shifted};
 });
