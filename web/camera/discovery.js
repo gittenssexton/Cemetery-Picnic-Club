@@ -42,7 +42,7 @@ const catalog=[
 ];
 const $=id=>document.getElementById(id), video=$('video'),stage=$('cameraStage'),canvas=$('discoveryCanvas'),ctx=canvas.getContext('2d',{alpha:true}),status=$('discoveryStatus');
 const scan=document.createElement('canvas');scan.width=160;scan.height=200;const g=scan.getContext('2d',{willReadFrequently:true});
-let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,liveFeatures=[],surfaceConditions=null,featureTracker=window.CPCSurfaceFeatures?.tracker?.();let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
+let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,autoStoneId=null,autoStoneHits=0,liveFeatures=[],surfaceConditions=null,featureTracker=window.CPCSurfaceFeatures?.tracker?.();let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
@@ -94,10 +94,17 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
    const brightness=latestAnalysis.preview.brightness,contrast=latestAnalysis.preview.contrast;
    video.style.filter='brightness('+brightness+') contrast('+contrast+')';
  }else video.style.filter='';
- const selectedStone=lockedTrackId===null?null:latestMonuments.find(t=>t.track_id===lockedTrackId);
- if(lockedTrackId!==null&&!selectedStone){lockedTrackId=null;featureTracker?.reset?.();}
- const candidate=selectedStone||latestMonuments.filter(t=>t.classification==='possible_monument_shape').sort((a,b)=>b.pixels-a.pixels)[0];
- liveFeatures=candidate&&$('liveDetails')?.checked?featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
+ const stoneCandidates=latestMonuments.filter(t=>t.classification==='possible_monument_shape'&&t.box.h>.15&&t.box.w>.06)
+   .sort((a,b)=>((b.shape_score||0)+Math.log(1+b.pixels)/2)-((a.shape_score||0)+Math.log(1+a.pixels)/2));
+ const selectedStone=lockedTrackId===null?null:stoneCandidates.find(t=>t.track_id===lockedTrackId);
+ if(lockedTrackId!==null&&!selectedStone){lockedTrackId=null;featureTracker?.reset?.();$('liveLockTarget').textContent='Lock detected stone';}
+ const topStone=stoneCandidates[0]||null;
+ if(topStone?.track_id===autoStoneId)autoStoneHits=Math.min(12,autoStoneHits+1);
+ else {autoStoneId=topStone?.track_id||null;autoStoneHits=topStone?1:0;featureTracker?.reset?.();}
+ // Require several consecutive observations before auto-selecting a stone.
+ // Once stable, prioritize that silhouette; do not draw many distracting scene contours.
+ const candidate=selectedStone||(autoStoneHits>=2?topStone:null);
+ liveFeatures=candidate&&($('liveLettering')?.checked||$('liveDetails')?.checked)?featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
  // Evaluate exposure/patchy light/chromatic deposits on the candidate stone surface only.
  // These flags describe appearance; they never identify lichen, algae, mildew or stains.
  surfaceConditions=window.CPCSurfaceConditions?.analyze?.(p,160,200,candidate||null)||null;
@@ -108,13 +115,12 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  }
  ctx.clearRect(0,0,w,h);
  if($('liveMonuments')?.checked){
-   ctx.save();ctx.lineWidth=2;
-   for(const shape of latestMonuments){const points=shape.points;if(!points?.length)continue;
-     const possible=shape.classification==='possible_monument_shape';
-     ctx.strokeStyle=shape.track_id===lockedTrackId?'#f4d48c':possible?'#7fe0bd':'rgba(192,205,220,.60)';
-     ctx.lineWidth=possible?2.7:1.4;ctx.setLineDash(possible?[]:[3,6]);
-     const first=point(points[0]);ctx.beginPath();ctx.moveTo(first[0],first[1]);
-     for(let i=1;i<points.length;i++){const pt=point(points[i]);ctx.lineTo(pt[0],pt[1]);}
+   // Focus on one stable, upright stone; suppress unrelated floating rectangles.
+   ctx.save();ctx.setLineDash([]);ctx.lineWidth=3;
+   if(candidate?.points?.length){
+     ctx.strokeStyle='#ffdb45';ctx.lineWidth=3.3;
+     const first=point(candidate.points[0]);ctx.beginPath();ctx.moveTo(first[0],first[1]);
+     for(let i=1;i<candidate.points.length;i++){const pt=point(candidate.points[i]);ctx.lineTo(pt[0],pt[1]);}
      ctx.closePath();ctx.stroke();
    }
    ctx.restore();
@@ -122,16 +128,26 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  if(candidate&&liveFeatures.length){
    ctx.save();ctx.setLineDash([]);
    for(const f of liveFeatures){
-     if(f.kind==='letter_like_stroke_unverified'&&!$('liveLettering')?.checked)continue;
-     if(f.kind!=='letter_like_stroke_unverified'&&!$('liveDetails')?.checked)continue;
-     const a=point([f.x,f.y]),b=point([f.x+f.w,f.y+f.h]);
-     ctx.strokeStyle=f.kind==='letter_like_stroke_unverified'?'#8bc4ff':'#f4d48c';
-     ctx.lineWidth=1.5;ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+     const isLetter=f.kind==='letter_like_stroke_unverified';
+     if(isLetter&&!$('liveLettering')?.checked)continue;
+     if(!isLetter&&!$('liveDetails')?.checked)continue;
+     if(isLetter){
+       // Highlight real connected stroke pixels (not the whole rectangular letter box).
+       // These remain unverified high-contrast shapes, not deciphered characters.
+       ctx.fillStyle='rgba(255,216,45,.53)';
+       for(const [x,y,len] of f.strokes||[]){
+         const a=point([x/160,y/200]),b=point([(x+len)/160,(y+1)/200]);
+         ctx.fillRect(a[0],a[1],Math.max(1,b[0]-a[0]),Math.max(1,b[1]-a[1]));
+       }
+     }else{
+       const a=point([f.x,f.y]),b=point([f.x+f.w,f.y+f.h]);
+       ctx.strokeStyle='rgba(255,216,45,.8)';ctx.lineWidth=1.4;ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+     }
    }
    ctx.restore();
  }
  if($('liveLettering')?.checked&&latestAnalysis){
-   ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle='#8bc4ff';ctx.lineWidth=2;
+   ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle='rgba(255,219,69,.65)';ctx.lineWidth=1.4;
    for(const r of latestAnalysis.textRegions){const a=point([r.x,r.y+r.h]),b=point([r.x+r.w,r.y+r.h]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
    ctx.restore();
  }
@@ -143,13 +159,13 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  const letterFeatures=liveFeatures.filter(f=>f.kind==='letter_like_stroke_unverified').length;
  const carvings=liveFeatures.filter(f=>f.kind==='carving_or_surface_detail_unverified').length;
  status.textContent='LIVE: '+m+' outlines, '+potential+' monument-like shapes. '+(lockedTrackId!==null?'Target locked. ':'')+letterFeatures+' letter-like strokes, '+carvings+' surface details. Shapes are unverified; no name or symbol identified.';
- if($('liveTargetStatus'))$('liveTargetStatus').textContent=lockedTrackId!==null?'Target locked; analyzing its internal details.':'Largest monument-like region analyzed provisionally. Lock a target when ready.';
+ if($('liveTargetStatus'))$('liveTargetStatus').textContent=lockedTrackId!==null?'Stone manually locked; analyzing its inscriptions.':candidate?'Stone outline stabilized; tracing possible carved strokes.':'Looking for a stable upright stone; move closer if needed.';
  if($('liveQuality'))$('liveQuality').textContent=surfaceConditions?.advice?.[0]||latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
  if($('liveSurfaceStatus'))$('liveSurfaceStatus').textContent=surfaceConditions?.flags?.length?'Surface observation: '+surfaceConditions.flags.map(f=>f.replaceAll('_',' ')).join('; ')+'. Color and lighting estimates only; no growth or moisture identified.':'Surface observation: no strong lighting or colored-patch flags in this view.';
  lastDraw=Date.now();
 }
 function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,1200);$('liveDiscovery').checked=true;}
-function stop(){running=false;lockedTrackId=null;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
+function stop(){running=false;lockedTrackId=null;autoStoneId=null;autoStoneHits=0;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
  const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
 const chooser=$('symbolChoice');for(const c of catalog){let option=document.createElement('option');option.value=c[0];option.textContent=c[1];chooser.appendChild(option)}
