@@ -33,5 +33,7 @@ jobs:
         run: node tests/test_camera_pixel_contours.js
       - name: Test rule-based live stone detail tracking
         run: node tests/test_camera_surface_features.js
+      - name: Test weathered stone light and color diagnostics
+        run: node tests/test_camera_surface_conditions.js
       - name: Test direct Drive photo and JSON synchronization
         run: node tests/test_camera_drive_sync.js
