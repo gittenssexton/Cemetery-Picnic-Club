@@ -16,7 +16,7 @@
 
 #discoveryCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:auto;display:none!important;touch-action:manipulation}
 .camera.active:not(.review) #discoveryCanvas{display:block!important}
-#discoveryCanvas:not(.enabled){pointer-events:none}
+#discoveryCanvas:not(.enabled){pointer-events:auto}
 .camera.review #discoveryCanvas{display:none!important}
 #markPanel[hidden],#finishContourBtn[hidden],#shareReviewPanel[hidden],#overviewPickerPanel[hidden]{display:none}
 #markPanel{border:1px solid #746d4f;border-radius:12px;padding:12px;background:#152922;margin-top:10px}
@@ -41,7 +41,7 @@
           <video id="video" autoplay muted playsinline></video>
           <div class="mask" id="maskTop"></div><div class="mask" id="maskBottom"></div><div class="mask" id="maskLeft"></div><div class="mask" id="maskRight"></div>
           <div class="guide" id="guide"></div><div id="grid" style="display:none;position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,transparent 33.2%,#ffffff55 33.3%,transparent 33.5%,transparent 66.5%,#ffffff55 66.7%,transparent 66.8%),linear-gradient(0deg,transparent 33.2%,#ffffff55 33.3%,transparent 33.5%,transparent 66.5%,#ffffff55 66.7%,transparent 66.8%)"></div><canvas id="reviewCanvas" aria-label="Captured photograph. Tap four points around the monument to refine the isolation polygon."></canvas>
-          <canvas id="discoveryCanvas" aria-label="Live visual detail highlights; tap to annotate after selecting Mark symbol"></canvas><span class="view-label" id="viewLabel">Field view</span><div class="live-tip" id="liveTip">Align the monument inside the golden guide. The full scene is always preserved.</div>
+          <canvas id="discoveryCanvas" aria-label="Live gravestone contours: tap a yellow outline to select that stone; use Mark a symbol to add a manual annotation"></canvas><span class="view-label" id="viewLabel">Field view</span><div class="live-tip" id="liveTip">Align the monument inside the golden guide. The full scene is always preserved.</div>
         </div>
       </div>
       <div class="toolbar live-only" id="cameraToolbar"><button class="btn soft" id="startBtn">Enable camera + GPS</button><button class="btn primary" id="captureBtn" disabled>Capture monument</button><button class="btn ghost" id="unlocatedBtn" disabled>Without GPS</button></div>
@@ -111,7 +111,7 @@
         <label class="toggle"><input type="checkbox" id="livePreviewEnhance" checked /> Auto-enhance preview only</label>
       </div>
       <div class="review-buttons"><button class="btn soft" id="liveMotionEnable" type="button">Enable phone motion assist</button><button class="btn soft" id="liveLockTarget" type="button">Lock detected stone</button></div>
- <p class="muted compact" id="liveMotionStatus" role="status">Motion assist optional. On iPhone, tap Enable once and approve the phone sensor request. Image tracking still works without it.</p><p class="muted compact" id="liveTargetStatus">The camera follows the acquired stone between full outline scans and briefly holds the last outline if obscured. Lock keeps the chosen target.</p><p class="muted compact" id="liveSurfaceStatus" aria-live="polite">Surface conditions will be assessed on the stone whenever a candidate is visible. Color changes are not proof of lichen, moss, mold, or wetness.</p><p class="muted compact" id="liveQuality" aria-live="polite">Live quality suggestions appear after camera starts. Original capture stays unchanged.</p>
+ <p class="muted compact" id="liveMotionStatus" role="status">Motion assist optional. On iPhone, tap Enable once and approve the phone sensor request. Image tracking still works without it.</p><p class="muted compact" id="liveTargetStatus">Tap the yellow outline on the live camera to choose that gravestone. Tracking and lettering analysis will focus on it until the visual lock is lost or you tap Unlock target.</p><p class="muted compact" id="liveSurfaceStatus" aria-live="polite">Surface conditions will be assessed on the stone whenever a candidate is visible. Color changes are not proof of lichen, moss, mold, or wetness.</p><p class="muted compact" id="liveQuality" aria-live="polite">Live quality suggestions appear after camera starts. Original capture stays unchanged.</p>
       <p class="muted" id="discoveryStatus" role="status">On-device analysis begins when the camera starts. Yellow: stabilized stone outline, likely letter strokes, and provisional carving edges. Not yet verified inscription reading or monument identity. All boundaries are provisional pixel groupings, <strong>not</strong> verified objects or gravestones.</p>
       <div class="review-buttons"><button class="btn soft" id="markSymbol" type="button">Mark a symbol</button><button class="btn ghost" id="clearSymbols" type="button">Clear marks</button></div>
       <div id="markPanel" hidden><div class="field"><label for="symbolChoice">What carving do you see?</label><select id="symbolChoice"><option value="">Choose from illustrated reference…</option></select></div><p class="muted" id="symbolDescription">Meanings based on your illustrated cemetery symbolism guide; interpretations vary.</p>
