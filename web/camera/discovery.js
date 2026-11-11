@@ -42,7 +42,7 @@ const catalog=[
 ];
 const $=id=>document.getElementById(id), video=$('video'),stage=$('cameraStage'),canvas=$('discoveryCanvas'),ctx=canvas.getContext('2d',{alpha:true}),status=$('discoveryStatus');
 const scan=document.createElement('canvas');scan.width=160;scan.height=200;const g=scan.getContext('2d',{willReadFrequently:true});
-let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,liveFeatures=[],featureTracker=window.CPCSurfaceFeatures?.tracker?.();let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
+let running=false,timer=null,latest=[],manual=false,annotations=[],lastDraw=0,reading=false,lockedTrackId=null,liveFeatures=[],surfaceConditions=null,featureTracker=window.CPCSurfaceFeatures?.tracker?.();let tracks=[],nextTrackId=1,latestAnalysis=null,latestMonuments=[],contourTracker=window.CPCPixelContours?.createTracker?.();
 function fit(){const r=stage.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w:r.width,h:r.height}}
 function videoRect(w,h){const vw=video.videoWidth||1,vh=video.videoHeight||1;const sc=Math.max(w/vw,h/vh);return{w:vw*sc,h:vh*sc,x:(w-vw*sc)/2,y:(h-vh*sc)/2}}
 function cycle(){if(!running||!stage.classList.contains('active')||stage.classList.contains('review')||video.readyState<2)return;
@@ -98,6 +98,9 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  if(lockedTrackId!==null&&!selectedStone){lockedTrackId=null;featureTracker?.reset?.();}
  const candidate=selectedStone||latestMonuments.filter(t=>t.classification==='possible_monument_shape').sort((a,b)=>b.pixels-a.pixels)[0];
  liveFeatures=candidate&&$('liveDetails')?.checked?featureTracker?.update?.(window.CPCSurfaceFeatures.scan(p,160,200,candidate))||[]:[];
+ // Evaluate exposure/patchy light/chromatic deposits on the candidate stone surface only.
+ // These flags describe appearance; they never identify lichen, algae, mildew or stains.
+ surfaceConditions=window.CPCSurfaceConditions?.analyze?.(p,160,200,candidate||null)||null;
  ctx.clearRect(0,0,w,h);
  if($('liveMonuments')?.checked){
    ctx.save();ctx.lineWidth=2;
@@ -136,11 +139,12 @@ function cycle(){if(!running||!stage.classList.contains('active')||stage.classLi
  const carvings=liveFeatures.filter(f=>f.kind==='carving_or_surface_detail_unverified').length;
  status.textContent='LIVE: '+m+' outlines, '+potential+' monument-like shapes. '+(lockedTrackId!==null?'Target locked. ':'')+letterFeatures+' letter-like strokes, '+carvings+' surface details. Shapes are unverified; no name or symbol identified.';
  if($('liveTargetStatus'))$('liveTargetStatus').textContent=lockedTrackId!==null?'Target locked; analyzing its internal details.':'Largest monument-like region analyzed provisionally. Lock a target when ready.';
- if($('liveQuality'))$('liveQuality').textContent=latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
+ if($('liveQuality'))$('liveQuality').textContent=surfaceConditions?.advice?.[0]||latestAnalysis?.advice[0]||'Live preview quality appears usable; check lettering at full resolution after capture.';
+ if($('liveSurfaceStatus'))$('liveSurfaceStatus').textContent=surfaceConditions?.flags?.length?'Surface observation: '+surfaceConditions.flags.map(f=>f.replaceAll('_',' ')).join('; ')+'. Color and lighting estimates only; no growth or moisture identified.':'Surface observation: no strong lighting or colored-patch flags in this view.';
  lastDraw=Date.now();
 }
 function start(){if(running)return;running=true;cycle();timer=setInterval(cycle,1200);$('liveDiscovery').checked=true;}
-function stop(){running=false;lockedTrackId=null;featureTracker?.reset?.();liveFeatures=[];if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
+function stop(){running=false;lockedTrackId=null;featureTracker?.reset?.();liveFeatures=[];surfaceConditions=null;if(timer)clearInterval(timer);timer=null;tracks=[];latest=[];latestAnalysis=null;latestMonuments=[];contourTracker?.reset?.();video.style.filter='';canvas.classList.remove('enabled');ctx.clearRect(0,0,canvas.width,canvas.height);status.textContent='Live analysis paused.';}
 function saveAnnotation(){const id=$('symbolChoice').value,record=catalog.find(c=>c[0]===id);if(!record){status.textContent='Choose a symbol from the reference first.';return}
  const x=Number($('markX').value),y=Number($('markY').value);annotations.push({x,y,symbol_id:id,label:record[1],interpretation:record[2],source:'User-supplied symbol identification',source_document:'Scan Nov 8, 2026 at 7.00 PM.pdf',source_page:record[3],review_status:'unreviewed',created_at:new Date().toISOString()});status.textContent=`Marked ${record[1]} based on your selection; not auto-identified.`;$('markPanel').hidden=true;manual=false;canvas.classList.remove('enabled');cycle()}
 const chooser=$('symbolChoice');for(const c of catalog){let option=document.createElement('option');option.value=c[0];option.textContent=c[1];chooser.appendChild(option)}
@@ -158,7 +162,7 @@ $('liveLockTarget')?.addEventListener('click',()=>{
 });
 // No automatic label claims. Working visual-interest indicators and user-tagged references only.
 window.CPCDiscovery={start,stop,getAnnotations:()=>annotations.map(a=>({...a})),
- snapshot:()=>({analysis_version:latestAnalysis?.version||null,surface_feature_version:window.CPCSurfaceFeatures?.VERSION||null,live_feature_count:liveFeatures.length,locked_target_track_id:lockedTrackId,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
+ snapshot:()=>({analysis_version:latestAnalysis?.version||null,surface_conditions:surfaceConditions?{...surfaceConditions,preview:undefined}:null,surface_feature_version:window.CPCSurfaceFeatures?.VERSION||null,live_feature_count:liveFeatures.length,locked_target_track_id:lockedTrackId,contour_engine_version:window.CPCPixelContours?.VERSION||null,visual_region_count:latest.length,text_like_region_count:latestAnalysis?.textRegions.length||0,possible_outline_count:latestMonuments.length,quality:latestAnalysis?.quality||null,analysis_status:'heuristic_unverified',enhancement_applies_only_to_preview:true}),
  clear:()=>{annotations=[];manual=false;canvas.classList.remove('enabled');$('markPanel').hidden=true},
  catalog:catalog.map(c=>({id:c[0],name:c[1],meaning:c[2],source_page:c[3]}))};
 })();
