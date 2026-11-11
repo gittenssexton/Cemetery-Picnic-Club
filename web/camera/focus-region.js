@@ -19,7 +19,7 @@ function resolve(stone,focus){
  const b=stone.box;
  // Roughly 44% of the stone face on each axis; 17% minimum viewport extent
  // for sufficient pixels to evaluate strokes without claiming letter identity.
- const rw=clamp(b.w*.44,.17,Math.min(.55,b.w)),rh=clamp(b.h*.38,.16,Math.min(.52,b.h));
+ const rw=Math.min(b.w,Math.max(Math.min(.17,b.w),Math.min(.55,b.w*.44))),rh=Math.min(b.h,Math.max(Math.min(.16,b.h),Math.min(.52,b.h*.38)));
  const cx=b.x+b.w*focus.u,cy=b.y+b.h*focus.v;
  const x=clamp(cx-rw/2,b.x,b.x+b.w-rw),y=clamp(cy-rh/2,b.y,b.y+b.h-rh);
  return{x,y,w:rw,h:rh,kind:'tapped_surface_region_unverified',is_detail:true};
