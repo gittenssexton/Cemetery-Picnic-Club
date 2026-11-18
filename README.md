@@ -68,8 +68,16 @@ This is an architecture proposal, not a statement that these services are provis
 
 - GitHub: https://github.com/gittenssexton/Cemetery-Picnic-Club
 - Google Drive: https://drive.google.com/drive/folders/10kQDrxfn097oa4XRGe7_ee44zR9bJ2OW
-- Cloudflare Worker (provided deployment address; current operational status not verified): https://cemeterypicnicclub.gittens-sexton.workers.dev/
+- Live Pine Grove field notebook: https://cemetery-picnic-club.gittens-sexton.workers.dev/
 
 ## Status
 
-Initial project charter. No app features or production infrastructure are claimed to be implemented by this document.
+The Pine Grove pilot supports photo attachments, optional GPS, private drafts stored in the browser, and separate downloads of the draft record and original photo. It also includes a stone-material field guide. The browser needs one online visit to cache the app for offline use. Drafts belong to the browser and site address where they were saved.
+
+To run the notebook from this repository:
+
+```sh
+python -m http.server 8000 --bind 127.0.0.1 --directory web
+```
+
+Open http://localhost:8000/.
