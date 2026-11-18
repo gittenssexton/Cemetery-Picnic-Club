@@ -70,7 +70,7 @@ a{color:#125e4d}footer{color:var(--muted);font-size:.8rem;padding-top:8px}
 "use strict";
 const $ = (id) => document.getElementById(id);
 const DB_NAME="cpc-field-notebook-v1", STORE="drafts";
-let gps=null, previewURL=null;
+let gps=null, previewURL=null, locationRequest=0, saving=false;
 function openDb(){
  return new Promise((resolve,reject)=>{
   if(!("indexedDB" in window)){reject(new Error("Offline storage is not available in this browser."));return;}
@@ -87,6 +87,7 @@ async function operate(mode,callback){
   req.onsuccess=()=>{result=req.result;};
   req.onerror=()=>reject(req.error);
   tx.onerror=()=>reject(tx.error);
+  tx.onabort=()=>reject(tx.error||new Error("The storage transaction was canceled."));
   tx.oncomplete=()=>resolve(result);
  });}finally{db.close();}
 }
@@ -122,32 +123,44 @@ $("photograph").addEventListener("change",()=>{
 });
 $("geoBtn").addEventListener("click",()=>{
  if(!navigator.geolocation){$("gpsStatus").textContent="Geolocation is not available.";return;}
+ const request=++locationRequest;
  $("gpsStatus").textContent="Requesting location permission…";
  navigator.geolocation.getCurrentPosition(p=>{
+  if(request!==locationRequest)return;
   gps={latitude:p.coords.latitude,longitude:p.coords.longitude,accuracyMeters:p.coords.accuracy,observedAt:new Date(p.timestamp).toISOString()};
   $("gpsStatus").textContent="GPS: "+gps.latitude.toFixed(6)+", "+gps.longitude.toFixed(6)+" · accuracy ±"+Math.round(gps.accuracyMeters)+" m";
- },e=>{$("gpsStatus").textContent="No location saved: "+e.message;},
+ },e=>{
+  if(request!==locationRequest)return;
+  $("gpsStatus").textContent=(gps?"Kept previous location. ":"No location saved. ")+e.message;
+ },
  {enableHighAccuracy:true,timeout:15000,maximumAge:0});
 });
-$("clearGps").addEventListener("click",()=>{gps=null;$("gpsStatus").textContent="Location removed.";});
+$("clearGps").addEventListener("click",()=>{locationRequest++;gps=null;$("gpsStatus").textContent="Location removed.";});
 $("fieldForm").addEventListener("submit",async(e)=>{
- e.preventDefault();const file=$("photograph").files[0];
+ e.preventDefault();
+ if(saving)return;
+ const file=$("photograph").files[0];
  if(!file){showStatus("Please select a photograph.",true);return;}
  if(!$("rights").checked){showStatus("Please confirm that you can retain this photograph.",true);return;}
- const btn=e.submitter;if(btn)btn.disabled=true;
+ const controls=[...$("fieldForm").elements];
+ saving=true;
+ controls.forEach(control=>{control.disabled=true;});
  try{
   const id=crypto.randomUUID?crypto.randomUUID():("cpc-"+Date.now()+"-"+Math.random().toString(36).slice(2));
   await put({id,format:"cpc-field-draft-v1",cemeteryId:"cem-pine-grove-warren",markerLabel:$("label").value.trim(),
-    transcription:$("inscription").value.trim(),notes:$("features").value.trim(),gps:structuredClone(gps),
+    transcription:$("inscription").value.trim(),notes:$("features").value.trim(),gps:gps,
     createdAt:new Date().toISOString(),photo:file,photoName:file.name||"gravestone.jpg",photoType:file.type,
     publicationAuthorized:false,analysisAuthorized:false,source:"user field capture",syncStatus:"local_only"});
-  $("fieldForm").reset();gps=null;$("gpsStatus").textContent="Location not collected.";
+  $("fieldForm").reset();locationRequest++;gps=null;$("gpsStatus").textContent="Location not collected.";
   $("preview").style.display="none";if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
   showStatus("Saved on this device. Export the record and photo for backup.");await render();
  }catch(err){showStatus("Could not save draft: "+(err.message||err),true);}
- finally{if(btn)btn.disabled=false;}
+ finally{
+  saving=false;
+  controls.forEach(control=>{control.disabled=false;});
+ }
 });
-if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 render();
 })();
 </script>
